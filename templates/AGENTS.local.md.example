@@ -1,0 +1,82 @@
+# AGENTS.local.md — Repository-Specific Overrides
+
+This file extends the base AGENTS.md constitution with project-specific customizations.
+
+**Precedence:** AGENTS.local.md overrides AGENTS.md when conflicts exist.
+
+**What Goes Here:** Project-specific details like tech stack, build commands, testing requirements, and architectural patterns. Keep the base AGENTS.md focused on universal workflow standards; put project-specific context here.
+
+**Common Extension Areas:**
+- **Tech Stack** - Framework versions, language specifics, key dependencies
+- **Build/Test Commands** - How to run, test, and build the project
+- **Testing Standards** - Coverage expectations, test patterns
+- **Code Style** - Formatting rules, naming conventions (if not in .editorconfig)
+- **Architecture** - File organization, design patterns
+- **Security** - Auth flows, secrets management, data validation
+- **Performance** - Optimization requirements, bundle size limits
+- **Deployment** - How/where code gets deployed
+
+---
+
+## Uncomment sections below to customize for this repository
+
+<!--
+## Project Overview
+
+This is a [brief description of project].
+
+**Tech Stack:**
+- React 18 with TypeScript
+- Vite for bundling
+- Testing with Vitest
+
+## Build Commands
+
+```bash
+npm run dev      # Start dev server
+npm test         # Run tests
+npm run build    # Production build
+```
+
+## Project Structure
+
+```
+src/
+├── components/   # React components
+├── lib/         # Utilities
+└── types/       # TypeScript types
+```
+
+## Code Style
+
+- Use Prettier for formatting (auto-format on save)
+- Components: PascalCase
+- Functions: camelCase
+- Files: kebab-case
+
+## Testing Standards
+
+- Write tests for business logic
+- Run `npm test` before creating PR
+- Location: `*.test.ts` next to source file
+
+## Security
+
+**Never commit:**
+- `.env.local` (use `.env.example` as template)
+- API keys or secrets
+
+## Architecture Notes
+
+[Any specific patterns or conventions for this codebase]
+
+## What NOT to Touch
+
+- `vendor/` directory
+- `node_modules/`
+
+## Useful Context
+
+[Anything else AI agents should know about this project]
+
+-->

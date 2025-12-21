@@ -1,0 +1,91 @@
+---
+description: "Mandatory workflow standards - hierarchical AGENTS.md enforcement"
+alwaysApply: true
+---
+
+# CRITICAL: Workflow Standards
+
+**READ BOTH AGENTS.md FILES IN THIS PRECEDENCE ORDER:**
+
+1. **AGENTS.local.md** (if exists) - Repository-specific overrides and customizations
+2. **AGENTS.md** (base) - Universal workflow constitution (symlinked from ~/.agents_toolkit/)
+
+When conflicts exist, AGENTS.local.md takes precedence. Both files contain MANDATORY rules for all code changes.
+
+## Prime Directives
+
+1. **NEVER begin implementation without a GitHub issue**
+2. **NEVER write code before issue scope is approved**
+3. **ALWAYS document work in GitHub issues and PRs**
+4. **ALWAYS provide clickable markdown hyperlinks for GitHub resources**
+
+## Workflow Commands
+
+These scripts enforce AGENTS.md standards:
+
+- `.cursor/commands/issue.sh "Title" "Body"` - Create issue + branch
+- `.cursor/commands/branch.sh [type] "description"` - Create branch
+- `.cursor/commands/status.sh` - Check workflow state
+- `.cursor/commands/pr.sh` - Create pull request
+- `.cursor/commands/link.sh <pr> <issue>` - Link PR to issue
+- `.cursor/commands/followup.sh <issue> "comment"` - Add issue comment
+
+## Branch Naming (AGENTS.md Requirement)
+
+**Format:** `{type}/{issue-num}-{description}` or `{type}/pending-{description}`
+
+**Types:** `fix/`, `feat/`, `refactor/`, `docs/`, `chore/`
+
+**Examples:**
+- `fix/42-null-reference-upload`
+- `feat/57-user-export-csv`
+- `refactor/pending-auth-module` (before issue creation)
+
+## Screenshot Handling
+
+**Directory:** `.issue_screenshots/` (committed to repo)
+
+**Naming:** `YYYYMMDD_{issue-num}_{branch-name}_{description}.{ext}`
+
+**Workflow:**
+1. Create branch first
+2. Save screenshots to `.issue_screenshots/`
+3. Commit and push
+4. Create issue (screenshots embedded via raw GitHub URLs)
+
+## Commit Standards
+
+**Format:** `#{issue-num}: {imperative description}`
+
+**Examples:**
+- `#42: Add null check before document serialization`
+- `#57: Implement CSV export endpoint`
+
+## Pull Request Protocol
+
+**Use the script:** `.cursor/commands/pr.sh`
+
+**Required sections:**
+- Summary
+- Changes
+- How to Test
+- Known Limitations
+- `Closes #{issue-num}`
+
+## Your Role
+
+1. **Decide WHEN** to act (based on AGENTS.md rules)
+2. **Execute via scripts** (for deterministic results)
+3. **Verify output** and continue
+
+## Anti-Patterns (Prohibited)
+
+- ❌ Starting to code before issue exists
+- ❌ Creating branches off branches
+- ❌ Expanding scope without user approval
+- ❌ Leaving failed approaches undocumented
+- ❌ Referencing screenshots before committing them
+- ❌ Providing non-clickable GitHub URLs
+- ❌ Manually closing issues (auto-close on PR merge)
+
+**The issue is the contract. The PR is the delivery. Documentation is the proof.**
