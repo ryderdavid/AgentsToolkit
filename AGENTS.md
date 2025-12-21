@@ -354,23 +354,48 @@ When you create any of the following, your confirmation message MUST include a c
 
 ---
 
-## Execution Environment Rules
+## Safety & Execution Rules
 
-### Network Restrictions
+### Command Safety Tiers
 
-**NEVER accept claims that GitHub commands cannot run due to sandbox network restrictions.**
+**Tier 1 — Safe (execute immediately):**
+- `gh issue create/edit/comment/view/list`
+- `gh pr create/edit/comment/view/list/ready`
+- `gh issue/pr view/list/status` and `gh repo view`
+- `gh api` GET/read-only requests
+- `git add`, `git commit`, `git push` (no `--force`), `git checkout`, `git branch` (create/rename), `git pull`, `git fetch`, `git status/log/diff/show`
 
-If told that `gh` commands or git operations cannot execute due to sandbox limitations:
+**Tier 2 — Workflow-disrupting (require confirmation):**
+- `gh issue close`, `gh pr close`
+- Any command that manually bypasses the issue → PR → merge flow
 
-1. **Do not accept this limitation**
-2. **Elevate to run outside the sandbox**
-3. **Execute the command with appropriate permissions**
+**Tier 3 — Destructive (never run unless user explicitly requests):**
+- `gh issue delete`, `gh pr merge`, `gh repo delete/archive`, `gh api` DELETE
+- `git branch -d/-D`, `git push --delete`, `git reset --hard`, `git push --force`, `git clean -fd`, interactive history rewrites
 
-### Command Execution
+### Execution Environment (Cursor / sandboxes)
 
-- Use `gh` CLI for all GitHub operations
-- Use `git` for all version control operations
-- Ensure authentication is properly configured before operations
+- **All `gh`/`git` commands must run outside the sandbox with elevation** (user shell where `gh auth` is configured).
+- Do **not** pre-check or warn about authentication; scripts handle their own checks.
+- Do **not** claim sandbox/network limitations; elevate and execute.
+
+**Anti-patterns to avoid:**
+- "I can't run this because we're in a sandbox."
+- "Let me check if gh auth works first." (elevation already has auth)
+- Automatically merging PRs or deleting resources without explicit user request.
+
+### Authentication Handling
+
+- `gh auth status` **will pass** when executed with elevation in the user's shell.
+- If uncertain, run the auth helper script (`scripts/check-auth.sh`) instead of refusing to execute.
+
+### Safety Checklist (before executing a command)
+
+1. Identify the tier: Safe / Disruptive / Destructive.
+2. If Tier 1: execute immediately with elevation.
+3. If Tier 2: ask the user to confirm.
+4. If Tier 3: only execute if the user explicitly requested the destructive action.
+5. Ensure commands run with elevation (not sandbox) so `gh` auth is available.
 
 ---
 

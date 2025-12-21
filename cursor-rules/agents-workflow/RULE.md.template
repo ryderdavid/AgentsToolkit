@@ -78,6 +78,23 @@ These scripts enforce AGENTS.md standards:
 2. **Execute via scripts** (for deterministic results)
 3. **Verify output** and continue
 
+## Command Execution & Safety
+
+### Execution Environment
+- Run all `gh`/`git` commands using the terminal tool with elevation (executes in the user's shell where `gh auth` is configured).
+- Do **not** pre-check or warn about authentication; execute scripts directly.
+- Do **not** claim sandbox/network limitations; elevate and execute.
+
+### Safety Tiers
+- **Tier 1 (execute immediately):** `gh issue/pr create/edit/comment/view/list/ready`, `gh issue/pr view/list/status`, `gh repo view`, `gh api` GET/read-only, `git add/commit/push` (no `--force`), `git checkout`, `git branch` create/rename, `git pull/fetch`, `git status/log/diff/show`.
+- **Tier 2 (ask confirmation):** `gh issue close`, `gh pr close`, or any action that manually bypasses the issue → PR → merge flow.
+- **Tier 3 (never auto-run):** `gh issue delete`, `gh pr merge`, `gh repo delete/archive`, `gh api` DELETE; `git branch -d/-D`, `git push --delete`, `git reset --hard`, `git push --force`, `git clean -fd`, interactive history rewrites. Only run if the user explicitly requests.
+
+### Anti-Patterns
+- ❌ "I can't run this because we're in a sandbox."
+- ❌ Pre-checking `gh auth` before execution (elevation already has auth).
+- ❌ Auto-merging PRs or deleting resources without explicit user request.
+
 ## Anti-Patterns (Prohibited)
 
 - ❌ Starting to code before issue exists

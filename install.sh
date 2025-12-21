@@ -1,6 +1,7 @@
 #!/bin/bash
 # Agents Toolkit Global Installer
 # Installs toolkit to ~/.agents_toolkit and adds bin/ to PATH
+# Note: Workflow scripts expect GitHub CLI (`gh`) to be installed and authenticated in your shell (used with elevation outside sandboxes).
 
 set -e
 

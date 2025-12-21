@@ -173,6 +173,21 @@ All commands available via `.cursor/commands/` (symlinked to `~/.agents_toolkit/
 - `link.sh <pr-num> <issue-num>` - Link existing PR to issue
 - `followup.sh <issue-num> "comment"` - Add comment to issue with optional screenshots
 
+## Safety Guarantees
+
+All workflow scripts are restricted to safe (Tier 1) operations:
+- ✅ Create/edit issues, PRs, comments, branches
+- ✅ Normal git operations (`add`, `commit`, `push` without `--force`, `checkout`, `branch` create/rename)
+- ✅ Read-only status/log/diff/show commands
+- ❌ No deletes of issues/PRs/repos/branches
+- ❌ No force push, history rewrite, or `git reset --hard`
+- ❌ No automatic PR merges
+
+Safety tiers (per AGENTS.md):
+- **Tier 1 (execute):** Safe/read-only/additive operations
+- **Tier 2 (confirm):** Closing issues/PRs manually
+- **Tier 3 (explicit request only):** Destructive operations (delete/force/merge)
+
 ## How It Works
 
 ### The Hybrid Architecture
