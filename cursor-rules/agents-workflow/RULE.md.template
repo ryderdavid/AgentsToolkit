@@ -75,8 +75,18 @@ These scripts enforce AGENTS.md standards:
 ## Your Role
 
 1. **Decide WHEN** to act (based on AGENTS.md rules)
-2. **Execute via scripts** (for deterministic results)
-3. **Verify output** and continue
+2. **Verify BRANCH** before any file changes (must NOT be main/master)
+3. **Execute via scripts** (for deterministic results)
+4. **Verify output** and continue
+
+### Pre-Change Checkpoint
+
+**Before modifying ANY files, verify:**
+- [ ] Issue exists for this work
+- [ ] On feature branch: run `git branch --show-current` (must NOT show main/master)
+- [ ] Branch follows `{type}/{issue-num}-{desc}` format
+
+**If on main/master: STOP and create feature branch first.**
 
 ## Command Execution & Safety
 
@@ -98,6 +108,8 @@ These scripts enforce AGENTS.md standards:
 ## Anti-Patterns (Prohibited)
 
 - ❌ Starting to code before issue exists
+- ❌ Making file changes while on main/master
+- ❌ Committing directly to main/master
 - ❌ Creating branches off branches
 - ❌ Expanding scope without user approval
 - ❌ Leaving failed approaches undocumented

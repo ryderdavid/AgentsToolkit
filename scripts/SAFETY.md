@@ -11,6 +11,7 @@ All workflow scripts are limited to Tier 1 (safe) operations: create/edit/read a
 - `status.sh`: read-only `gh` and `git`. No mutations.
 - `followup.sh`: `git add/commit/push` for screenshots, `gh issue comment/view`. No force or deletes.
 - `check-auth.sh`: read-only auth check.
+- `check-workflow.sh`: verifies you're on a feature branch before making changes.
 
 ## Guardrails for New Scripts
 

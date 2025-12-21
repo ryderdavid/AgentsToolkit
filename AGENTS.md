@@ -43,8 +43,10 @@ This document defines non-negotiable rules for all AI agents operating in this c
 
 1. **NEVER begin implementation without a structured, scoped GitHub issue.** The issue is the contract.
 2. **NEVER write code before the issue scope is explicitly approved by the user.**
-3. **ALWAYS document your work in GitHub issues and PRs—not just in chat.**
-4. **ALWAYS provide clickable markdown hyperlinks when referencing GitHub resources.**
+3. **NEVER make file changes while on main/master branch.** Always create a feature branch first.
+4. **ALWAYS verify you are on a feature branch before making any file changes.**
+5. **ALWAYS document your work in GitHub issues and PRs—not just in chat.**
+6. **ALWAYS provide clickable markdown hyperlinks when referencing GitHub resources.**
 
 ---
 
@@ -89,6 +91,25 @@ When the user raises a new problem, bug, or feature request:
 ---
 
 ## Branch Management
+
+### CRITICAL: Branch Before Changes
+
+**YOU MUST create and switch to a feature branch BEFORE making any file changes.**
+
+**Pre-Change Checklist:**
+1. ✅ Verify issue exists
+2. ✅ Check current branch: `git branch --show-current`
+3. ✅ If on `main` or `master`: **STOP and create feature branch**
+4. ✅ Only proceed with file changes after confirming you're on a feature branch
+
+**If you are on main/master:**
+```bash
+# STOP - Do not make any file changes
+git checkout -b {type}/{issue-num}-{short-description}
+git branch --show-current  # Verify you're off main
+```
+
+**NEVER commit directly to main/master.** All work must go through feature branches and PRs.
 
 ### Naming Convention
 
@@ -391,11 +412,16 @@ When you create any of the following, your confirmation message MUST include a c
 
 ### Safety Checklist (before executing a command)
 
-1. Identify the tier: Safe / Disruptive / Destructive.
-2. If Tier 1: execute immediately with elevation.
-3. If Tier 2: ask the user to confirm.
-4. If Tier 3: only execute if the user explicitly requested the destructive action.
-5. Ensure commands run with elevation (not sandbox) so `gh` auth is available.
+**Before making ANY file modifications:**
+
+1. ✅ Is there a GitHub issue for this work?
+2. ✅ Am I on a feature branch (NOT main/master)? Run: `git branch --show-current`
+3. ✅ Does my branch name follow `{type}/{issue-num}-{desc}` format?
+4. ✅ Identify command tier: Safe / Disruptive / Destructive
+5. ✅ If Tier 1: execute immediately with elevation
+6. ✅ If Tier 2: ask the user to confirm
+7. ✅ If Tier 3: only execute if the user explicitly requested the destructive action
+8. ✅ Ensure commands run with elevation (not sandbox) so `gh` auth is available
 
 ---
 
@@ -406,6 +432,8 @@ The following behaviors are **explicitly prohibited:**
 | Anti-Pattern | Why It's Prohibited |
 |--------------|---------------------|
 | Starting to code before issue is created and confirmed | Violates issue-first principle; leads to scope ambiguity |
+| Making file changes while on main/master | Bypasses PR review; breaks workflow; direct commits to main |
+| Committing directly to main/master | No PR review; no issue linkage; violates traceable development |
 | Creating branches off branches for iterations | Complicates history; one branch per issue |
 | Expanding scope silently without user approval | Leads to bloated PRs; scope creep |
 | Leaving failed approaches undocumented | Wastes future effort; loses institutional knowledge |
