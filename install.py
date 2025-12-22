@@ -168,7 +168,7 @@ def add_to_path_unix(bin_dir: Path) -> bool:
     if not shell_config:
         print_warning("⚠️  Could not detect shell config file")
         print_warning("Manually add to your shell config:")
-        print_info(f'export PATH="$HOME/.agents_toolkit/bin:$PATH"')
+        print_info(f'export PATH="{bin_dir}:$PATH"')
         return True
     
     # Check if already in PATH
@@ -181,7 +181,7 @@ def add_to_path_unix(bin_dir: Path) -> bool:
     try:
         with shell_config.open('a') as f:
             f.write('\n# Agents Toolkit\n')
-            f.write('export PATH="$HOME/.agents_toolkit/bin:$PATH"\n')
+            f.write(f'export PATH="{bin_dir}:$PATH"\n')
         
         print_success(f"✓ Added to {shell_config}")
         print_warning(f"Run: source {shell_config}")

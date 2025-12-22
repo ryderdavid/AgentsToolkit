@@ -57,14 +57,14 @@ def main():
     # Remove .agents/commands symlink
     agents_commands = repo_root / '.agents' / 'commands'
     if agents_commands.exists() or agents_commands.is_symlink():
-        remove_link(agents_commands)
-        
-        # Remove .agents directory if empty
-        agents_dir = repo_root / '.agents'
-        if agents_dir.exists() and not any(agents_dir.iterdir()):
-            agents_dir.rmdir()
-        
-        print_success("✓ Removed .agents/commands")
+        if remove_link(agents_commands):
+            # Remove .agents directory if empty
+            agents_dir = repo_root / '.agents'
+            if agents_dir.exists() and not any(agents_dir.iterdir()):
+                agents_dir.rmdir()
+            print_success("✓ Removed .agents/commands")
+        else:
+            print_warning("⚠  Could not remove .agents/commands")
     
     # Remove cursor command wrappers
     cursor_commands = repo_root / '.cursor' / 'commands'

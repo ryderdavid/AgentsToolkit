@@ -124,6 +124,10 @@ def create_agents_local_md(target_dir: Path, update_mode: bool) -> bool:
     template = TOOLKIT_DIR / 'templates' / 'AGENTS.local.md.example'
     
     if not agents_local.exists():
+        # Check template file exists before copying
+        if not template.exists():
+            print_error(f"Template not found: {template}")
+            return False
         shutil.copy2(template, agents_local)
         print_success("✓ Created with examples (uncomment to customize)")
         return True

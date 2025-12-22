@@ -59,18 +59,20 @@ def main():
         print_info(f"PR already mentions issue #{args.issue_number}")
     
     # Add "Closes #N" to PR body
-    if not current_body.endswith('\n'):
-        current_body += '\n'
+    # Strip trailing whitespace/newlines
+    current_body = current_body.rstrip()
     
-    # Remove any existing "Closes #N" lines
+    # Remove closing keywords
     lines = current_body.split('\n')
-    filtered_lines = [line for line in lines if not line.strip().startswith('Closes #')]
-    new_body = '\n'.join(filtered_lines)
+    closing_keywords = ['Closes #', 'Fixes #', 'Resolves #']
+    filtered_lines = [
+        line for line in lines 
+        if not any(line.strip().startswith(kw) for kw in closing_keywords)
+    ]
     
-    # Add new link
-    if not new_body.endswith('\n'):
-        new_body += '\n'
-    new_body += f"\nCloses #{args.issue_number}\n"
+    # Rejoin and add single closing reference
+    new_body = '\n'.join(filtered_lines).rstrip()
+    new_body += f"\n\nCloses #{args.issue_number}\n"
     
     # Update PR
     if update_pr(args.pr_number, body=new_body):

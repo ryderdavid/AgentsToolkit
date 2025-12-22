@@ -114,7 +114,7 @@ def main():
             run_git('add', str(dest_path))
             
             # Generate GitHub raw URL (temporary, will update after issue creation)
-            image_url = f"https://raw.githubusercontent.com/{owner}/{repo_name}/{branch_name}/{dest_path}"
+            image_url = f"https://raw.githubusercontent.com/{owner}/{repo_name}/{branch_name}/{dest_path.as_posix()}"
             image_markdown += f"\n\n![Screenshot]({image_url})"
             
             print_success(f"  Added: {screenshot} -> {temp_name}")

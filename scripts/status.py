@@ -69,8 +69,25 @@ def main():
         pr_num = check_pr_exists(branch, 'master')
     
     if pr_num:
+        from lib.github import get_pr
+        pr = get_pr(pr_num)
         print(f"{colors.BLUE}PR:{colors.NC} #{pr_num}")
-        print(f"{colors.GREEN}✅ Ready to merge!{colors.NC}")
+        
+        if pr:
+            state = pr.get('state', '').upper()
+            is_draft = pr.get('isDraft', False)
+            is_merged = pr.get('merged', False)
+            
+            if is_merged:
+                print(f"{colors.GREEN}✅ Merged!{colors.NC}")
+            elif state == 'CLOSED':
+                print(f"{colors.YELLOW}⚠️  Closed without merge{colors.NC}")
+            elif is_draft:
+                print(f"{colors.BLUE}📋 Draft PR{colors.NC}")
+            else:
+                print(f"{colors.BLUE}📋 Open{colors.NC}")
+        else:
+            print(f"{colors.BLUE}📋 PR open{colors.NC}")
     else:
         if commits_ahead > 0:
             print(f"{colors.BLUE}PR:{colors.NC} None - run 'pr.py' to create")

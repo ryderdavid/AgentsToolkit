@@ -186,8 +186,14 @@ def create_link(
     
     # Check if link already exists
     if link_path.exists():
-        if link_path.is_symlink() and link_path.resolve() == target_path:
-            return True, "existing symlink", None
+        # Check if existing path already points to target
+        # (works for symlinks; junctions resolve correctly too)
+        try:
+            if link_path.resolve() == target_path:
+                existing_type = "symlink" if link_path.is_symlink() else "junction/link"
+                return True, f"existing {existing_type}", None
+        except OSError:
+            pass  # Broken link, will fall through to error
         return False, "none", f"Link path already exists: {link_path}"
     
     # Ensure parent directory exists
@@ -271,14 +277,18 @@ def remove_link(link_path: Path) -> bool:
         True if removed successfully, False otherwise
     """
     try:
-        if not link_path.exists():
+        if not link_path.exists() and not link_path.is_symlink():
             return True  # Already gone
         
         if link_path.is_dir() and not link_path.is_symlink():
             # It's a real directory or junction
             if is_windows():
-                # Use rmdir for junctions
-                subprocess.run(['cmd', '/c', 'rmdir', str(link_path)], check=True)
+                # Try rmdir first (for junctions), fall back to rmtree
+                result = subprocess.run(['cmd', '/c', 'rmdir', str(link_path)], 
+                                        capture_output=True)
+                if result.returncode != 0:
+                    # Not a junction or is non-empty, use shutil
+                    shutil.rmtree(link_path)
             else:
                 shutil.rmtree(link_path)
         else:
