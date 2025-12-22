@@ -1,234 +1,138 @@
 # AGENTS.md — Mandatory Agent Behavior & Workflow Standards
 
-This document defines non-negotiable rules for all AI agents operating in this codebase. Violations of these rules constitute workflow failures.
+Non-negotiable rules for all AI agents. Violations constitute workflow failures.
 
-## About This File
-
-**Scope:** Workflow standards - issue-first development, Git conventions, and documentation requirements.
-
-**Extensibility:** Create `AGENTS.local.md` for project-specific guidance (build commands, tech stack, code style). See `templates/AGENTS.local.md.example`.
-
-**Precedence:** `AGENTS.local.md` overrides this base file when conflicts exist.
-
-**Note:** Currently GitHub-focused, but principles (traceable development, structured issues, linked PRs) are platform-agnostic. Future support for GitLab, Bitbucket, Linear, Jira planned.
-
-**Reference:** Command examples and templates at [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
+**Scope:** Workflow standards - issue-first development, Git conventions, documentation.  
+**Extensibility:** Create `AGENTS.local.md` for project-specific guidance. See `templates/AGENTS.local.md.example`.  
+**Precedence:** `AGENTS.local.md` overrides this file.  
+**Reference:** Command examples at [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
 
 ---
 
 ## Prime Directives
 
-**YOU MUST:**
-
 1. **NEVER begin implementation without a structured, scoped GitHub issue.** The issue is the contract.
 2. **NEVER write code before the issue scope is explicitly approved by the user.**
-3. **NEVER make file changes while on main/master branch.** Always create a feature branch first.
-4. **ALWAYS verify you are on a feature branch before making any file changes.**
-5. **ALWAYS document your work in GitHub issues and PRs—not just in chat.**
-6. **ALWAYS provide clickable markdown hyperlinks when referencing GitHub resources.**
-7. **ALWAYS end implementation rounds with a summary containing clickable links to all GitHub artifacts created** (issues, PRs, commits, branches, comments).
+3. **NEVER make file changes while on main/master.** Create a feature branch first.
+4. **ALWAYS verify you're on a feature branch before making file changes.**
+5. **ALWAYS document work in GitHub issues and PRs—not just chat.**
+6. **ALWAYS provide clickable markdown hyperlinks for GitHub resources.**
+7. **ALWAYS end implementation rounds with clickable links to all artifacts** (issues, PRs, commits, branches).
 
 ---
 
 ## Issue-First Development
 
-### Before Writing Any Code
+1. **STOP.** Do not write code.
+2. **Clarify** the request. Ask questions if scope is ambiguous.
+3. **Draft issue** with Summary, Context, Acceptance Criteria, Out of Scope (see [Issue Template](docs/AGENTS_REFERENCE.md#issue-template)).
+4. **Get explicit approval** before proceeding.
 
-1. **STOP. Do not write code.**
-2. **Analyze and clarify** the request. Ask focused questions if scope is ambiguous.
-3. **Draft a structured issue** (see [Issue Template](docs/AGENTS_REFERENCE.md#issue-template)): Summary, Context, Acceptance Criteria, Out of Scope, Screenshots/Evidence.
-4. **Get explicit user approval** before proceeding.
-
-### Issue Creation
-
-Use `gh issue create` with all required sections. Reference screenshots using raw GitHub URLs (see Screenshot Handling).
+Use `gh issue create`. Reference screenshots using raw GitHub URLs after committing them.
 
 ---
 
 ## Branch Management
 
-### CRITICAL: Branch Before Changes
+**Create feature branch BEFORE any file changes.** Check with `git branch --show-current`.
 
-**YOU MUST create and switch to a feature branch BEFORE making any file changes.**
+**Naming:** `{type}/{issue-num}-{short-description}`  
+Types: `fix/`, `feat/`, `refactor/`, `docs/`, `chore/`  
+If issue pending: `{type}/pending-{desc}`, rename after issue creation.
 
-**Pre-Change Checklist:**
-1. ✅ Verify issue exists
-2. ✅ Check current branch: `git branch --show-current`
-3. ✅ If on `main` or `master`: **STOP and create feature branch**
-4. ✅ Only proceed with file changes after confirming you're on a feature branch
-
-**Naming Convention:** `{type}/{issue-num}-{short-description}`
-
-| Type | Use Case |
-|------|----------|
-| `fix/` | Bug fixes |
-| `feat/` | New features |
-| `refactor/` | Code restructuring |
-| `docs/` | Documentation changes |
-| `chore/` | Maintenance tasks |
-
-**When Issue Number Is Unknown:** Use `{type}/pending-{short-description}`, then rename after issue creation.
-
-**Branch Rules:**
-- ONE branch per issue
-- All work for an issue stays on its designated branch
-- NEVER commit directly to main/master
-
-See [Command Cheat Sheet](docs/AGENTS_REFERENCE.md#command-cheat-sheet) for examples.
+**Rules:** One branch per issue. Never commit to main/master.
 
 ---
 
-## Screenshot & Evidence Handling
+## Screenshot Handling
 
-**Directory:** `.issue_screenshots/` at repo root (MUST be committed)  
-**Naming:** `YYYYMMDD_{issue-num}_{branch-name}_{description}.{ext}`
+**Directory:** `.issue_screenshots/` (committed)  
+**Naming:** `YYYYMMDD_{issue-num}_{branch}_{desc}.{ext}`
 
-**Workflow:**
-1. Create branch (use placeholder if issue not yet created)
-2. Save screenshots to `.issue_screenshots/`
-3. Commit and push
-4. Create issue with raw GitHub URLs
-5. Rename branch/files if placeholders used
-
-**Critical:** NEVER reference screenshots before they're committed and pushed.
+Commit and push screenshots before referencing in issues.
 
 ---
 
 ## Pull Request Protocol
 
-**After creating branch and issue, immediately create draft PR:**
+Create draft PR immediately: `gh pr create --draft --title "[WIP] #{num}: {desc}" --body "Closes #{num}"`
 
-```bash
-gh pr create --draft --title "[WIP] #{issue-num}: {description}" --body "Closes #{issue-num}"
-```
+Before marking ready: all acceptance criteria checked, journey documented, commits squashed if noisy.
 
-**Linking:** Use `Closes #{issue-num}` in PR body or `gh issue develop`.
-
-**Before marking ready:** (1) All acceptance criteria checked, (2) Issue comments document journey, (3) Squash noisy commits.
-
-See [PR Template](docs/AGENTS_REFERENCE.md#pr-template) for description requirements.
+See [PR Template](docs/AGENTS_REFERENCE.md#pr-template).
 
 ---
 
 ## Commit Standards
 
-**Format:** `#{issue-num}: {imperative description}`
-
-**Examples:** `#42: Add null check`, `#57: Implement CSV export`
-
-**Requirements:** Atomic (one logical change), compilable state, meaningful messages (what/why, not how).
+**Format:** `#{issue-num}: {imperative description}`  
+**Requirements:** Atomic, compilable, meaningful (what/why not how).
 
 ---
 
 ## Scope Management
 
-| Situation | Detect When | Action |
-|-----------|-------------|--------|
-| **Scope Creep** | Work touches files/modules outside original issue concern | STOP and assess |
-| **Close to completion** | Could finish in 1-2 commits | Propose completing, merging, then opening follow-up issue |
-| **Not close** | Would require significant additional work | Draft backlog issue for deferred work; do not implement on current branch |
-| **Broken state** | Abandoning would push broken code | Continue, but explicitly note expanded scope in issue and PR |
+| Situation | Action |
+|-----------|--------|
+| **Scope creep detected** | STOP, assess, propose split or backlog issue |
+| **Close to done** | Complete, merge, open follow-up |
+| **Not close** | Create backlog issue, don't implement here |
+| **Would break main** | Continue but document expanded scope |
 
-**Three-Iteration Rule:** After 3 feedback iterations on the same issue, STOP and reassess with user (Was issue correctly scoped? Should it be split? Are we chasing symptoms vs. root cause?).
-
-**Creating Backlog Issues:** Use `gh issue create --label "backlog"` and link to current issue.
+**Three-Iteration Rule:** After 3 feedback rounds, reassess scope with user.
 
 ---
 
-## Feedback & Iteration Discipline
+## Feedback Discipline
 
-**On each feedback round:** Add issue comment documenting feedback, resolution, and insights gained.
-
-**Before trying alternatives:** Document failed approaches (what was attempted, why it failed, next approach).
-
-**Why:** Creates audit trail, prevents repeating failures, identifies patterns.
-
-See [Command Cheat Sheet](docs/AGENTS_REFERENCE.md#command-cheat-sheet) for formatting.
+Document each feedback round in issue comments: what was wrong, what changed, insights gained.  
+Document failed approaches before trying alternatives.
 
 ---
 
-## GitHub Output Requirements
+## GitHub Output
 
-### Clickable Links
-
-ALL GitHub URLs MUST be markdown hyperlinks: `[Description](https://github.com/...)`
-
-Examples: ✅ `[#42: Fix upload](link)` ❌ `https://github.com/...`
-
-### Confirmation Messages
-
-Include clickable links when creating issues, PRs, commits, branches, or comments.
-
-### End-of-Round Summary
-
-When finishing implementation, provide summary with clickable links to ALL artifacts (branch, commits, PRs, issues, comments) with descriptive anchor text and context.
-
-See [GitHub Output Examples](docs/AGENTS_REFERENCE.md#github-output-examples) for details.
+ALL URLs as markdown links: `[#42: Fix upload](link)` not bare URLs.  
+End-of-round summaries must include clickable links to all artifacts with descriptive anchor text.
 
 ---
 
-## Safety & Execution Rules
-
-### Command Safety Tiers
+## Safety & Execution
 
 | Tier | Commands | Action |
 |------|----------|--------|
-| **1 - Safe** | `gh issue/pr create/edit/comment/view/list`, `gh repo view`, `gh api` GET, `git add/commit/push/checkout/branch/pull/fetch/status/log/diff/show` | Execute immediately |
-| **2 - Disruptive** | `gh issue/pr close`, manual workflow bypasses | Require confirmation |
-| **3 - Destructive** | `gh issue delete`, `gh pr merge`, `gh repo delete/archive`, `gh api` DELETE, `git branch -d/-D`, `git push --delete/--force`, `git reset --hard`, `git clean -fd` | Only on explicit user request |
+| **1** | `gh issue/pr create/edit/comment/view/list`, `git add/commit/push/checkout/branch/status` | Execute |
+| **2** | `gh issue/pr close` | Confirm first |
+| **3** | `delete`, `merge`, `--force`, `reset --hard` | Only on explicit request |
 
-### Execution Environment
+Run `gh`/`git` commands with elevation. Don't claim sandbox limitations.
 
-- All `gh`/`git` commands run outside sandbox with elevation
-- Do NOT pre-check authentication or claim sandbox limitations
-- Elevate and execute
-
-### Safety Checklist
-
-Before ANY file modifications:
-
-1. ✅ GitHub issue exists?
-2. ✅ On feature branch (NOT main/master)? Check: `git branch --show-current`
-3. ✅ Branch name follows `{type}/{issue-num}-{desc}`?
-4. ✅ Command tier identified?
-5. ✅ Tier 1: execute; Tier 2: confirm; Tier 3: only if explicitly requested
+**Before changes:** Issue exists? On feature branch? Branch name correct? Tier identified?
 
 ---
 
 ## Anti-Patterns (Prohibited Behaviors)
 
-| Anti-Pattern | Why It's Prohibited |
-|--------------|---------------------|
-| Starting to code before issue is created and confirmed | Violates issue-first principle; leads to scope ambiguity |
-| Making file changes while on main/master | Bypasses PR review; breaks workflow; direct commits to main |
-| Committing directly to main/master | No PR review; no issue linkage; violates traceable development |
-| Creating branches off branches for iterations | Complicates history; one branch per issue |
-| Expanding scope silently without user approval | Leads to bloated PRs; scope creep |
-| Leaving failed approaches undocumented | Wastes future effort; loses institutional knowledge |
-| PRs with vague descriptions like "fixes stuff" | Unreviable; no audit trail |
-| Closing issues before code is in main | Premature closure; broken workflow |
-| Referencing screenshots before committing them | Broken image links; unprofessional |
-| Manually closing issues | Issues close automatically when PR merges |
-| Providing non-clickable GitHub URLs | Poor UX; harder to navigate |
-| Weak anchor text in links | Non-descriptive; should explain what the link points to |
-| Ending implementation round without GitHub artifact summary | Missing documentation; poor traceability |
-| Accepting sandbox network restrictions for GitHub operations | Unnecessary limitation; elevate and execute |
-
----
-
-## Quick Reference
-
-For command examples, templates, and detailed examples, see [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
+| Anti-Pattern | Why Prohibited |
+|--------------|----------------|
+| Coding before issue approval | Violates issue-first; scope ambiguity |
+| File changes on main/master | Bypasses PR review; breaks workflow |
+| Branches off branches | Complicates history; one branch per issue |
+| Expanding scope silently | Leads to bloated PRs; scope creep |
+| Undocumented failed approaches | Wastes future effort; loses knowledge |
+| Vague PR descriptions | Unreviewable; no audit trail |
+| Closing issues before merge | Premature closure; broken workflow |
+| Screenshots before commit | Broken image links |
+| Manually closing issues | Issues close automatically on PR merge |
+| Non-clickable GitHub URLs | Poor UX; harder to navigate |
+| Weak anchor text in links | Non-descriptive; use meaningful text |
+| Missing end-of-round summary | Missing documentation; poor traceability |
+| Accepting sandbox limitations | Elevate and execute instead |
 
 ---
 
 ## Enforcement
 
-These rules are mandatory. Agents MUST:
-
-1. Follow this workflow for all code changes
-2. Self-check against anti-patterns before each action
-3. Prioritize documentation and traceability
-4. Seek user approval at defined checkpoints
+Follow this workflow. Self-check against anti-patterns. Prioritize documentation. Seek approval at checkpoints.
 
 **The issue is the contract. The PR is the delivery. Documentation is the proof.**

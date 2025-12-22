@@ -210,7 +210,7 @@ Safety tiers (per AGENTS.md):
 │ - When to create issues             │
 │ - Scope boundaries                  │
 │ - Workflow decisions                │
-│ ↓ (~600 tokens in context)         │
+│ ↓ (~600 tokens in context)          │
 └─────────────────────────────────────┘
                 │
                 ↓
@@ -219,7 +219,7 @@ Safety tiers (per AGENTS.md):
 │ - alwaysApply: true                 │
 │ - "Read both AGENTS.md files"       │
 │ - "Use workflow scripts"            │
-│ ↓ (~100 tokens in context)         │
+│ ↓ (~100 tokens in context)          │
 └─────────────────────────────────────┘
                 │
                 ↓
@@ -534,3 +534,17 @@ Created to enforce consistent, traceable, issue-first development workflows acro
 Inspired by the need for deterministic execution of complex Git workflows while maintaining AI flexibility in decision-making.
 
 Built on the AGENTS.md standard that emerged in July 2025, now supported by 60+ AI development tools.
+
+---
+
+## Appendix: AGENTS.md Word Budget
+
+```
+AGENTS.md Word Budget (target: 1,000 words)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+█████████████████████░░░░░░░░░░  671/1000 (67%)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Buffer remaining: 329 words for future additions
+```
+
+Per [AGENTS.md best practices](https://agents.md), top-level files should be ~300–1,200 words. Shorter files reduce token cost, latency, and instruction dilution.
