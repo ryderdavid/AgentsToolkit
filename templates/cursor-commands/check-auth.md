@@ -1,5 +1,5 @@
 Verify GitHub CLI authentication status.
 
-Run: `.agents/commands/check-auth.sh`
+Run: `python3 .agents/commands/check-auth.py`
 
 
