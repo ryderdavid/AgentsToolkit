@@ -333,15 +333,23 @@ AI tools use "nearest file in directory tree wins" pattern.
 To get toolkit updates in all your repos:
 
 ```bash
-# Pull latest changes
+# Pull latest toolkit changes
 cd ~/Projects/AgentsToolkit
 git pull
 
 # Re-run global installer (if install.sh changed)
 ./install.sh
+
+# Refresh copied files in an existing repo
+cd /path/to/your/repo
+agentsdotmd-init --update
 ```
 
-All repos with symlinked files get updates automatically (AGENTS.md, scripts). Copied files (.cursor/rules/, AGENTS.local.md) remain unchanged.
+Symlinked files (AGENTS.md, CLAUDE.md, .cursor/commands/) update automatically. Copied files refresh when you run `--update`:
+- `.cursor/rules/agents-workflow/RULE.md` (prompt before overwrite)
+- Existing `.github/ISSUE_TEMPLATE.md` and `PULL_REQUEST_TEMPLATE.md` (prompt; not installed if absent)
+
+`AGENTS.local.md` is never changed by `--update` so your local overrides remain intact.
 
 ## Architecture Details
 

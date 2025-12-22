@@ -12,6 +12,7 @@ NC='\033[0m'
 
 TOOLKIT_DIR="$HOME/.agents_toolkit"
 SUBDIR=""
+UPDATE_MODE=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -20,9 +21,13 @@ while [[ $# -gt 0 ]]; do
             SUBDIR="$2"
             shift 2
             ;;
+        --update)
+            UPDATE_MODE=true
+            shift
+            ;;
         *)
             echo -e "${RED}Unknown option: $1${NC}"
-            echo "Usage: agentsdotmd-init [--subdir path]"
+            echo "Usage: agentsdotmd-init [--subdir path] [--update]"
             exit 1
             ;;
     esac
@@ -38,7 +43,11 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 TARGET_DIR="$REPO_ROOT${SUBDIR:+/$SUBDIR}"
 
 echo -e "${BLUE}================================================${NC}"
-echo -e "${BLUE}   Agents Toolkit Initialization${NC}"
+if [ "$UPDATE_MODE" = true ]; then
+    echo -e "${BLUE}   Agents Toolkit Update Mode${NC}"
+else
+    echo -e "${BLUE}   Agents Toolkit Initialization${NC}"
+fi
 echo -e "${BLUE}================================================${NC}"
 echo ""
 echo -e "${GREEN}Target: $TARGET_DIR${NC}"
@@ -67,7 +76,9 @@ fi
 # 2. Create AGENTS.local.md with examples
 echo ""
 echo -e "${YELLOW}[2/7] Creating AGENTS.local.md...${NC}"
-if [ ! -f "$TARGET_DIR/AGENTS.local.md" ]; then
+if [ "$UPDATE_MODE" = true ]; then
+    echo -e "${YELLOW}⊘ Skipped (preserving existing AGENTS.local.md)${NC}"
+elif [ ! -f "$TARGET_DIR/AGENTS.local.md" ]; then
     cp "$TOOLKIT_DIR/templates/AGENTS.local.md.example" "$TARGET_DIR/AGENTS.local.md"
     echo -e "${GREEN}✓ Created with examples (uncomment to customize)${NC}"
 else
@@ -99,11 +110,24 @@ fi
 echo ""
 echo -e "${YELLOW}[5/7] Installing .cursor/rules/...${NC}"
 mkdir -p "$TARGET_DIR/.cursor/rules/agents-workflow"
-if [ ! -f "$TARGET_DIR/.cursor/rules/agents-workflow/RULE.md" ]; then
-    cp "$TOOLKIT_DIR/cursor-rules/agents-workflow/RULE.md.template" "$TARGET_DIR/.cursor/rules/agents-workflow/RULE.md"
-    echo -e "${GREEN}✓ Installed .cursor/rules/agents-workflow/RULE.md${NC}"
+RULE_FILE="$TARGET_DIR/.cursor/rules/agents-workflow/RULE.md"
+if [ -f "$RULE_FILE" ]; then
+    if [ "$UPDATE_MODE" = true ]; then
+        read -p "Update existing RULE.md from template? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            rm "$RULE_FILE"
+            cp "$TOOLKIT_DIR/cursor-rules/agents-workflow/RULE.md.template" "$RULE_FILE"
+            echo -e "${GREEN}✓ Updated .cursor/rules/agents-workflow/RULE.md${NC}"
+        else
+            echo -e "${YELLOW}⊘ Skipped update${NC}"
+        fi
+    else
+        echo -e "${GREEN}✓ Already exists${NC}"
+    fi
 else
-    echo -e "${GREEN}✓ Already exists${NC}"
+    cp "$TOOLKIT_DIR/cursor-rules/agents-workflow/RULE.md.template" "$RULE_FILE"
+    echo -e "${GREEN}✓ Installed .cursor/rules/agents-workflow/RULE.md${NC}"
 fi
 
 # 6. Create .issue_screenshots/
@@ -115,34 +139,78 @@ echo -e "${GREEN}✓ Created .issue_screenshots/${NC}"
 
 # 7. GitHub templates (optional)
 echo ""
-echo -e "${YELLOW}[7/7] Install GitHub templates?${NC}"
-read -p "Install .github/ templates? (Y/n): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-    mkdir -p "$TARGET_DIR/.github"
-    [ ! -f "$TARGET_DIR/.github/ISSUE_TEMPLATE.md" ] && cp "$TOOLKIT_DIR/templates/ISSUE_TEMPLATE.md" "$TARGET_DIR/.github/" && echo -e "${GREEN}✓ ISSUE_TEMPLATE.md${NC}"
-    [ ! -f "$TARGET_DIR/.github/PULL_REQUEST_TEMPLATE.md" ] && cp "$TOOLKIT_DIR/templates/PULL_REQUEST_TEMPLATE.md" "$TARGET_DIR/.github/" && echo -e "${GREEN}✓ PULL_REQUEST_TEMPLATE.md${NC}"
+echo -e "${YELLOW}[7/7] GitHub templates${NC}"
+if [ "$UPDATE_MODE" = true ]; then
+    UPDATED_ANY=false
+    if [ -f "$TARGET_DIR/.github/ISSUE_TEMPLATE.md" ]; then
+        read -p "Update existing ISSUE_TEMPLATE.md? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            cp "$TOOLKIT_DIR/templates/ISSUE_TEMPLATE.md" "$TARGET_DIR/.github/ISSUE_TEMPLATE.md"
+            echo -e "${GREEN}✓ Updated ISSUE_TEMPLATE.md${NC}"
+            UPDATED_ANY=true
+        else
+            echo -e "${YELLOW}⊘ Skipped ISSUE_TEMPLATE.md${NC}"
+        fi
+    fi
+    if [ -f "$TARGET_DIR/.github/PULL_REQUEST_TEMPLATE.md" ]; then
+        read -p "Update existing PULL_REQUEST_TEMPLATE.md? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            cp "$TOOLKIT_DIR/templates/PULL_REQUEST_TEMPLATE.md" "$TARGET_DIR/.github/PULL_REQUEST_TEMPLATE.md"
+            echo -e "${GREEN}✓ Updated PULL_REQUEST_TEMPLATE.md${NC}"
+            UPDATED_ANY=true
+        else
+            echo -e "${YELLOW}⊘ Skipped PULL_REQUEST_TEMPLATE.md${NC}"
+        fi
+    fi
+    if [ "$UPDATED_ANY" = false ]; then
+        echo -e "${YELLOW}⊘ No existing templates to update${NC}"
+    fi
 else
-    echo -e "${YELLOW}⊘ Skipped${NC}"
+    echo -e "${YELLOW}Install .github/ templates?${NC}"
+    read -p "Install .github/ templates? (Y/n): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+        mkdir -p "$TARGET_DIR/.github"
+        [ ! -f "$TARGET_DIR/.github/ISSUE_TEMPLATE.md" ] && cp "$TOOLKIT_DIR/templates/ISSUE_TEMPLATE.md" "$TARGET_DIR/.github/" && echo -e "${GREEN}✓ ISSUE_TEMPLATE.md${NC}"
+        [ ! -f "$TARGET_DIR/.github/PULL_REQUEST_TEMPLATE.md" ] && cp "$TOOLKIT_DIR/templates/PULL_REQUEST_TEMPLATE.md" "$TARGET_DIR/.github/" && echo -e "${GREEN}✓ PULL_REQUEST_TEMPLATE.md${NC}"
+    else
+        echo -e "${YELLOW}⊘ Skipped${NC}"
+    fi
 fi
 
 echo ""
 echo -e "${GREEN}================================================${NC}"
-echo -e "${GREEN}   Initialization Complete!${NC}"
+if [ "$UPDATE_MODE" = true ]; then
+    echo -e "${GREEN}   Update Complete!${NC}"
+else
+    echo -e "${GREEN}   Initialization Complete!${NC}"
+fi
 echo -e "${GREEN}================================================${NC}"
 echo ""
-echo -e "${BLUE}Files created:${NC}"
-echo "  • AGENTS.md (symlink to global constitution)"
-echo "  • AGENTS.local.md (repo-specific overrides)"
+echo -e "${BLUE}Files managed:${NC}"
+echo "  • AGENTS.md (symlink to global constitution; auto-updates via toolkit)"
 echo "  • CLAUDE.md (symlink for Claude Code)"
 echo "  • .cursor/commands/ (symlink to scripts)"
-echo "  • .cursor/rules/agents-workflow/RULE.md"
+echo "  • .cursor/rules/agents-workflow/RULE.md (copied; refreshed via --update)"
+echo "  • AGENTS.local.md (repo overrides; left untouched in --update)"
 echo "  • .issue_screenshots/"
+if [ "$UPDATE_MODE" = true ]; then
+    echo "  • .github templates (updated only when already present)"
+else
+    echo "  • .github templates (optional install)"
+fi
 echo ""
 echo -e "${BLUE}Next steps:${NC}"
-echo "  1. Review AGENTS.local.md and uncomment customizations"
-echo "  2. Commit files: git add AGENTS.md CLAUDE.md .cursor/ .issue_screenshots/"
-echo "  3. Open Cursor - rules will auto-load"
+if [ "$UPDATE_MODE" = true ]; then
+    echo "  1. Review updated files and commit if desired"
+    echo "  2. Open Cursor - rules will auto-load"
+else
+    echo "  1. Review AGENTS.local.md and uncomment customizations"
+    echo "  2. Commit files: git add AGENTS.md CLAUDE.md .cursor/ .issue_screenshots/"
+    echo "  3. Open Cursor - rules will auto-load"
+fi
 echo "  4. Try: .cursor/commands/status.sh"
 echo ""
 echo -e "${YELLOW}Note: Symlinks are committed to git for team visibility${NC}"
