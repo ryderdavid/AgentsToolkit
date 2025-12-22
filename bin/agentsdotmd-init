@@ -85,14 +85,41 @@ else
     echo -e "${GREEN}✓ Already exists${NC}"
 fi
 
-# 3. Symlink CLAUDE.md for Claude Code compatibility
+# 3. Copy CLAUDE.md for Claude Code enforcement
 echo ""
-echo -e "${YELLOW}[3/9] Symlinking CLAUDE.md (Claude Code compat)...${NC}"
-if [ ! -e "$TARGET_DIR/CLAUDE.md" ]; then
-    ln -s AGENTS.md "$TARGET_DIR/CLAUDE.md"
-    echo -e "${GREEN}✓ Created CLAUDE.md -> AGENTS.md${NC}"
+echo -e "${YELLOW}[3/9] Installing CLAUDE.md (Claude Code enforcement)...${NC}"
+if [ "$UPDATE_MODE" = true ]; then
+    if [ -f "$TARGET_DIR/CLAUDE.md" ]; then
+        read -p "Update existing CLAUDE.md? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            # Remove symlink if it exists, then copy
+            [ -L "$TARGET_DIR/CLAUDE.md" ] && rm "$TARGET_DIR/CLAUDE.md"
+            cp "$TOOLKIT_DIR/templates/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
+            echo -e "${GREEN}✓ Updated CLAUDE.md${NC}"
+        else
+            echo -e "${YELLOW}⊘ Skipped CLAUDE.md${NC}"
+        fi
+    else
+        cp "$TOOLKIT_DIR/templates/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
+        echo -e "${GREEN}✓ Created CLAUDE.md${NC}"
+    fi
+elif [ -f "$TARGET_DIR/CLAUDE.md" ] && [ ! -L "$TARGET_DIR/CLAUDE.md" ]; then
+    echo -e "${GREEN}✓ Already exists (standalone file)${NC}"
+elif [ -L "$TARGET_DIR/CLAUDE.md" ]; then
+    echo -e "${YELLOW}⚠️  CLAUDE.md is a symlink (old format)${NC}"
+    read -p "Replace with standalone file? (Y/n): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+        rm "$TARGET_DIR/CLAUDE.md"
+        cp "$TOOLKIT_DIR/templates/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
+        echo -e "${GREEN}✓ Replaced symlink with standalone CLAUDE.md${NC}"
+    else
+        echo -e "${YELLOW}⊘ Kept symlink${NC}"
+    fi
 else
-    echo -e "${GREEN}✓ Already exists${NC}"
+    cp "$TOOLKIT_DIR/templates/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
+    echo -e "${GREEN}✓ Created CLAUDE.md${NC}"
 fi
 
 # 4. Symlink .agents/commands/ (agent-agnostic scripts)
@@ -267,7 +294,7 @@ echo -e "${GREEN}================================================${NC}"
 echo ""
 echo -e "${BLUE}Files managed:${NC}"
 echo "  • AGENTS.md (symlink to global constitution; auto-updates via toolkit)"
-echo "  • CLAUDE.md (symlink for Claude Code)"
+echo "  • CLAUDE.md (copied; Claude Code enforcement; refreshed via --update)"
 echo "  • .agents/commands/ (symlink to toolkit scripts; agent-agnostic)"
 echo "  • .cursor/commands/*.md (Cursor prompt wrappers for slash commands)"
 echo "  • .cursor/rules/agents-workflow/RULE.md (copied; refreshed via --update)"

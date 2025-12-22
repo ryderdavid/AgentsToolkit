@@ -26,7 +26,7 @@ echo "  • .cursor/rules/agents-workflow/"
 echo "  • .cursor/commands/*.md"
 echo "  • .issue_screenshots/ (if empty)"
 echo ""
-echo -e "${RED}AGENTS.md, .github/ templates will NOT be removed${NC}"
+echo -e "${RED}AGENTS.md, CLAUDE.md, .github/ templates will NOT be removed${NC}"
 echo ""
 
 read -p "Continue? (y/N): " -n 1 -r
@@ -76,7 +76,7 @@ fi
 echo ""
 echo -e "${GREEN}Uninstallation complete${NC}"
 echo ""
-echo -e "${YELLOW}Note: AGENTS.md and .github/ templates were not removed${NC}"
+echo -e "${YELLOW}Note: AGENTS.md, CLAUDE.md, and .github/ templates were not removed${NC}"
 echo "Remove them manually if needed"
 echo ""
 

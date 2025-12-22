@@ -4,6 +4,22 @@ This file extends the base AGENTS.md constitution with project-specific customiz
 
 **Precedence:** AGENTS.local.md overrides AGENTS.md when conflicts exist.
 
+---
+
+## ⛔ Workflow Enforcement (DO NOT SKIP)
+
+**Before implementing ANY code changes, you MUST:**
+
+1. ✅ Verify a GitHub issue exists for this work (or create one first)
+2. ✅ Confirm you are on a feature branch, NOT main/master: `git branch --show-current`
+3. ✅ Create a draft PR linking to the issue
+
+**If on main/master:** STOP and create a feature branch before making any file changes.
+
+See **AGENTS.md** for complete workflow rules. See **CLAUDE.md** for Claude Code-specific enforcement.
+
+---
+
 **What Goes Here:** Project-specific details like tech stack, build commands, testing requirements, and architectural patterns. Keep the base AGENTS.md focused on universal workflow standards; put project-specific context here.
 
 **Common Extension Areas:**
