@@ -1,0 +1,112 @@
+name: Promote Nightly to Stable
+
+on:
+  workflow_dispatch:
+    inputs:
+      nightly_tag:
+        description: 'Nightly tag to promote (e.g., nightly-2025-12-22)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Validate nightly tag format
+        run: |
+          if [[ ! "${{ inputs.nightly_tag }}" =~ ^nightly-[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+            echo "❌ Error: Invalid tag format"
+            echo "Expected: nightly-YYYY-MM-DD"
+            echo "Got: ${{ inputs.nightly_tag }}"
+            exit 1
+          fi
+      
+      - name: Extract date and create stable tag name
+        id: tags
+        run: |
+          NIGHTLY="${{ inputs.nightly_tag }}"
+          DATE="${NIGHTLY#nightly-}"
+          STABLE="stable-${DATE}"
+          echo "date=${DATE}" >> $GITHUB_OUTPUT
+          echo "stable=${STABLE}" >> $GITHUB_OUTPUT
+      
+      - name: Check if nightly release exists
+        run: |
+          if ! gh release view "${{ inputs.nightly_tag }}" > /dev/null 2>&1; then
+            echo "❌ Error: Nightly release '${{ inputs.nightly_tag }}' not found"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+      
+      - name: Check if stable already exists
+        run: |
+          if gh release view "${{ steps.tags.outputs.stable }}" > /dev/null 2>&1; then
+            echo "❌ Error: Stable release '${{ steps.tags.outputs.stable }}' already exists"
+            echo "Delete it first: gh release delete ${{ steps.tags.outputs.stable }}"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+      
+      - name: Get nightly release details
+        id: nightly
+        run: |
+          BODY=$(gh release view "${{ inputs.nightly_tag }}" --json body -q .body)
+          COMMIT=$(gh release view "${{ inputs.nightly_tag }}" --json targetCommitish -q .targetCommitish)
+          echo "commit=${COMMIT}" >> $GITHUB_OUTPUT
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "${BODY}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+      
+      - name: Create stable release
+        run: |
+          NOTES="## Stable Release - ${{ steps.tags.outputs.date }}
+
+          🎉 Promoted from \`${{ inputs.nightly_tag }}\` to stable
+
+          ### Original Release Notes
+          ${{ steps.nightly.outputs.body }}"
+
+          gh release create "${{ steps.tags.outputs.stable }}" \
+            --title "Stable Release ${{ steps.tags.outputs.date }}" \
+            --notes "${NOTES}" \
+            --target "${{ steps.nightly.outputs.commit }}" \
+            --latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+      
+      - name: Mark nightly as superseded
+        run: |
+          UPDATED_BODY="> ⚠️ **Superseded by \`${{ steps.tags.outputs.stable }}\`**
+
+          ${{ steps.nightly.outputs.body }}"
+
+          gh release edit "${{ inputs.nightly_tag }}" \
+            --notes "${UPDATED_BODY}" \
+            --prerelease \
+            --latest=false
+        env:
+          GH_TOKEN: ${{ github.token }}
+      
+      - name: Summary
+        run: |
+          echo "✅ Successfully promoted nightly to stable"
+          echo ""
+          echo "🏷️  Nightly: ${{ inputs.nightly_tag }}"
+          echo "🏷️  Stable: ${{ steps.tags.outputs.stable }}"
+          echo ""
+          echo "🔗 View stable release:"
+          echo "   https://github.com/${{ github.repository }}/releases/tag/${{ steps.tags.outputs.stable }}"
+
