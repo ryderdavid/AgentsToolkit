@@ -71,15 +71,16 @@ your-repo/
 - **Symlinked** (automatic updates): AGENTS.md, `.agents/commands/`, CLAUDE.md
 - **Copied** (customizable per-repo): AGENTS.local.md, `.cursor/commands/*.md`, `.cursor/rules/`, `.github/` templates
 
-## Hierarchical Configuration
+## Documentation Structure
 
-The toolkit uses a two-tier configuration system:
+The toolkit uses a multi-tier documentation system:
 
 ### 1. AGENTS.md (Base Constitution)
 - Symlinked from `~/.agents_toolkit/AGENTS.md`
-- Contains universal workflow standards
+- Contains universal workflow standards (~1,200 words)
 - Never modified per-repo
 - Updated by pulling toolkit changes
+- See [AGENTS.md](AGENTS.md)
 
 ### 2. AGENTS.local.md (Repo Overrides)
 - Created in each repo with commented examples
@@ -87,9 +88,15 @@ The toolkit uses a two-tier configuration system:
 - Customize for project-specific needs
 - Example: "This monorepo uses Nx for build orchestration..."
 
+### 3. AGENTS_REFERENCE.md (Command Reference)
+- Contains command examples, templates, and detailed examples
+- Lives in `docs/AGENTS_REFERENCE.md`
+- Referenced from AGENTS.md for complete examples
+- See [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md)
+
 **Precedence:** When conflicts exist, AGENTS.local.md overrides AGENTS.md.
 
-AI tools (Cursor, GitHub Copilot, Claude Code) support hierarchical config using "nearest file in directory tree wins" pattern.
+AI tools (Cursor, GitHub Copilot, Claude Code) support hierarchical config using "nearest file in directory tree wins" pattern. For command examples and templates, see [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
 
 ### What Goes Where?
 
