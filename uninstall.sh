@@ -21,8 +21,9 @@ fi
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
 echo -e "${YELLOW}This will remove:${NC}"
+echo "  • .agents/commands (symlink)"
 echo "  • .cursor/rules/agents-workflow/"
-echo "  • .cursor/commands/*.sh"
+echo "  • .cursor/commands/*.md"
 echo "  • .issue_screenshots/ (if empty)"
 echo ""
 echo -e "${RED}AGENTS.md, .github/ templates will NOT be removed${NC}"
@@ -41,10 +42,19 @@ if [ -d "$REPO_ROOT/.cursor/rules/agents-workflow" ]; then
     echo -e "${GREEN}✓ Removed .cursor/rules/agents-workflow/${NC}"
 fi
 
-# Remove cursor commands
+# Remove .agents/commands symlink (if present)
+if [ -L "$REPO_ROOT/.agents/commands" ] || [ -e "$REPO_ROOT/.agents/commands" ]; then
+    rm -f "$REPO_ROOT/.agents/commands"
+    if [ -d "$REPO_ROOT/.agents" ] && [ -z "$(ls -A "$REPO_ROOT/.agents")" ]; then
+        rmdir "$REPO_ROOT/.agents"
+    fi
+    echo -e "${GREEN}✓ Removed .agents/commands${NC}"
+fi
+
+# Remove cursor command wrappers
 if [ -d "$REPO_ROOT/.cursor/commands" ]; then
-    rm -f "$REPO_ROOT/.cursor/commands"/{issue,branch,pr,status,link,followup}.sh
-    echo -e "${GREEN}✓ Removed .cursor/commands/*.sh${NC}"
+    rm -f "$REPO_ROOT/.cursor/commands"/*.md
+    echo -e "${GREEN}✓ Removed .cursor/commands/*.md${NC}"
 
     # Remove commands directory if empty
     if [ -z "$(ls -A "$REPO_ROOT/.cursor/commands")" ]; then

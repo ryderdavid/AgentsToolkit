@@ -47,6 +47,7 @@ This document defines non-negotiable rules for all AI agents operating in this c
 4. **ALWAYS verify you are on a feature branch before making any file changes.**
 5. **ALWAYS document your work in GitHub issues and PRs—not just in chat.**
 6. **ALWAYS provide clickable markdown hyperlinks when referencing GitHub resources.**
+7. **ALWAYS end implementation rounds with a summary containing clickable links to all GitHub artifacts created** (issues, PRs, commits, branches, comments).
 
 ---
 
@@ -372,6 +373,55 @@ When you create any of the following, your confirmation message MUST include a c
 - Pull requests
 - Commits (link to commit on GitHub)
 - Branches (link to branch comparison or tree)
+- Issue/PR comments
+
+### End-of-Round Summary Requirement
+
+**When you finish implementing and are waiting for new instructions, you MUST provide a summary with clickable links to ALL GitHub artifacts created.**
+
+**Required elements:**
+1. **Descriptive anchor text** - describe WHAT the link points to, not just the item type
+2. **All artifacts** - include branch, commits, PRs, issues, comments created during the round
+3. **Context** - briefly explain what was accomplished
+
+**Examples:**
+
+✅ **Good end-of-round summary:**
+```markdown
+Completed agent-agnostic commands refactor on [feat/2-vscode-claude-setup branch](https://github.com/owner/repo/tree/feat/2-vscode-claude-setup):
+
+- Refactored to [.agents/commands architecture (commit abc123)](https://github.com/owner/repo/commit/abc123)
+- Created [8 Cursor markdown wrappers (commit def456)](https://github.com/owner/repo/commit/def456)
+- Updated [README with new architecture (commit ghi789)](https://github.com/owner/repo/commit/ghi789)
+- Posted [implementation plan to Issue #2](https://github.com/owner/repo/issues/2#issuecomment-123)
+
+View all changes: [Pull Request #5: Add VS Code + Claude Code setup](https://github.com/owner/repo/pull/5)
+```
+
+❌ **Bad end-of-round summary:**
+```markdown
+Completed refactor. See branch and PR.
+```
+
+❌ **Bad anchor text:**
+```markdown
+Posted [comment](https://github.com/owner/repo/issues/2#issuecomment-123) to issue.
+```
+Should be: `Posted [implementation plan to Issue #2](link)`
+
+### Issue/PR Comments (CLI formatting)
+
+- Avoid literal `\n` in `gh issue comment` bodies; GitHub will render them as text.
+- Use a heredoc or ANSI C–quoted string for multiline bodies, e.g.:
+  ```bash
+  gh issue comment 2 --body "$(cat <<'EOF'
+  Implementing agent-agnostic commands refactor:
+  - .agents/commands symlink (agent-agnostic)
+  - Cursor markdown wrappers in .cursor/commands
+  EOF
+  )"
+  ```
+- Keep bullets readable and use Markdown lists for status summaries.
 
 ---
 
@@ -442,6 +492,8 @@ The following behaviors are **explicitly prohibited:**
 | Referencing screenshots before committing them | Broken image links; unprofessional |
 | Manually closing issues | Issues close automatically when PR merges |
 | Providing non-clickable GitHub URLs | Poor UX; harder to navigate |
+| Weak anchor text in links (e.g., "comment", "PR") | Non-descriptive; should explain what the link points to |
+| Ending implementation round without GitHub artifact summary | Missing documentation; poor traceability |
 | Accepting sandbox network restrictions for GitHub operations | Unnecessary limitation; elevate and execute |
 
 ---

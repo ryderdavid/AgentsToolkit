@@ -1,0 +1,110 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Agents: Status",
+      "type": "shell",
+      "command": "./.agents/commands/status.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "none"
+      },
+      "detail": "Show workflow status (branch, linked issue, PR state)"
+    },
+    {
+      "label": "Agents: Create Issue",
+      "type": "shell",
+      "command": "./.agents/commands/issue.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "none"
+      },
+      "detail": "Create issue with branch, screenshots, and links"
+    },
+    {
+      "label": "Agents: Create Branch",
+      "type": "shell",
+      "command": "./.agents/commands/branch.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "none"
+      },
+      "detail": "Create issue-first branch using naming rules"
+    },
+    {
+      "label": "Agents: Create PR",
+      "type": "shell",
+      "command": "./.agents/commands/pr.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "none"
+      },
+      "detail": "Create draft PR linked to the issue"
+    },
+    {
+      "label": "Agents: Link PR",
+      "type": "shell",
+      "command": "./.agents/commands/link.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "none"
+      },
+      "detail": "Link an existing PR to an issue"
+    },
+    {
+      "label": "Agents: Followup",
+      "type": "shell",
+      "command": "./.agents/commands/followup.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "none"
+      },
+      "detail": "Add follow-up comment to an issue"
+    },
+    {
+      "label": "Agents: Check Auth",
+      "type": "shell",
+      "command": "./.agents/commands/check-auth.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "none"
+      },
+      "detail": "Verify GitHub CLI authentication"
+    },
+    {
+      "label": "Agents: Check Workflow",
+      "type": "shell",
+      "command": "./.agents/commands/check-workflow.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "none"
+      },
+      "detail": "Validate workflow compliance (branch, issue linkage)"
+    }
+  ]
+}
+

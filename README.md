@@ -52,19 +52,24 @@ your-repo/
 ├── AGENTS.md -> ~/.agents_toolkit/AGENTS.md          # Symlink to base constitution
 ├── AGENTS.local.md                                    # Repo-specific overrides (customizable)
 ├── CLAUDE.md -> AGENTS.md                             # Claude Code compatibility symlink
+├── .agents/
+│   └── commands/ -> ~/.agents_toolkit/scripts/        # Universal script location (symlink)
 ├── .cursor/
-│   ├── commands/ -> ~/.agents_toolkit/scripts/        # Symlink to workflow scripts
+│   ├── commands/                                      # Cursor markdown wrappers for /commands
+│   │   ├── status.md, issue.md, branch.md, pr.md, etc.
 │   └── rules/agents-workflow/RULE.md                  # Cursor enforcement (copied, customizable)
 ├── .issue_screenshots/                                # Screenshot storage (committed to git)
-└── .github/                                           # Optional GitHub templates
-    ├── ISSUE_TEMPLATE.md
-    └── PULL_REQUEST_TEMPLATE.md
+├── .github/                                           # Optional GitHub templates
+│   ├── ISSUE_TEMPLATE.md
+│   └── PULL_REQUEST_TEMPLATE.md
+└── .vscode/                                           # Optional VS Code tasks
+    └── tasks.json
 ```
 
 ### Symlinks vs Copies
 
-- **Symlinked** (automatic updates): AGENTS.md, .cursor/commands/, CLAUDE.md
-- **Copied** (customizable per-repo): AGENTS.local.md, .cursor/rules/, .github/ templates
+- **Symlinked** (automatic updates): AGENTS.md, `.agents/commands/`, CLAUDE.md
+- **Copied** (customizable per-repo): AGENTS.local.md, `.cursor/commands/*.md`, `.cursor/rules/`, `.github/` templates
 
 ## Hierarchical Configuration
 
@@ -123,12 +128,12 @@ The toolkit enforces:
 
 ## Workflow Scripts
 
-All commands available via `.cursor/commands/` (symlinked to `~/.agents_toolkit/scripts/`):
+All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/scripts/`). Cursor users can also use `/status`, `/issue`, etc. via the markdown wrappers in `.cursor/commands/`.
 
 ### Creating Issues
 
 ```bash
-.cursor/commands/issue.sh "Fix login button" "Button misaligned on mobile" screenshot.png
+.agents/commands/issue.sh "Fix login button" "Button misaligned on mobile" screenshot.png
 
 # What it does:
 # 1. Creates branch: fix/pending-fix-login-button
@@ -142,7 +147,7 @@ All commands available via `.cursor/commands/` (symlinked to `~/.agents_toolkit/
 ### Checking Status
 
 ```bash
-.cursor/commands/status.sh
+.agents/commands/status.sh
 
 # Output:
 # 📋 Current Workflow Status
@@ -158,7 +163,7 @@ All commands available via `.cursor/commands/` (symlinked to `~/.agents_toolkit/
 ### Creating Pull Requests
 
 ```bash
-.cursor/commands/pr.sh
+.agents/commands/pr.sh
 
 # What it does:
 # 1. Detects linked issue from git config
@@ -236,15 +241,25 @@ Safety tiers (per AGENTS.md):
 
 ## Cross-Agent Compatibility
 
-| Agent | AGENTS.md Support | Hierarchical Config | Status |
-|-------|------------------|---------------------|--------|
-| **Cursor** | ✅ Native | ✅ Nearest file wins | Fully supported |
-| **GitHub Copilot** | ✅ Native (Aug 2025) | ✅ Nearest file wins | Fully supported |
-| **Claude Code** | ⚠️ Uses CLAUDE.md | ✅ Hierarchical | Via CLAUDE.md symlink |
-| **Jules** | ✅ Native | ✅ Repo root | Fully supported |
-| **Aider** | ✅ Recommended | ✅ Standard | Fully supported |
+| Agent | AGENTS.md Support | Hierarchical Config | Script Access | Status |
+|-------|------------------|---------------------|---------------|--------|
+| **Cursor** | ✅ Native | ✅ Nearest file wins | Built-in `/commands` (markdown wrappers → `.agents/commands/`) | Fully supported |
+| **GitHub Copilot** | ✅ Native (Aug 2025) | ✅ Nearest file wins | Terminal or tasks (`.agents/commands/`) | Fully supported |
+| **Claude Code** | ⚠️ Uses CLAUDE.md | ✅ Hierarchical | Terminal (`.agents/commands/`), VS Code tasks, aliases | Via CLAUDE.md symlink |
+| **Jules** | ✅ Native | ✅ Repo root | Terminal (`.agents/commands/`) | Fully supported |
+| **Aider** | ✅ Recommended | ✅ Standard | Terminal (`.agents/commands/`) | Fully supported |
 
 The toolkit creates `CLAUDE.md -> AGENTS.md` symlink for cross-agent compatibility.
+
+## VS Code + Claude Code Setup
+
+Claude Code reads `CLAUDE.md -> AGENTS.md` but does not ship Cursor-style `/commands`. Use any of these access methods:
+
+1. **Direct terminal:** `.agents/commands/status.sh` (symlink to toolkit scripts)
+2. **VS Code tasks:** Cmd+Shift+P → “Tasks: Run Task” → “Agents: Status” (optional `.vscode/tasks.json` installed by `agentsdotmd-init` when you opt in; tasks call `.agents/commands/…`)
+3. **Shell aliases:** add shortcuts such as `alias agents-status='.agents/commands/status.sh'`
+
+When prompting Claude Code, explicitly reference the repo-local script path (for example, “run .agents/commands/status.sh from the repo root”) so it executes the workflow scripts.
 
 ## AGENTS.md Compliance
 
@@ -345,7 +360,8 @@ cd /path/to/your/repo
 agentsdotmd-init --update
 ```
 
-Symlinked files (AGENTS.md, CLAUDE.md, .cursor/commands/) update automatically. Copied files refresh when you run `--update`:
+Symlinked files (AGENTS.md, CLAUDE.md, `.agents/commands/`) update automatically. Copied files refresh when you run `--update`:
+- `.cursor/commands/*.md` (Cursor command wrappers; prompt before overwrite)
 - `.cursor/rules/agents-workflow/RULE.md` (prompt before overwrite)
 - Existing `.github/ISSUE_TEMPLATE.md` and `PULL_REQUEST_TEMPLATE.md` (prompt; not installed if absent)
 
@@ -441,7 +457,7 @@ If your platform doesn't support symlinks:
 ```bash
 # From repository root
 rm AGENTS.md CLAUDE.md AGENTS.local.md
-rm -rf .cursor/commands .cursor/rules/agents-workflow
+rm -rf .agents/commands .cursor/commands .cursor/rules/agents-workflow
 rm -rf .issue_screenshots
 ```
 
