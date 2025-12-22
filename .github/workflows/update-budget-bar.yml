@@ -1,0 +1,46 @@
+name: Update Budget Bar
+
+on:
+  push:
+    paths:
+      - 'AGENTS.md'
+
+permissions:
+  contents: write
+
+jobs:
+  update-budget:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Update budget bar
+        id: update
+        run: |
+          chmod +x scripts/update-budget-bar.sh
+          ./scripts/update-budget-bar.sh
+          
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet README.md; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes to README.md"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "README.md has been updated"
+          fi
+          
+      - name: Commit and push if changed
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Update AGENTS.md word budget bar [skip ci]"
+          git push
+
