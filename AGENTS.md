@@ -111,11 +111,23 @@ Run `gh`/`git` commands with elevation. Don't claim sandbox limitations.
 
 ---
 
-## Anti-Patterns
+## Anti-Patterns (Prohibited Behaviors)
 
-**Prohibited:** Coding before issue approval, changes on main, undocumented failures, vague PRs, non-clickable URLs, weak anchor text, missing end-of-round summaries.
-
-See [Anti-Patterns Reference](docs/AGENTS_REFERENCE.md#anti-patterns-reference) for complete list.
+| Anti-Pattern | Why Prohibited |
+|--------------|----------------|
+| Coding before issue approval | Violates issue-first; scope ambiguity |
+| File changes on main/master | Bypasses PR review; breaks workflow |
+| Branches off branches | Complicates history; one branch per issue |
+| Expanding scope silently | Leads to bloated PRs; scope creep |
+| Undocumented failed approaches | Wastes future effort; loses knowledge |
+| Vague PR descriptions | Unreviewable; no audit trail |
+| Closing issues before merge | Premature closure; broken workflow |
+| Screenshots before commit | Broken image links |
+| Manually closing issues | Issues close automatically on PR merge |
+| Non-clickable GitHub URLs | Poor UX; harder to navigate |
+| Weak anchor text in links | Non-descriptive; use meaningful text |
+| Missing end-of-round summary | Missing documentation; poor traceability |
+| Accepting sandbox limitations | Elevate and execute instead |
 
 ---
 
