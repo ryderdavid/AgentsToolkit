@@ -98,7 +98,7 @@ When you run `agentsdotmd-init` in a repository:
 your-repo/
 ├── AGENTS.md -> ~/.agents_toolkit/AGENTS.md          # Symlink to base constitution
 ├── AGENTS.local.md                                    # Repo-specific overrides (customizable)
-├── CLAUDE.md -> AGENTS.md                             # Claude Code compatibility symlink
+├── CLAUDE.md                                          # Claude Code enforcement (copied, standalone)
 ├── .agents/
 │   └── commands/ -> ~/.agents_toolkit/scripts/        # Universal script location (symlink)
 ├── .cursor/
@@ -115,8 +115,9 @@ your-repo/
 
 ### Symlinks vs Copies
 
-- **Symlinked** (automatic updates): AGENTS.md, `.agents/commands/`, CLAUDE.md
-- **Copied** (customizable per-repo): AGENTS.local.md, `.cursor/commands/*.md`, `.cursor/rules/`, `.github/` templates
+- **Symlinked** (automatic updates): AGENTS.md, `.agents/commands/`
+- **Copied** (refreshed via `--update`): CLAUDE.md, `.cursor/commands/*.md`, `.cursor/rules/`, `.github/` templates
+- **Copied once** (customizable per-repo, never overwritten): AGENTS.local.md
 
 ## Documentation Structure
 
@@ -299,11 +300,11 @@ Safety tiers (per AGENTS.md):
 |-------|------------------|---------------------|---------------|--------|
 | **Cursor** | ✅ Native | ✅ Nearest file wins | Built-in `/commands` (markdown wrappers → `.agents/commands/`) | Fully supported |
 | **GitHub Copilot** | ✅ Native (Aug 2025) | ✅ Nearest file wins | Terminal or tasks (`.agents/commands/`) | Fully supported |
-| **Claude Code** | ⚠️ Uses CLAUDE.md | ✅ Hierarchical | Terminal (`.agents/commands/`), VS Code tasks, aliases | Via CLAUDE.md symlink |
+| **Claude Code** | ✅ Via CLAUDE.md | ✅ Hierarchical | Terminal (`.agents/commands/`), VS Code tasks, aliases | Fully supported |
 | **Jules** | ✅ Native | ✅ Repo root | Terminal (`.agents/commands/`) | Fully supported |
 | **Aider** | ✅ Recommended | ✅ Standard | Terminal (`.agents/commands/`) | Fully supported |
 
-The toolkit creates `CLAUDE.md -> AGENTS.md` symlink for cross-agent compatibility.
+The toolkit creates a standalone `CLAUDE.md` file with explicit workflow enforcement for Claude Code compatibility.
 
 ## Windows Support
 
@@ -346,7 +347,14 @@ python .agents\commands\pr.py
 
 ## VS Code + Claude Code Setup
 
-Claude Code reads `CLAUDE.md -> AGENTS.md` but does not ship Cursor-style `/commands`. Use any of these access methods:
+Claude Code reads `CLAUDE.md` which contains explicit workflow enforcement rules. Unlike a symlink (which Claude Code may not follow correctly), CLAUDE.md is a standalone file with "STOP" language at the top.
+
+**Why standalone instead of symlink?**
+- Claude Code sometimes ignores symlinked content
+- Explicit "STOP" rules at the top of CLAUDE.md are more effective
+- AGENTS.local.md also contains workflow enforcement as a backup
+
+**Running workflow scripts:**
 
 1. **Direct terminal:** `python3 .agents/commands/status.py` (or `python` on Windows)
 2. **VS Code tasks:** Cmd+Shift+P → "Tasks: Run Task" → "Agents: Status" (optional `.vscode/tasks.json` installed by `agentsdotmd-init` when you opt in)
