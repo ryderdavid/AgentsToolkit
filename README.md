@@ -542,9 +542,9 @@ Built on the AGENTS.md standard that emerged in July 2025, now supported by 60+ 
 ```
 AGENTS.md Word Budget (target: 1,000 words)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-█████████████████████░░░░░░░░░░  671/1000 (67%)
+██████████████████████░░░░░░░░░  694/1000 (69%)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Buffer remaining: 329 words for future additions
+Buffer remaining: 306 words for future additions
 ```
 
 Per [AGENTS.md best practices](https://agents.md), top-level files should be ~300–1,200 words. Shorter files reduce token cost, latency, and instruction dilution.

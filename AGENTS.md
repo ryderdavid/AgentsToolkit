@@ -105,7 +105,7 @@ End-of-round summaries must include clickable links to all artifacts with descri
 | **2** | `gh issue/pr close` | Confirm first |
 | **3** | `delete`, `merge`, `--force`, `reset --hard` | Only on explicit request |
 
-Run `gh`/`git` commands with elevation. Don't claim sandbox limitations.
+**For Tier 1 operations:** Run `gh`/`git` commands with elevation outside sandbox. Don't claim sandbox limitations for pre-approved safe operations—elevate and execute. See [README](README.md#safety-guarantees) for rationale.
 
 **Before changes:** Issue exists? On feature branch? Branch name correct? Tier identified?
 
@@ -127,7 +127,7 @@ Run `gh`/`git` commands with elevation. Don't claim sandbox limitations.
 | Non-clickable GitHub URLs | Poor UX; harder to navigate |
 | Weak anchor text in links | Non-descriptive; use meaningful text |
 | Missing end-of-round summary | Missing documentation; poor traceability |
-| Accepting sandbox limitations | Elevate and execute instead |
+| Accepting sandbox limits for Tier 1 ops | Pre-approved safe operations should elevate and execute |
 
 ---
 
