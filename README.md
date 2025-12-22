@@ -165,7 +165,7 @@ All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/
 ### Creating Issues
 
 ```bash
-.agents/commands/issue.sh "Fix login button" "Button misaligned on mobile" screenshot.png
+.agents/commands/issue.py "Fix login button" "Button misaligned on mobile" screenshot.png
 
 # What it does:
 # 1. Creates branch: fix/pending-fix-login-button
@@ -179,7 +179,7 @@ All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/
 ### Checking Status
 
 ```bash
-.agents/commands/status.sh
+.agents/commands/status.py
 
 # Output:
 # 📋 Current Workflow Status
@@ -188,14 +188,14 @@ All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/
 # Issue State: OPEN
 # Commits ahead: 2
 # Pushed: ✅ Yes
-# PR: None - run pr.sh to create
+# PR: None - run pr.py to create
 # 📋 Next step: Create PR
 ```
 
 ### Creating Pull Requests
 
 ```bash
-.agents/commands/pr.sh
+.agents/commands/pr.py
 
 # What it does:
 # 1. Detects linked issue from git config
@@ -206,9 +206,9 @@ All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/
 
 ### Other Commands
 
-- `branch.sh [type] "description"` - Create branch (auto-detects type if omitted)
-- `link.sh <pr-num> <issue-num>` - Link existing PR to issue
-- `followup.sh <issue-num> "comment"` - Add comment to issue with optional screenshots
+- `branch.py [type] "description"` - Create branch (auto-detects type if omitted)
+- `link.py <pr-num> <issue-num>` - Link existing PR to issue
+- `followup.py <issue-num> "comment"` - Add comment to issue with optional screenshots
 
 ## Safety Guarantees
 
@@ -252,7 +252,7 @@ Safety tiers (per AGENTS.md):
 │ AI Decision Layer                   │
 │ - Consults AGENTS.md rules          │
 │ - Decides: "Need to create issue"   │
-│ - Executes: Bash(issue.sh)          │
+│ - Executes: Python(issue.py)        │
 └─────────────────────────────────────┘
                 │
                 ↓
@@ -358,7 +358,7 @@ Unit tests verify all deterministic functions:
 
 ```bash
 cd ~/Projects/AgentsToolkit
-./tests/test_functions.sh
+./tests/test_functions.py
 
 # 39 tests covering:
 # ✓ detect_branch_type
@@ -458,10 +458,10 @@ Symlinked files (AGENTS.md, CLAUDE.md, `.agents/commands/`) update automatically
 ├── scripts/              # Symlinked to repos
 │   ├── issue.py
 │   ├── branch.py
-│   ├── pr.sh
-│   ├── status.sh
-│   ├── link.sh
-│   └── followup.sh
+│   ├── pr.py
+│   ├── status.py
+│   ├── link.py
+│   └── followup.py
 ├── cursor-rules/
 │   └── agents-workflow/
 │       └── RULE.md.template
@@ -556,7 +556,7 @@ rm -rf ~/.agents_toolkit
 Contributions welcome! Please:
 
 1. Follow AGENTS.md standards (yes, meta!)
-2. Run tests: `./tests/test_functions.sh`
+2. Run tests: `./tests/test_functions.py`
 3. Update documentation
 4. Create issues before PRs
 
@@ -575,11 +575,11 @@ AgentsToolkit/
 │
 ├── scripts/                  # Workflow commands
 │   ├── issue.py
-│   ├── branch.sh
-│   ├── pr.sh
-│   ├── status.sh
-│   ├── link.sh
-│   └── followup.sh
+│   ├── branch.py
+│   ├── pr.py
+│   ├── status.py
+│   ├── link.py
+│   └── followup.py
 │
 ├── cursor-rules/             # Cursor-specific enforcement
 │   └── agents-workflow/
@@ -591,7 +591,7 @@ AgentsToolkit/
 │   └── PULL_REQUEST_TEMPLATE.md
 │
 ├── tests/                    # Unit tests
-│   └── test_functions.sh
+│   └── test_functions.py
 │
 └── docs/                     # Additional documentation
 ```

@@ -112,8 +112,8 @@ def make_scripts_executable(install_dir: Path) -> bool:
         return True
     
     try:
-        # Make all .sh and .py files in scripts/ and bin/ executable
-        for pattern in ['scripts/*.sh', 'scripts/*.py', 'bin/*']:
+        # Make all .py files in scripts/ and bin/ executable
+        for pattern in ['scripts/*.py', 'bin/*']:
             for script in install_dir.glob(pattern):
                 if script.is_file():
                     script.chmod(0o755)

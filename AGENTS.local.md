@@ -45,7 +45,7 @@ This is a global toolkit for enforcing issue-first workflows across AI agents.
 **Key Files:**
 - `AGENTS.md` — Base workflow rules (symlinked to repos)
 - `docs/AGENTS_REFERENCE.md` — Command examples, templates
-- `scripts/*.sh` — Workflow automation scripts
+- `scripts/*.py` — Workflow automation scripts
 - `templates/` — Templates for repo initialization
 
 ---
@@ -55,6 +55,6 @@ This is a global toolkit for enforcing issue-first workflows across AI agents.
 Run tests before PRing changes to scripts:
 
 ```bash
-./tests/test_functions.sh
+./tests/test_functions.py
 ```
 
