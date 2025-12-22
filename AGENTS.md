@@ -4,36 +4,15 @@ This document defines non-negotiable rules for all AI agents operating in this c
 
 ## About This File
 
-**Scope:** This base AGENTS.md focuses on **workflow standards** - the issue-first development process, Git conventions, and documentation requirements that apply universally across projects.
+**Scope:** Workflow standards - issue-first development, Git conventions, and documentation requirements.
 
-**Extensibility:** Projects should create `AGENTS.local.md` for project-specific guidance:
-- Build/test commands (`npm test`, `docker-compose up`)
-- Tech stack details (React 18, Python 3.11, PostgreSQL 15)
-- Code style (Prettier config, naming conventions)
-- Architecture patterns (monorepo structure, API design)
-- Security specifics (authentication flows, secrets management)
-- Testing requirements (coverage thresholds, E2E test patterns)
+**Extensibility:** Create `AGENTS.local.md` for project-specific guidance (build commands, tech stack, code style). See `templates/AGENTS.local.md.example`.
 
-**Precedence:** When conflicts exist, `AGENTS.local.md` overrides this base file. See `templates/AGENTS.local.md.example` for guidance.
+**Precedence:** `AGENTS.local.md` overrides this base file when conflicts exist.
 
-**Note:** This toolkit currently implements GitHub-based workflows, but AGENTS.md is not limited to GitHub. Future versions may add support for GitLab, Bitbucket, Linear, Jira, or custom issue tracking systems. The core principles (traceable development, structured issues, linked PRs) remain universal.
+**Note:** Currently GitHub-focused, but principles (traceable development, structured issues, linked PRs) are platform-agnostic. Future support for GitLab, Bitbucket, Linear, Jira planned.
 
----
-
-## Table of Contents
-
-1. [Prime Directives](#prime-directives)
-2. [Issue-First Development](#issue-first-development)
-3. [Branch Management](#branch-management)
-4. [Screenshot & Evidence Handling](#screenshot--evidence-handling)
-5. [Pull Request Protocol](#pull-request-protocol)
-6. [Commit Standards](#commit-standards)
-7. [Scope Management](#scope-management)
-8. [Feedback & Iteration Discipline](#feedback--iteration-discipline)
-9. [GitHub Output Requirements](#github-output-requirements)
-10. [Execution Environment Rules](#execution-environment-rules)
-11. [Anti-Patterns (Prohibited Behaviors)](#anti-patterns-prohibited-behaviors)
-12. [Quick Reference](#quick-reference)
+**Reference:** Command examples and templates at [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
 
 ---
 
@@ -55,39 +34,14 @@ This document defines non-negotiable rules for all AI agents operating in this c
 
 ### Before Writing Any Code
 
-When the user raises a new problem, bug, or feature request:
-
 1. **STOP. Do not write code.**
-
-2. **Analyze and clarify** the request. Ask focused follow-up questions if scope is ambiguous. Your goal is a tightly bounded issue.
-
-3. **Draft a structured issue** using this exact format:
-
-```markdown
-## Summary
-[One sentence: what is broken or needed]
-
-## Context
-[What triggered this — error message, user observation, feature gap]
-
-## Acceptance Criteria
-- [ ] [Specific, testable condition 1]
-- [ ] [Specific, testable condition 2]
-
-## Out of Scope
-- [Explicitly list what this issue will NOT address]
-
-## Screenshots / Evidence
-[Will be populated after branch is created if screenshots provided]
-```
-
-4. **Present the draft issue to the user and obtain explicit approval** before proceeding.
+2. **Analyze and clarify** the request. Ask focused questions if scope is ambiguous.
+3. **Draft a structured issue** (see [Issue Template](docs/AGENTS_REFERENCE.md#issue-template)): Summary, Context, Acceptance Criteria, Out of Scope, Screenshots/Evidence.
+4. **Get explicit user approval** before proceeding.
 
 ### Issue Creation
 
-- Use `gh issue create` to create issues
-- Include all sections from the template above
-- Reference screenshots using raw GitHub URLs (see [Screenshot Handling](#screenshot--evidence-handling))
+Use `gh issue create` with all required sections. Reference screenshots using raw GitHub URLs (see Screenshot Handling).
 
 ---
 
@@ -103,248 +57,93 @@ When the user raises a new problem, bug, or feature request:
 3. ✅ If on `main` or `master`: **STOP and create feature branch**
 4. ✅ Only proceed with file changes after confirming you're on a feature branch
 
-**If you are on main/master:**
-```bash
-# STOP - Do not make any file changes
-git checkout -b {type}/{issue-num}-{short-description}
-git branch --show-current  # Verify you're off main
-```
+**Naming Convention:** `{type}/{issue-num}-{short-description}`
 
-**NEVER commit directly to main/master.** All work must go through feature branches and PRs.
-
-### Naming Convention
-
-All branches MUST follow this pattern:
-
-```
-{type}/{issue-num}-{short-description}
-```
-
-**Types:**
-| Prefix | Use Case |
-|--------|----------|
+| Type | Use Case |
+|------|----------|
 | `fix/` | Bug fixes |
 | `feat/` | New features |
 | `refactor/` | Code restructuring |
 | `docs/` | Documentation changes |
 | `chore/` | Maintenance tasks |
 
-**Examples:**
-- `fix/42-null-reference-upload`
-- `feat/57-user-export-csv`
-- `refactor/63-auth-module-cleanup`
+**When Issue Number Is Unknown:** Use `{type}/pending-{short-description}`, then rename after issue creation.
 
-### When Issue Number Is Unknown
+**Branch Rules:**
+- ONE branch per issue
+- All work for an issue stays on its designated branch
+- NEVER commit directly to main/master
 
-If the issue has not yet been created (e.g., screenshots must be committed first):
-
-1. Use placeholder naming: `{type}/pending-{short-description}`
-2. After issue creation, rename the branch:
-
-```bash
-git branch -m {type}/{issue-num}-{short-description}
-git push origin -u {type}/{issue-num}-{short-description}
-git push origin --delete {old-branch-name}
-```
-
-### Branch Rules
-
-- **ONE branch per issue.** Do not create branches off branches for iterations.
-- **All work for an issue stays on its designated branch.**
+See [Command Cheat Sheet](docs/AGENTS_REFERENCE.md#command-cheat-sheet) for examples.
 
 ---
 
 ## Screenshot & Evidence Handling
 
-### Directory Structure
+**Directory:** `.issue_screenshots/` at repo root (MUST be committed)  
+**Naming:** `YYYYMMDD_{issue-num}_{branch-name}_{description}.{ext}`
 
-- **Location:** `.issue_screenshots/` at repository root
-- **This directory MUST be committed** (not gitignored)
+**Workflow:**
+1. Create branch (use placeholder if issue not yet created)
+2. Save screenshots to `.issue_screenshots/`
+3. Commit and push
+4. Create issue with raw GitHub URLs
+5. Rename branch/files if placeholders used
 
-### File Naming Convention
-
-```
-YYYYMMDD_{issue-num}_{branch-name}_{description}.{ext}
-```
-
-**Examples:**
-- `20250618_42_fix-null-ref_error-dialog.png`
-- `20250620_57_feat-export_csv-preview.png`
-
-If issue number is pending, use `pending` as placeholder; rename after issue creation.
-
-### Workflow When Screenshots Are Provided
-
-1. **Create the branch first** (with placeholder if needed)
-2. **Save screenshots** to `.issue_screenshots/` with proper naming
-3. **Commit and push:**
-   ```bash
-   git add .issue_screenshots/
-   git commit -m "#42: Add screenshot evidence for issue"
-   git push -u origin {branch-name}
-   ```
-4. **Create the issue** with screenshot references:
-   ```markdown
-   ![Description](https://raw.githubusercontent.com/{owner}/{repo}/{branch}/.issue_screenshots/{filename})
-   ```
-5. **Rename branch and files** if placeholders were used
-
-### Critical Rule
-
-**NEVER reference screenshots in issues before they are committed and pushed.** GitHub cannot display images that don't exist at the referenced URL.
+**Critical:** NEVER reference screenshots before they're committed and pushed.
 
 ---
 
 ## Pull Request Protocol
 
-### Immediate Draft PR Creation
-
-After creating a branch and issue, **immediately create a draft PR:**
+**After creating branch and issue, immediately create draft PR:**
 
 ```bash
-gh pr create --draft \
-  --title "[WIP] #{issue-num}: {short description}" \
-  --body "Closes #{issue-num}"
+gh pr create --draft --title "[WIP] #{issue-num}: {description}" --body "Closes #{issue-num}"
 ```
 
-### Linking to Issues
+**Linking:** Use `Closes #{issue-num}` in PR body or `gh issue develop`.
 
-Ensure the PR is linked to its issue:
-- Use `Closes #{issue-num}` in PR body (automatic linking)
-- Or manually link: `gh issue develop {issue-num} --branch {branch-name}`
+**Before marking ready:** (1) All acceptance criteria checked, (2) Issue comments document journey, (3) Squash noisy commits.
 
-### PR Description Requirements
-
-Before marking PR ready for review, the description MUST include:
-
-```markdown
-## Summary
-[What changed and why]
-
-## Changes
-- [Key change 1]
-- [Key change 2]
-
-## How to Test
-[Steps to verify the fix/feature]
-
-## Known Limitations
-[Anything not addressed, edge cases, follow-up needed]
-
-Closes #{issue-num}
-```
-
-### Marking Ready for Review
-
-Before running `gh pr ready`:
-
-1. Verify all acceptance criteria are checked off in the issue
-2. Verify issue comments document the development journey
-3. Squash commits if history is noisy (preserve if commits tell a useful story)
+See [PR Template](docs/AGENTS_REFERENCE.md#pr-template) for description requirements.
 
 ---
 
 ## Commit Standards
 
-### Message Format
+**Format:** `#{issue-num}: {imperative description}`
 
-All commit messages MUST be prefixed with the issue number:
+**Examples:** `#42: Add null check`, `#57: Implement CSV export`
 
-```
-#{issue-num}: {imperative description of change}
-```
-
-**Examples:**
-- `#42: Add null check before document serialization`
-- `#57: Implement CSV export endpoint`
-- `#63: Extract authentication logic to separate module`
-
-### Commit Granularity
-
-- **Atomic commits:** Each commit should represent one logical change
-- **Compilable state:** Each commit should leave the codebase in a working state
-- **Meaningful messages:** Describe what and why, not how
+**Requirements:** Atomic (one logical change), compilable state, meaningful messages (what/why, not how).
 
 ---
 
 ## Scope Management
 
-### Detecting Scope Creep
+| Situation | Detect When | Action |
+|-----------|-------------|--------|
+| **Scope Creep** | Work touches files/modules outside original issue concern | STOP and assess |
+| **Close to completion** | Could finish in 1-2 commits | Propose completing, merging, then opening follow-up issue |
+| **Not close** | Would require significant additional work | Draft backlog issue for deferred work; do not implement on current branch |
+| **Broken state** | Abandoning would push broken code | Continue, but explicitly note expanded scope in issue and PR |
 
-**STOP and assess** if work begins to:
+**Three-Iteration Rule:** After 3 feedback iterations on the same issue, STOP and reassess with user (Was issue correctly scoped? Should it be split? Are we chasing symptoms vs. root cause?).
 
-- Touch files/modules outside the original issue's concern
-- Require changes that wouldn't fit in a clean PR description
-- Chase recursive related bugs beyond the third iteration
-
-### Handling Scope Creep
-
-**When scope creep is detected:**
-
-| Situation | Action |
-|-----------|--------|
-| Close to completion | Propose completing current work, merging, then opening follow-up issue |
-| Not close to completion | Draft a backlog issue for deferred work; do not implement on current branch |
-| Abandoning would push broken code | Continue, but explicitly note expanded scope in issue and PR |
-
-### Creating Backlog Issues
-
-```bash
-gh issue create \
-  --title "{description}" \
-  --label "backlog" \
-  --body "Related to #{current-issue-num}
-
-## Summary
-[What needs to be done]
-
-## Context
-[Why this was discovered/deferred]"
-```
-
-### Three-Iteration Rule
-
-**After 3 feedback iterations on the same issue, STOP and reassess:**
-
-- Was the issue correctly scoped?
-- Should it be split into multiple issues?
-- Are we chasing symptoms rather than root cause?
-
-Discuss findings with user before proceeding.
+**Creating Backlog Issues:** Use `gh issue create --label "backlog"` and link to current issue.
 
 ---
 
 ## Feedback & Iteration Discipline
 
-### Documenting Feedback
+**On each feedback round:** Add issue comment documenting feedback, resolution, and insights gained.
 
-On **each feedback round** from the user, add an issue comment:
+**Before trying alternatives:** Document failed approaches (what was attempted, why it failed, next approach).
 
-```bash
-gh issue comment {issue-num} --body "**Feedback:** {what was wrong}
+**Why:** Creates audit trail, prevents repeating failures, identifies patterns.
 
-**Resolution:** {what was changed}
-
-**Understanding gained:** {any new insights}"
-```
-
-### Documenting Failed Approaches
-
-Before trying alternatives, document dead ends:
-
-```bash
-gh issue comment {issue-num} --body "❌ **Attempted:** {approach}
-
-**Why it failed:** {reason}
-
-**Next approach:** {what we'll try instead}"
-```
-
-### Why This Matters
-
-- Creates audit trail for future reference
-- Prevents repeating failed approaches
-- Helps identify patterns in recurring issues
+See [Command Cheat Sheet](docs/AGENTS_REFERENCE.md#command-cheat-sheet) for formatting.
 
 ---
 
@@ -352,76 +151,19 @@ gh issue comment {issue-num} --body "❌ **Attempted:** {approach}
 
 ### Clickable Links
 
-**ALL GitHub URLs in chat responses MUST be formatted as clickable markdown hyperlinks.**
+ALL GitHub URLs MUST be markdown hyperlinks: `[Description](https://github.com/...)`
 
-**Required format:**
-```markdown
-[Human-readable description](https://github.com/owner/repo/...)
-```
-
-**Examples:**
-- ✅ `Created issue [#42: Fix null reference on upload](https://github.com/owner/repo/issues/42)`
-- ✅ `Opened PR [#43: Implement CSV export](https://github.com/owner/repo/pull/43)`
-- ❌ `Created issue https://github.com/owner/repo/issues/42`
-- ❌ `Created issue #42`
+Examples: ✅ `[#42: Fix upload](link)` ❌ `https://github.com/...`
 
 ### Confirmation Messages
 
-When you create any of the following, your confirmation message MUST include a clickable link:
+Include clickable links when creating issues, PRs, commits, branches, or comments.
 
-- Issues
-- Pull requests
-- Commits (link to commit on GitHub)
-- Branches (link to branch comparison or tree)
-- Issue/PR comments
+### End-of-Round Summary
 
-### End-of-Round Summary Requirement
+When finishing implementation, provide summary with clickable links to ALL artifacts (branch, commits, PRs, issues, comments) with descriptive anchor text and context.
 
-**When you finish implementing and are waiting for new instructions, you MUST provide a summary with clickable links to ALL GitHub artifacts created.**
-
-**Required elements:**
-1. **Descriptive anchor text** - describe WHAT the link points to, not just the item type
-2. **All artifacts** - include branch, commits, PRs, issues, comments created during the round
-3. **Context** - briefly explain what was accomplished
-
-**Examples:**
-
-✅ **Good end-of-round summary:**
-```markdown
-Completed agent-agnostic commands refactor on [feat/2-vscode-claude-setup branch](https://github.com/owner/repo/tree/feat/2-vscode-claude-setup):
-
-- Refactored to [.agents/commands architecture (commit abc123)](https://github.com/owner/repo/commit/abc123)
-- Created [8 Cursor markdown wrappers (commit def456)](https://github.com/owner/repo/commit/def456)
-- Updated [README with new architecture (commit ghi789)](https://github.com/owner/repo/commit/ghi789)
-- Posted [implementation plan to Issue #2](https://github.com/owner/repo/issues/2#issuecomment-123)
-
-View all changes: [Pull Request #5: Add VS Code + Claude Code setup](https://github.com/owner/repo/pull/5)
-```
-
-❌ **Bad end-of-round summary:**
-```markdown
-Completed refactor. See branch and PR.
-```
-
-❌ **Bad anchor text:**
-```markdown
-Posted [comment](https://github.com/owner/repo/issues/2#issuecomment-123) to issue.
-```
-Should be: `Posted [implementation plan to Issue #2](link)`
-
-### Issue/PR Comments (CLI formatting)
-
-- Avoid literal `\n` in `gh issue comment` bodies; GitHub will render them as text.
-- Use a heredoc or ANSI C–quoted string for multiline bodies, e.g.:
-  ```bash
-  gh issue comment 2 --body "$(cat <<'EOF'
-  Implementing agent-agnostic commands refactor:
-  - .agents/commands symlink (agent-agnostic)
-  - Cursor markdown wrappers in .cursor/commands
-  EOF
-  )"
-  ```
-- Keep bullets readable and use Markdown lists for status summaries.
+See [GitHub Output Examples](docs/AGENTS_REFERENCE.md#github-output-examples) for details.
 
 ---
 
@@ -429,55 +171,31 @@ Should be: `Posted [implementation plan to Issue #2](link)`
 
 ### Command Safety Tiers
 
-**Tier 1 — Safe (execute immediately):**
-- `gh issue create/edit/comment/view/list`
-- `gh pr create/edit/comment/view/list/ready`
-- `gh issue/pr view/list/status` and `gh repo view`
-- `gh api` GET/read-only requests
-- `git add`, `git commit`, `git push` (no `--force`), `git checkout`, `git branch` (create/rename), `git pull`, `git fetch`, `git status/log/diff/show`
+| Tier | Commands | Action |
+|------|----------|--------|
+| **1 - Safe** | `gh issue/pr create/edit/comment/view/list`, `gh repo view`, `gh api` GET, `git add/commit/push/checkout/branch/pull/fetch/status/log/diff/show` | Execute immediately |
+| **2 - Disruptive** | `gh issue/pr close`, manual workflow bypasses | Require confirmation |
+| **3 - Destructive** | `gh issue delete`, `gh pr merge`, `gh repo delete/archive`, `gh api` DELETE, `git branch -d/-D`, `git push --delete/--force`, `git reset --hard`, `git clean -fd` | Only on explicit user request |
 
-**Tier 2 — Workflow-disrupting (require confirmation):**
-- `gh issue close`, `gh pr close`
-- Any command that manually bypasses the issue → PR → merge flow
+### Execution Environment
 
-**Tier 3 — Destructive (never run unless user explicitly requests):**
-- `gh issue delete`, `gh pr merge`, `gh repo delete/archive`, `gh api` DELETE
-- `git branch -d/-D`, `git push --delete`, `git reset --hard`, `git push --force`, `git clean -fd`, interactive history rewrites
+- All `gh`/`git` commands run outside sandbox with elevation
+- Do NOT pre-check authentication or claim sandbox limitations
+- Elevate and execute
 
-### Execution Environment (Cursor / sandboxes)
+### Safety Checklist
 
-- **All `gh`/`git` commands must run outside the sandbox with elevation** (user shell where `gh auth` is configured).
-- Do **not** pre-check or warn about authentication; scripts handle their own checks.
-- Do **not** claim sandbox/network limitations; elevate and execute.
+Before ANY file modifications:
 
-**Anti-patterns to avoid:**
-- "I can't run this because we're in a sandbox."
-- "Let me check if gh auth works first." (elevation already has auth)
-- Automatically merging PRs or deleting resources without explicit user request.
-
-### Authentication Handling
-
-- `gh auth status` **will pass** when executed with elevation in the user's shell.
-- If uncertain, run the auth helper script (`scripts/check-auth.sh`) instead of refusing to execute.
-
-### Safety Checklist (before executing a command)
-
-**Before making ANY file modifications:**
-
-1. ✅ Is there a GitHub issue for this work?
-2. ✅ Am I on a feature branch (NOT main/master)? Run: `git branch --show-current`
-3. ✅ Does my branch name follow `{type}/{issue-num}-{desc}` format?
-4. ✅ Identify command tier: Safe / Disruptive / Destructive
-5. ✅ If Tier 1: execute immediately with elevation
-6. ✅ If Tier 2: ask the user to confirm
-7. ✅ If Tier 3: only execute if the user explicitly requested the destructive action
-8. ✅ Ensure commands run with elevation (not sandbox) so `gh` auth is available
+1. ✅ GitHub issue exists?
+2. ✅ On feature branch (NOT main/master)? Check: `git branch --show-current`
+3. ✅ Branch name follows `{type}/{issue-num}-{desc}`?
+4. ✅ Command tier identified?
+5. ✅ Tier 1: execute; Tier 2: confirm; Tier 3: only if explicitly requested
 
 ---
 
 ## Anti-Patterns (Prohibited Behaviors)
-
-The following behaviors are **explicitly prohibited:**
 
 | Anti-Pattern | Why It's Prohibited |
 |--------------|---------------------|
@@ -492,7 +210,7 @@ The following behaviors are **explicitly prohibited:**
 | Referencing screenshots before committing them | Broken image links; unprofessional |
 | Manually closing issues | Issues close automatically when PR merges |
 | Providing non-clickable GitHub URLs | Poor UX; harder to navigate |
-| Weak anchor text in links (e.g., "comment", "PR") | Non-descriptive; should explain what the link points to |
+| Weak anchor text in links | Non-descriptive; should explain what the link points to |
 | Ending implementation round without GitHub artifact summary | Missing documentation; poor traceability |
 | Accepting sandbox network restrictions for GitHub operations | Unnecessary limitation; elevate and execute |
 
@@ -500,113 +218,7 @@ The following behaviors are **explicitly prohibited:**
 
 ## Quick Reference
 
-### Command Cheat Sheet
-
-```bash
-# Create branch
-git checkout -b fix/42-short-description
-
-# Commit and push screenshots
-git add .issue_screenshots/
-git commit -m "#42: Add screenshot evidence"
-git push -u origin fix/42-short-description
-
-# Create issue
-gh issue create \
-  --title "Bug: Null reference on document upload" \
-  --body "## Summary
-Null reference exception when uploading documents over 10MB.
-
-## Context
-Error occurs in production; stack trace attached.
-
-## Acceptance Criteria
-- [ ] Upload succeeds for files up to 100MB
-- [ ] Appropriate error message for files over limit
-
-## Out of Scope
-- Performance optimization for large files
-- UI redesign of upload component"
-
-# Create draft PR linked to issue
-gh pr create --draft \
-  --title "[WIP] #42: Fix null reference on upload" \
-  --body "Closes #42"
-
-# Add feedback documentation
-gh issue comment 42 --body "**Feedback:** Error still occurs for files exactly 10MB
-
-**Resolution:** Changed comparison from > to >=
-
-**Understanding:** Boundary condition was not handled"
-
-# Document failed approach
-gh issue comment 42 --body "❌ **Attempted:** Increase memory allocation
-
-**Why it failed:** Issue is null reference, not memory
-
-**Next approach:** Add null check before size validation"
-
-# Mark PR ready for review
-gh pr ready
-
-# Create backlog issue
-gh issue create \
-  --title "Optimize large file upload performance" \
-  --label "backlog" \
-  --body "Related to #42
-
-## Summary
-Large file uploads are slow; chunked upload could improve UX.
-
-## Context
-Discovered while fixing #42; out of scope for that fix."
-
-# Rename branch after issue creation
-git branch -m fix/42-null-reference-upload
-git push origin -u fix/42-null-reference-upload
-git push origin --delete fix/pending-null-reference
-```
-
-### Issue Template
-
-```markdown
-## Summary
-[One sentence]
-
-## Context
-[Background]
-
-## Acceptance Criteria
-- [ ] [Criterion 1]
-- [ ] [Criterion 2]
-
-## Out of Scope
-- [Item 1]
-
-## Screenshots / Evidence
-[Images or N/A]
-```
-
-### PR Template
-
-```markdown
-## Summary
-[What and why]
-
-## Changes
-- [Change 1]
-- [Change 2]
-
-## How to Test
-1. [Step 1]
-2. [Step 2]
-
-## Known Limitations
-- [Limitation or "None"]
-
-Closes #{issue-num}
-```
+For command examples, templates, and detailed examples, see [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
 
 ---
 
