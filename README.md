@@ -2,35 +2,69 @@
 
 A global toolkit that enforces issue-first development workflows across AI coding agents (Cursor, Claude Code, GitHub Copilot, Jules, Aider, etc.).
 
+**Now with native Windows support!** All scripts rewritten in Python for true cross-platform compatibility.
+
 ## Features
 
 - **🌍 Global Installation** - Install once, use everywhere
 - **📋 Hierarchical Configuration** - Base constitution + repo-specific overrides
-- **🔗 Symlink Architecture** - Update once, all repos benefit automatically
+- **🔗 Symlink Architecture** - Update once, all repos benefit automatically (with Windows fallback)
 - **🤖 Cross-Agent Compatible** - Works with Cursor, Claude Code, GitHub Copilot, Jules, Aider
 - **✅ Issue-First Workflow** - Enforces traceable development patterns
 - **🚀 Zero Mental Context** - Simple `agentsdotmd-init` command
+- **💻 Cross-Platform** - Windows, macOS, Linux (Python 3.8+)
+
+## Prerequisites
+
+**All platforms:**
+- Python 3.8 or higher
+- Git
+- GitHub CLI (`gh`) - [Installation guide](https://cli.github.com/)
+
+**Check your Python version:**
+```bash
+python3 --version  # macOS/Linux
+python --version   # Windows
+```
+
+**Windows-specific:**
+- Enable Developer Mode (optional, for symlinks) or the toolkit will use fallback methods
+- Git for Windows installed
 
 ## Quick Start
 
 ### One-Time Global Installation
 
+**macOS/Linux:**
 ```bash
 # Clone the repository
 git clone https://github.com/YOU/AgentsToolkit.git ~/Projects/AgentsToolkit
 
 # Run global installer
 cd ~/Projects/AgentsToolkit
-./install.sh
+python3 install.py
 
 # Restart your terminal (or source your shell config)
 source ~/.zshrc  # or ~/.bashrc
 ```
 
-This installs the toolkit to `~/.agents_toolkit/` and adds `agentsdotmd-init` to your PATH.
+**Windows:**
+```powershell
+# Clone the repository
+git clone https://github.com/YOU/AgentsToolkit.git %USERPROFILE%\Projects\AgentsToolkit
+
+# Run global installer
+cd %USERPROFILE%\Projects\AgentsToolkit
+python install.py
+
+# Restart your terminal or PowerShell window
+```
+
+This installs the toolkit to `~/.agents_toolkit/` (or `%USERPROFILE%\.agents_toolkit` on Windows) and adds `agentsdotmd-init` to your PATH.
 
 ### Initialize Any Repository
 
+**macOS/Linux:**
 ```bash
 # Navigate to any git repository
 cd ~/my-project
@@ -41,6 +75,19 @@ agentsdotmd-init
 # For monorepos (optional)
 cd ~/my-monorepo
 agentsdotmd-init --subdir backend
+```
+
+**Windows:**
+```powershell
+# Navigate to any git repository
+cd C:\Projects\my-project
+
+# Initialize with toolkit  
+python %USERPROFILE%\.agents_toolkit\bin\agentsdotmd-init.py
+
+# For monorepos (optional)
+cd C:\Projects\my-monorepo
+python %USERPROFILE%\.agents_toolkit\bin\agentsdotmd-init.py --subdir backend
 ```
 
 ## What Gets Created
@@ -258,15 +305,54 @@ Safety tiers (per AGENTS.md):
 
 The toolkit creates `CLAUDE.md -> AGENTS.md` symlink for cross-agent compatibility.
 
+## Windows Support
+
+AgentsToolkit now has full Windows support via Python 3.8+ scripts.
+
+### Installation on Windows
+
+1. **Install Python 3.8+** from [python.org](https://python.org) or via `winget install Python.Python.3`
+2. **Install Git for Windows** from [git-scm.com](https://git-scm.com/)
+3. **Install GitHub CLI** from [cli.github.com](https://cli.github.com/) or via `winget install GitHub.cli`
+4. **Run the installer:** `python install.py` (see Quick Start above)
+
+### Symlinks on Windows
+
+The toolkit uses a smart fallback chain for Windows compatibility:
+
+1. **Symlinks** (preferred) - Requires Developer Mode or Administrator privileges
+2. **Junctions** (directories only) - Works without special permissions
+3. **Hard links** (files only) - Same volume required
+4. **Copy** (last resort) - Manual updates needed via `agentsdotmd-init --update`
+
+**To enable symlinks without admin:**
+- Windows 10/11: Settings → Update & Security → For Developers → Developer Mode
+
+If symlinks are unavailable, the installer will use junctions for directories and copy files, displaying appropriate warnings.
+
+### Running Scripts on Windows
+
+**Via Python directly:**
+```powershell
+python .agents\commands\status.py
+python .agents\commands\branch.py feat "add authentication"
+python .agents\commands\issue.py "Bug title" "Description"
+python .agents\commands\pr.py
+```
+
+**Via Cursor commands:** `/status`, `/branch`, `/issue`, `/pr` work automatically (Cursor wrappers call Python)
+
+**Via VS Code tasks:** Cmd+Shift+P → "Tasks: Run Task" → "Agents: Status" etc.
+
 ## VS Code + Claude Code Setup
 
 Claude Code reads `CLAUDE.md -> AGENTS.md` but does not ship Cursor-style `/commands`. Use any of these access methods:
 
-1. **Direct terminal:** `.agents/commands/status.sh` (symlink to toolkit scripts)
-2. **VS Code tasks:** Cmd+Shift+P → “Tasks: Run Task” → “Agents: Status” (optional `.vscode/tasks.json` installed by `agentsdotmd-init` when you opt in; tasks call `.agents/commands/…`)
-3. **Shell aliases:** add shortcuts such as `alias agents-status='.agents/commands/status.sh'`
+1. **Direct terminal:** `python3 .agents/commands/status.py` (or `python` on Windows)
+2. **VS Code tasks:** Cmd+Shift+P → "Tasks: Run Task" → "Agents: Status" (optional `.vscode/tasks.json` installed by `agentsdotmd-init` when you opt in)
+3. **Shell aliases:** add shortcuts such as `alias agents-status='python3 .agents/commands/status.py'`
 
-When prompting Claude Code, explicitly reference the repo-local script path (for example, “run .agents/commands/status.sh from the repo root”) so it executes the workflow scripts.
+When prompting Claude Code, explicitly reference the repo-local script path (for example, "run python3 .agents/commands/status.py from the repo root") so it executes the workflow scripts.
 
 ## AGENTS.md Compliance
 

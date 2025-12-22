@@ -4,7 +4,7 @@
     {
       "label": "Agents: Status",
       "type": "shell",
-      "command": "./.agents/commands/status.sh",
+      "command": "python3 ./.agents/commands/status.py",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -17,7 +17,7 @@
     {
       "label": "Agents: Create Issue",
       "type": "shell",
-      "command": "./.agents/commands/issue.sh",
+      "command": "python3 ./.agents/commands/issue.py",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -30,7 +30,7 @@
     {
       "label": "Agents: Create Branch",
       "type": "shell",
-      "command": "./.agents/commands/branch.sh",
+      "command": "python3 ./.agents/commands/branch.py",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -43,7 +43,7 @@
     {
       "label": "Agents: Create PR",
       "type": "shell",
-      "command": "./.agents/commands/pr.sh",
+      "command": "python3 ./.agents/commands/pr.py",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -56,7 +56,7 @@
     {
       "label": "Agents: Link PR",
       "type": "shell",
-      "command": "./.agents/commands/link.sh",
+      "command": "python3 ./.agents/commands/link.py",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -69,7 +69,7 @@
     {
       "label": "Agents: Followup",
       "type": "shell",
-      "command": "./.agents/commands/followup.sh",
+      "command": "python3 ./.agents/commands/followup.py",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -82,7 +82,7 @@
     {
       "label": "Agents: Check Auth",
       "type": "shell",
-      "command": "./.agents/commands/check-auth.sh",
+      "command": "python3 ./.agents/commands/check_auth.py",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -95,7 +95,7 @@
     {
       "label": "Agents: Check Workflow",
       "type": "shell",
-      "command": "./.agents/commands/check-workflow.sh",
+      "command": "python3 ./.agents/commands/check_workflow.py",
       "options": {
         "cwd": "${workspaceFolder}"
       },
