@@ -23,12 +23,12 @@ When conflicts exist, AGENTS.local.md takes precedence. Both files contain MANDA
 
 These scripts enforce AGENTS.md standards (repo-local, symlinked from toolkit):
 
-- `.agents/commands/issue.sh "Title" "Body"` - Create issue + branch
-- `.agents/commands/branch.sh [type] "description"` - Create branch
-- `.agents/commands/status.sh` - Check workflow state
-- `.agents/commands/pr.sh` - Create pull request
-- `.agents/commands/link.sh <pr> <issue>` - Link PR to issue
-- `.agents/commands/followup.sh <issue> "comment"` - Add issue comment
+- `.agents/commands/issue.py "Title" "Body"` - Create issue + branch
+- `.agents/commands/branch.py [type] "description"` - Create branch
+- `.agents/commands/status.py` - Check workflow state
+- `.agents/commands/pr.py` - Create pull request
+- `.agents/commands/link.py <pr> <issue>` - Link PR to issue
+- `.agents/commands/followup.py <issue> "comment"` - Add issue comment
 
 Cursor slash commands (`/status`, `/issue`, etc.) are backed by markdown wrappers in `.cursor/commands/` that call these scripts.
 
@@ -65,7 +65,7 @@ Cursor slash commands (`/status`, `/issue`, etc.) are backed by markdown wrapper
 
 ## Pull Request Protocol
 
-**Use the script:** `.cursor/commands/pr.sh`
+**Use the script:** `.agents/commands/pr.py`
 
 **Required sections:**
 - Summary

@@ -35,7 +35,7 @@ python --version   # Windows
 
 ### One-Time Global Installation
 
-**macOS/Linux:**
+**All Platforms:**
 ```bash
 # Clone the repository
 git clone https://github.com/YOU/AgentsToolkit.git ~/Projects/AgentsToolkit
@@ -45,26 +45,14 @@ cd ~/Projects/AgentsToolkit
 python3 install.py
 
 # Restart your terminal (or source your shell config)
-source ~/.zshrc  # or ~/.bashrc
-```
-
-**Windows:**
-```powershell
-# Clone the repository
-git clone https://github.com/YOU/AgentsToolkit.git %USERPROFILE%\Projects\AgentsToolkit
-
-# Run global installer
-cd %USERPROFILE%\Projects\AgentsToolkit
-python install.py
-
-# Restart your terminal or PowerShell window
+source ~/.zshrc  # or ~/.bashrc (Unix only)
 ```
 
 This installs the toolkit to `~/.agents_toolkit/` (or `%USERPROFILE%\.agents_toolkit` on Windows) and adds `agentsdotmd-init` to your PATH.
 
 ### Initialize Any Repository
 
-**macOS/Linux:**
+**All Platforms:**
 ```bash
 # Navigate to any git repository
 cd ~/my-project
@@ -77,18 +65,7 @@ cd ~/my-monorepo
 agentsdotmd-init --subdir backend
 ```
 
-**Windows:**
-```powershell
-# Navigate to any git repository
-cd C:\Projects\my-project
-
-# Initialize with toolkit  
-python %USERPROFILE%\.agents_toolkit\bin\agentsdotmd-init.py
-
-# For monorepos (optional)
-cd C:\Projects\my-monorepo
-python %USERPROFILE%\.agents_toolkit\bin\agentsdotmd-init.py --subdir backend
-```
+**Note:** On Unix systems, `agentsdotmd-init` is a symlink to `agentsdotmd-init.py`. On Windows, you can use either `agentsdotmd-init.py` or add `.py` to your PATHEXT.
 
 ## What Gets Created
 
@@ -188,7 +165,7 @@ All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/
 ### Creating Issues
 
 ```bash
-.agents/commands/issue.sh "Fix login button" "Button misaligned on mobile" screenshot.png
+.agents/commands/issue.py "Fix login button" "Button misaligned on mobile" screenshot.png
 
 # What it does:
 # 1. Creates branch: fix/pending-fix-login-button
@@ -202,7 +179,7 @@ All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/
 ### Checking Status
 
 ```bash
-.agents/commands/status.sh
+.agents/commands/status.py
 
 # Output:
 # 📋 Current Workflow Status
@@ -211,14 +188,14 @@ All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/
 # Issue State: OPEN
 # Commits ahead: 2
 # Pushed: ✅ Yes
-# PR: None - run pr.sh to create
+# PR: None - run pr.py to create
 # 📋 Next step: Create PR
 ```
 
 ### Creating Pull Requests
 
 ```bash
-.agents/commands/pr.sh
+.agents/commands/pr.py
 
 # What it does:
 # 1. Detects linked issue from git config
@@ -229,9 +206,9 @@ All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/
 
 ### Other Commands
 
-- `branch.sh [type] "description"` - Create branch (auto-detects type if omitted)
-- `link.sh <pr-num> <issue-num>` - Link existing PR to issue
-- `followup.sh <issue-num> "comment"` - Add comment to issue with optional screenshots
+- `branch.py [type] "description"` - Create branch (auto-detects type if omitted)
+- `link.py <pr-num> <issue-num>` - Link existing PR to issue
+- `followup.py <issue-num> "comment"` - Add comment to issue with optional screenshots
 
 ## Safety Guarantees
 
@@ -275,7 +252,7 @@ Safety tiers (per AGENTS.md):
 │ AI Decision Layer                   │
 │ - Consults AGENTS.md rules          │
 │ - Decides: "Need to create issue"   │
-│ - Executes: Bash(issue.sh)          │
+│ - Executes: Python(issue.py)        │
 └─────────────────────────────────────┘
                 │
                 ↓
@@ -381,7 +358,7 @@ Unit tests verify all deterministic functions:
 
 ```bash
 cd ~/Projects/AgentsToolkit
-./tests/test_functions.sh
+./tests/test_functions.py
 
 # 39 tests covering:
 # ✓ detect_branch_type
@@ -453,8 +430,8 @@ To get toolkit updates in all your repos:
 cd ~/Projects/AgentsToolkit
 git pull
 
-# Re-run global installer (if install.sh changed)
-./install.sh
+# Re-run global installer (if install.py changed)
+python3 install.py
 
 # Refresh copied files in an existing repo
 cd /path/to/your/repo
@@ -476,14 +453,15 @@ Symlinked files (AGENTS.md, CLAUDE.md, `.agents/commands/`) update automatically
 ~/.agents_toolkit/
 ├── AGENTS.md              # Base constitution
 ├── bin/
-│   └── agentsdotmd-init  # Added to PATH
+│   ├── agentsdotmd-init.py  # Python script (cross-platform)
+│   └── agentsdotmd-init     # Symlink to .py (Unix only)
 ├── scripts/              # Symlinked to repos
-│   ├── issue.sh
-│   ├── branch.sh
-│   ├── pr.sh
-│   ├── status.sh
-│   ├── link.sh
-│   └── followup.sh
+│   ├── issue.py
+│   ├── branch.py
+│   ├── pr.py
+│   ├── status.py
+│   ├── link.py
+│   └── followup.py
 ├── cursor-rules/
 │   └── agents-workflow/
 │       └── RULE.md.template
@@ -491,7 +469,7 @@ Symlinked files (AGENTS.md, CLAUDE.md, `.agents/commands/`) update automatically
 │   ├── AGENTS.local.md.example
 │   ├── ISSUE_TEMPLATE.md
 │   └── PULL_REQUEST_TEMPLATE.md
-└── install.sh
+└── install.py
 ```
 
 ### Why Symlinks?
@@ -578,7 +556,7 @@ rm -rf ~/.agents_toolkit
 Contributions welcome! Please:
 
 1. Follow AGENTS.md standards (yes, meta!)
-2. Run tests: `./tests/test_functions.sh`
+2. Run tests: `./tests/test_functions.py`
 3. Update documentation
 4. Create issues before PRs
 
@@ -588,19 +566,20 @@ Contributions welcome! Please:
 AgentsToolkit/
 ├── README.md                 # This file
 ├── AGENTS.md                 # Workflow standards (source of truth)
-├── install.sh                # Global installer
+├── install.py                 # Global installer (cross-platform)
 ├── uninstall.sh              # Uninstaller
 │
 ├── bin/
-│   └── agentsdotmd-init     # Repo initialization command
+│   ├── agentsdotmd-init.py  # Repo initialization command (Python)
+│   └── agentsdotmd-init    # Symlink to .py (Unix only)
 │
 ├── scripts/                  # Workflow commands
-│   ├── issue.sh
-│   ├── branch.sh
-│   ├── pr.sh
-│   ├── status.sh
-│   ├── link.sh
-│   └── followup.sh
+│   ├── issue.py
+│   ├── branch.py
+│   ├── pr.py
+│   ├── status.py
+│   ├── link.py
+│   └── followup.py
 │
 ├── cursor-rules/             # Cursor-specific enforcement
 │   └── agents-workflow/
@@ -612,7 +591,7 @@ AgentsToolkit/
 │   └── PULL_REQUEST_TEMPLATE.md
 │
 ├── tests/                    # Unit tests
-│   └── test_functions.sh
+│   └── test_functions.py
 │
 └── docs/                     # Additional documentation
 ```
