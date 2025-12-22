@@ -54,7 +54,7 @@ echo -e "${GREEN}Target: $TARGET_DIR${NC}"
 echo ""
 
 # 1. Symlink AGENTS.md
-echo -e "${YELLOW}[1/7] Symlinking AGENTS.md...${NC}"
+echo -e "${YELLOW}[1/9] Symlinking AGENTS.md...${NC}"
 if [ -f "$TARGET_DIR/AGENTS.md" ] && [ ! -L "$TARGET_DIR/AGENTS.md" ]; then
     echo -e "${YELLOW}⚠️  AGENTS.md exists (not a symlink)${NC}"
     read -p "Overwrite with symlink? (y/N): " -n 1 -r
@@ -75,7 +75,7 @@ fi
 
 # 2. Create AGENTS.local.md with examples
 echo ""
-echo -e "${YELLOW}[2/7] Creating AGENTS.local.md...${NC}"
+echo -e "${YELLOW}[2/9] Creating AGENTS.local.md...${NC}"
 if [ "$UPDATE_MODE" = true ]; then
     echo -e "${YELLOW}⊘ Skipped (preserving existing AGENTS.local.md)${NC}"
 elif [ ! -f "$TARGET_DIR/AGENTS.local.md" ]; then
@@ -87,7 +87,7 @@ fi
 
 # 3. Symlink CLAUDE.md for Claude Code compatibility
 echo ""
-echo -e "${YELLOW}[3/7] Symlinking CLAUDE.md (Claude Code compat)...${NC}"
+echo -e "${YELLOW}[3/9] Symlinking CLAUDE.md (Claude Code compat)...${NC}"
 if [ ! -e "$TARGET_DIR/CLAUDE.md" ]; then
     ln -s AGENTS.md "$TARGET_DIR/CLAUDE.md"
     echo -e "${GREEN}✓ Created CLAUDE.md -> AGENTS.md${NC}"
@@ -95,20 +95,62 @@ else
     echo -e "${GREEN}✓ Already exists${NC}"
 fi
 
-# 4. Symlink .cursor/commands/
+# 4. Symlink .agents/commands/ (agent-agnostic scripts)
 echo ""
-echo -e "${YELLOW}[4/7] Symlinking .cursor/commands/...${NC}"
-mkdir -p "$TARGET_DIR/.cursor"
-if [ ! -e "$TARGET_DIR/.cursor/commands" ]; then
-    ln -s "$TOOLKIT_DIR/scripts" "$TARGET_DIR/.cursor/commands"
-    echo -e "${GREEN}✓ Created .cursor/commands/ -> ~/.agents_toolkit/scripts/${NC}"
+echo -e "${YELLOW}[4/9] Symlinking .agents/commands/...${NC}"
+mkdir -p "$TARGET_DIR/.agents"
+if [ ! -e "$TARGET_DIR/.agents/commands" ]; then
+    ln -s "$TOOLKIT_DIR/scripts" "$TARGET_DIR/.agents/commands"
+    echo -e "${GREEN}✓ Created .agents/commands/ -> ~/.agents_toolkit/scripts/${NC}"
 else
     echo -e "${GREEN}✓ Already exists${NC}"
 fi
 
-# 5. Copy .cursor/rules/
+# 4a. Install Cursor markdown command wrappers
 echo ""
-echo -e "${YELLOW}[5/7] Installing .cursor/rules/...${NC}"
+echo -e "${YELLOW}[5/9] Installing Cursor command wrappers...${NC}"
+mkdir -p "$TARGET_DIR/.cursor/commands"
+COMMANDS_SRC="$TOOLKIT_DIR/templates/cursor-commands"
+COMMANDS_DST="$TARGET_DIR/.cursor/commands"
+if [ "$UPDATE_MODE" = true ]; then
+    if ls "$COMMANDS_DST"/*.md >/dev/null 2>&1; then
+        read -p "Update existing .cursor/commands/*.md from templates? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            for f in "$COMMANDS_SRC"/*.md; do
+                [ -f "$f" ] || continue
+                cp "$f" "$COMMANDS_DST/"
+            done
+            echo -e "${GREEN}✓ Updated Cursor command wrappers${NC}"
+        else
+            echo -e "${YELLOW}⊘ Skipped updating Cursor command wrappers${NC}"
+        fi
+    else
+        for f in "$COMMANDS_SRC"/*.md; do
+            [ -f "$f" ] || continue
+            cp "$f" "$COMMANDS_DST/"
+        done
+        echo -e "${GREEN}✓ Installed Cursor command wrappers${NC}"
+    fi
+else
+    INSTALLED_ANY=false
+    for f in "$COMMANDS_SRC"/*.md; do
+        [ -f "$f" ] || continue
+        base="$(basename "$f")"
+        if [ ! -f "$COMMANDS_DST/$base" ]; then
+            cp "$f" "$COMMANDS_DST/"
+            INSTALLED_ANY=true
+            echo -e "${GREEN}✓ $base${NC}"
+        fi
+    done
+    if [ "$INSTALLED_ANY" = false ]; then
+        echo -e "${GREEN}✓ Cursor command wrappers already present${NC}"
+    fi
+fi
+
+# 6. Copy .cursor/rules/
+echo ""
+echo -e "${YELLOW}[6/9] Installing .cursor/rules/...${NC}"
 mkdir -p "$TARGET_DIR/.cursor/rules/agents-workflow"
 RULE_FILE="$TARGET_DIR/.cursor/rules/agents-workflow/RULE.md"
 if [ -f "$RULE_FILE" ]; then
@@ -130,16 +172,16 @@ else
     echo -e "${GREEN}✓ Installed .cursor/rules/agents-workflow/RULE.md${NC}"
 fi
 
-# 6. Create .issue_screenshots/
+# 7. Create .issue_screenshots/
 echo ""
-echo -e "${YELLOW}[6/7] Creating .issue_screenshots/...${NC}"
+echo -e "${YELLOW}[7/9] Creating .issue_screenshots/...${NC}"
 mkdir -p "$TARGET_DIR/.issue_screenshots"
 touch "$TARGET_DIR/.issue_screenshots/.gitkeep"
 echo -e "${GREEN}✓ Created .issue_screenshots/${NC}"
 
-# 7. GitHub templates (optional)
+# 8. GitHub templates (optional)
 echo ""
-echo -e "${YELLOW}[7/7] GitHub templates${NC}"
+echo -e "${YELLOW}[8/9] GitHub templates${NC}"
 if [ "$UPDATE_MODE" = true ]; then
     UPDATED_ANY=false
     if [ -f "$TARGET_DIR/.github/ISSUE_TEMPLATE.md" ]; then
@@ -180,6 +222,40 @@ else
     fi
 fi
 
+# 9. VS Code tasks (optional)
+echo ""
+echo -e "${YELLOW}[9/9] VS Code tasks${NC}"
+TASKS_FILE="$TARGET_DIR/.vscode/tasks.json"
+if [ "$UPDATE_MODE" = true ]; then
+    if [ -f "$TASKS_FILE" ]; then
+        read -p "Update existing .vscode/tasks.json? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            mkdir -p "$TARGET_DIR/.vscode"
+            cp "$TOOLKIT_DIR/templates/vscode-tasks.json" "$TASKS_FILE"
+            echo -e "${GREEN}✓ Updated .vscode/tasks.json${NC}"
+        else
+            echo -e "${YELLOW}⊘ Skipped .vscode/tasks.json${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⊘ No existing .vscode/tasks.json to update${NC}"
+    fi
+else
+    echo -e "${YELLOW}Install VS Code tasks?${NC}"
+    read -p "Install .vscode/tasks.json? (Y/n): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+        mkdir -p "$TARGET_DIR/.vscode"
+        if [ ! -f "$TASKS_FILE" ]; then
+            cp "$TOOLKIT_DIR/templates/vscode-tasks.json" "$TASKS_FILE"
+            echo -e "${GREEN}✓ .vscode/tasks.json${NC}"
+        else
+            echo -e "${GREEN}✓ .vscode/tasks.json already exists${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⊘ Skipped${NC}"
+    fi
+fi
 echo ""
 echo -e "${GREEN}================================================${NC}"
 if [ "$UPDATE_MODE" = true ]; then
@@ -192,14 +268,17 @@ echo ""
 echo -e "${BLUE}Files managed:${NC}"
 echo "  • AGENTS.md (symlink to global constitution; auto-updates via toolkit)"
 echo "  • CLAUDE.md (symlink for Claude Code)"
-echo "  • .cursor/commands/ (symlink to scripts)"
+echo "  • .agents/commands/ (symlink to toolkit scripts; agent-agnostic)"
+echo "  • .cursor/commands/*.md (Cursor prompt wrappers for slash commands)"
 echo "  • .cursor/rules/agents-workflow/RULE.md (copied; refreshed via --update)"
 echo "  • AGENTS.local.md (repo overrides; left untouched in --update)"
 echo "  • .issue_screenshots/"
 if [ "$UPDATE_MODE" = true ]; then
     echo "  • .github templates (updated only when already present)"
+    echo "  • .vscode/tasks.json (updated only when already present)"
 else
     echo "  • .github templates (optional install)"
+    echo "  • .vscode/tasks.json (optional install)"
 fi
 echo ""
 echo -e "${BLUE}Next steps:${NC}"
@@ -208,10 +287,10 @@ if [ "$UPDATE_MODE" = true ]; then
     echo "  2. Open Cursor - rules will auto-load"
 else
     echo "  1. Review AGENTS.local.md and uncomment customizations"
-    echo "  2. Commit files: git add AGENTS.md CLAUDE.md .cursor/ .issue_screenshots/"
+    echo "  2. Commit files: git add AGENTS.md CLAUDE.md .agents/ .cursor/ .issue_screenshots/"
     echo "  3. Open Cursor - rules will auto-load"
 fi
-echo "  4. Try: .cursor/commands/status.sh"
+echo "  4. Try: .agents/commands/status.sh (Cursor users can also use /status)"
 echo ""
 echo -e "${YELLOW}Note: Symlinks are committed to git for team visibility${NC}"
 echo ""
