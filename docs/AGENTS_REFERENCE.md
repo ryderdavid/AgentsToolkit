@@ -11,6 +11,7 @@ This document provides command examples, templates, and detailed examples refere
 3. [PR Template](#pr-template)
 4. [GitHub Output Examples](#github-output-examples)
 5. [CLI Formatting Guidance](#cli-formatting-guidance)
+6. [Anti-Patterns Reference](#anti-patterns-reference)
 
 ---
 
@@ -268,3 +269,25 @@ YYYYMMDD_{issue-num}_{branch-name}_{description}.{ext}
 - **Link everything:** Issues link to PRs, PRs link to issues, commits reference issue numbers
 - **Document as you go:** Add issue comments for feedback, failed approaches, and learnings
 
+---
+
+## Anti-Patterns Reference
+
+The following behaviors are **explicitly prohibited**. Self-check against this list before each action.
+
+| Anti-Pattern | Why It's Prohibited |
+|--------------|---------------------|
+| Starting to code before issue is created and confirmed | Violates issue-first principle; leads to scope ambiguity |
+| Making file changes while on main/master | Bypasses PR review; breaks workflow; direct commits to main |
+| Committing directly to main/master | No PR review; no issue linkage; violates traceable development |
+| Creating branches off branches for iterations | Complicates history; one branch per issue |
+| Expanding scope silently without user approval | Leads to bloated PRs; scope creep |
+| Leaving failed approaches undocumented | Wastes future effort; loses institutional knowledge |
+| PRs with vague descriptions like "fixes stuff" | Unreviewable; no audit trail |
+| Closing issues before code is in main | Premature closure; broken workflow |
+| Referencing screenshots before committing them | Broken image links; unprofessional |
+| Manually closing issues | Issues close automatically when PR merges |
+| Providing non-clickable GitHub URLs | Poor UX; harder to navigate |
+| Weak anchor text in links | Non-descriptive; should explain what the link points to |
+| Ending implementation round without GitHub artifact summary | Missing documentation; poor traceability |
+| Accepting sandbox network restrictions for GitHub operations | Unnecessary limitation; elevate and execute |
