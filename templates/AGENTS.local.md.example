@@ -21,6 +21,24 @@ This file extends the base AGENTS.md constitution with project-specific customiz
 ## Uncomment sections below to customize for this repository
 
 <!--
+## Response Standards (Project-Specific)
+
+When completing implementation work, agent responses MUST include:
+
+- [ ] Clickable issue link: `[#N: Title](url)`
+- [ ] Clickable PR link: `[#N: Title](url)`
+- [ ] Clickable branch link: `` [`name`](url) ``
+- [ ] Clickable commit links: `[hash: message](url)`
+- [ ] Use End-of-Round Response Template from AGENTS.md
+
+**Repository-specific artifact requirements:**
+- Include links to deployment previews (if applicable)
+- Include links to CI/CD pipeline runs (if applicable)
+- Include links to relevant documentation pages (if updated)
+
+-->
+
+<!--
 ## Project Overview
 
 This is a [brief description of project].
