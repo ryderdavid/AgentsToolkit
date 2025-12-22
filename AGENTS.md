@@ -95,6 +95,8 @@ Document failed approaches before trying alternatives.
 ALL URLs as markdown links: `[#42: Fix upload](link)` not bare URLs.  
 End-of-round summaries must include clickable links to all artifacts with descriptive anchor text.
 
+**Format:** `### 🔗 GitHub Artifacts` section with issue, PR, branch, commits as `[#N: Title](url)` or `[hash: msg](url)`.
+
 ---
 
 ## Safety & Execution
@@ -113,21 +115,21 @@ End-of-round summaries must include clickable links to all artifacts with descri
 
 ## Anti-Patterns (Prohibited Behaviors)
 
-| Anti-Pattern | Why Prohibited |
-|--------------|----------------|
-| Coding before issue approval | Violates issue-first; scope ambiguity |
-| File changes on main/master | Bypasses PR review; breaks workflow |
-| Branches off branches | Complicates history; one branch per issue |
-| Expanding scope silently | Leads to bloated PRs; scope creep |
-| Undocumented failed approaches | Wastes future effort; loses knowledge |
-| Vague PR descriptions | Unreviewable; no audit trail |
-| Closing issues before merge | Premature closure; broken workflow |
-| Screenshots before commit | Broken image links |
-| Manually closing issues | Issues close automatically on PR merge |
-| Non-clickable GitHub URLs | Poor UX; harder to navigate |
-| Weak anchor text in links | Non-descriptive; use meaningful text |
-| Missing end-of-round summary | Missing documentation; poor traceability |
-| Accepting sandbox limits for Tier 1 ops | Pre-approved safe operations should elevate and execute |
+| Anti-Pattern | Why Prohibited | Severity |
+|--------------|----------------|----------|
+| Coding before issue approval | Violates issue-first; scope ambiguity | ⛔ BLOCKER |
+| File changes on main/master | Bypasses PR review; breaks workflow | ⛔ BLOCKER |
+| Non-clickable GitHub URLs | Poor UX; harder to navigate | ⛔ BLOCKER |
+| Weak anchor text in links | Non-descriptive; use meaningful text | ⛔ BLOCKER |
+| Missing end-of-round artifact links | No audit trail; violates Prime Directive 7 | ⛔ BLOCKER |
+| Branches off branches | Complicates history; one branch per issue | 🔴 HIGH |
+| Expanding scope silently | Leads to bloated PRs; scope creep | 🔴 HIGH |
+| Vague PR descriptions | Unreviewable; no audit trail | 🔴 HIGH |
+| Closing issues before merge | Premature closure; broken workflow | 🔴 HIGH |
+| Undocumented failed approaches | Wastes future effort; loses knowledge | 🟡 MEDIUM |
+| Screenshots before commit | Broken image links | 🟡 MEDIUM |
+| Manually closing issues | Issues close automatically on PR merge | 🟡 MEDIUM |
+| Accepting sandbox limits for Tier 1 ops | Pre-approved safe operations should elevate | 🟡 MEDIUM |
 
 ---
 
