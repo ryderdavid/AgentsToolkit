@@ -210,7 +210,7 @@ Safety tiers (per AGENTS.md):
 │ - When to create issues             │
 │ - Scope boundaries                  │
 │ - Workflow decisions                │
-│ ↓ (~600 tokens in context)         │
+│ ↓ (~600 tokens in context)          │
 └─────────────────────────────────────┘
                 │
                 ↓
@@ -219,7 +219,7 @@ Safety tiers (per AGENTS.md):
 │ - alwaysApply: true                 │
 │ - "Read both AGENTS.md files"       │
 │ - "Use workflow scripts"            │
-│ ↓ (~100 tokens in context)         │
+│ ↓ (~100 tokens in context)          │
 └─────────────────────────────────────┘
                 │
                 ↓
