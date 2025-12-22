@@ -119,7 +119,7 @@ def make_scripts_executable(install_dir: Path) -> bool:
                     script.chmod(0o755)
         
         # Root-level scripts
-        for script in ['install.sh', 'uninstall.sh', 'install.py', 'uninstall.py']:
+        for script in ['uninstall.sh', 'install.py', 'uninstall.py']:
             script_path = install_dir / script
             if script_path.exists():
                 script_path.chmod(0o755)
@@ -130,6 +130,47 @@ def make_scripts_executable(install_dir: Path) -> bool:
     except Exception as e:
         print_error(f"Failed to make scripts executable: {e}")
         return False
+
+
+def create_unix_wrapper(install_dir: Path) -> bool:
+    """Create agentsdotmd-init symlink on Unix systems.
+    
+    On Unix, create a symlink so users can type 'agentsdotmd-init'
+    instead of 'agentsdotmd-init.py'.
+    
+    Returns:
+        True if successful
+    """
+    if is_windows():
+        return True  # Not needed on Windows
+    
+    bin_dir = install_dir / 'bin'
+    python_script = bin_dir / 'agentsdotmd-init.py'
+    wrapper = bin_dir / 'agentsdotmd-init'
+    
+    if not python_script.exists():
+        print_warning("⚠️  agentsdotmd-init.py not found, skipping wrapper")
+        return True
+    
+    try:
+        # Remove existing wrapper if it exists (could be old bash script)
+        if wrapper.exists():
+            if wrapper.is_symlink() or wrapper.is_file():
+                wrapper.unlink()
+            else:
+                print_warning(f"⚠️  {wrapper} exists but is not a file/symlink, skipping")
+                return True
+        
+        # Create symlink
+        wrapper.symlink_to('agentsdotmd-init.py')
+        wrapper.chmod(0o755)  # Make sure it's executable
+        print_success("✓ Created agentsdotmd-init wrapper")
+        return True
+    
+    except Exception as e:
+        print_warning(f"⚠️  Could not create wrapper: {e}")
+        print_info("You can still use: agentsdotmd-init.py")
+        return True
 
 
 def add_to_path(install_dir: Path) -> bool:
@@ -301,6 +342,10 @@ def main():
     
     # Make scripts executable (Unix only)
     if not make_scripts_executable(install_dir):
+        sys.exit(1)
+    
+    # Create Unix wrapper (symlink agentsdotmd-init -> agentsdotmd-init.py)
+    if not create_unix_wrapper(install_dir):
         sys.exit(1)
     
     # Add to PATH

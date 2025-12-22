@@ -35,7 +35,7 @@ python --version   # Windows
 
 ### One-Time Global Installation
 
-**macOS/Linux:**
+**All Platforms:**
 ```bash
 # Clone the repository
 git clone https://github.com/YOU/AgentsToolkit.git ~/Projects/AgentsToolkit
@@ -45,26 +45,14 @@ cd ~/Projects/AgentsToolkit
 python3 install.py
 
 # Restart your terminal (or source your shell config)
-source ~/.zshrc  # or ~/.bashrc
-```
-
-**Windows:**
-```powershell
-# Clone the repository
-git clone https://github.com/YOU/AgentsToolkit.git %USERPROFILE%\Projects\AgentsToolkit
-
-# Run global installer
-cd %USERPROFILE%\Projects\AgentsToolkit
-python install.py
-
-# Restart your terminal or PowerShell window
+source ~/.zshrc  # or ~/.bashrc (Unix only)
 ```
 
 This installs the toolkit to `~/.agents_toolkit/` (or `%USERPROFILE%\.agents_toolkit` on Windows) and adds `agentsdotmd-init` to your PATH.
 
 ### Initialize Any Repository
 
-**macOS/Linux:**
+**All Platforms:**
 ```bash
 # Navigate to any git repository
 cd ~/my-project
@@ -77,18 +65,7 @@ cd ~/my-monorepo
 agentsdotmd-init --subdir backend
 ```
 
-**Windows:**
-```powershell
-# Navigate to any git repository
-cd C:\Projects\my-project
-
-# Initialize with toolkit  
-python %USERPROFILE%\.agents_toolkit\bin\agentsdotmd-init.py
-
-# For monorepos (optional)
-cd C:\Projects\my-monorepo
-python %USERPROFILE%\.agents_toolkit\bin\agentsdotmd-init.py --subdir backend
-```
+**Note:** On Unix systems, `agentsdotmd-init` is a symlink to `agentsdotmd-init.py`. On Windows, you can use either `agentsdotmd-init.py` or add `.py` to your PATHEXT.
 
 ## What Gets Created
 
@@ -453,8 +430,8 @@ To get toolkit updates in all your repos:
 cd ~/Projects/AgentsToolkit
 git pull
 
-# Re-run global installer (if install.sh changed)
-./install.sh
+# Re-run global installer (if install.py changed)
+python3 install.py
 
 # Refresh copied files in an existing repo
 cd /path/to/your/repo
@@ -476,10 +453,11 @@ Symlinked files (AGENTS.md, CLAUDE.md, `.agents/commands/`) update automatically
 ~/.agents_toolkit/
 ├── AGENTS.md              # Base constitution
 ├── bin/
-│   └── agentsdotmd-init  # Added to PATH
+│   ├── agentsdotmd-init.py  # Python script (cross-platform)
+│   └── agentsdotmd-init     # Symlink to .py (Unix only)
 ├── scripts/              # Symlinked to repos
-│   ├── issue.sh
-│   ├── branch.sh
+│   ├── issue.py
+│   ├── branch.py
 │   ├── pr.sh
 │   ├── status.sh
 │   ├── link.sh
@@ -491,7 +469,7 @@ Symlinked files (AGENTS.md, CLAUDE.md, `.agents/commands/`) update automatically
 │   ├── AGENTS.local.md.example
 │   ├── ISSUE_TEMPLATE.md
 │   └── PULL_REQUEST_TEMPLATE.md
-└── install.sh
+└── install.py
 ```
 
 ### Why Symlinks?
@@ -588,14 +566,15 @@ Contributions welcome! Please:
 AgentsToolkit/
 ├── README.md                 # This file
 ├── AGENTS.md                 # Workflow standards (source of truth)
-├── install.sh                # Global installer
+├── install.py                 # Global installer (cross-platform)
 ├── uninstall.sh              # Uninstaller
 │
 ├── bin/
-│   └── agentsdotmd-init     # Repo initialization command
+│   ├── agentsdotmd-init.py  # Repo initialization command (Python)
+│   └── agentsdotmd-init    # Symlink to .py (Unix only)
 │
 ├── scripts/                  # Workflow commands
-│   ├── issue.sh
+│   ├── issue.py
 │   ├── branch.sh
 │   ├── pr.sh
 │   ├── status.sh

@@ -136,31 +136,52 @@ def create_agents_local_md(target_dir: Path, update_mode: bool) -> bool:
         return True
 
 
-def create_claude_md_symlink(target_dir: Path) -> bool:
-    """Create CLAUDE.md symlink for Claude Code compatibility.
+def create_claude_md(target_dir: Path, update_mode: bool) -> bool:
+    """Copy CLAUDE.md for Claude Code enforcement.
     
     Returns:
         True if successful
     """
     print()
-    print_info("[3/9] Symlinking CLAUDE.md (Claude Code compat)...")
+    print_info("[3/9] Installing CLAUDE.md (Claude Code enforcement)...")
     
     claude_md = target_dir / 'CLAUDE.md'
-    agents_md = target_dir / 'AGENTS.md'
+    claude_template = TOOLKIT_DIR / 'templates' / 'CLAUDE.md'
     
-    if not claude_md.exists():
-        # Create relative symlink
-        success, method, warning = create_link(claude_md, agents_md)
-        if success:
-            print_success("✓ Created CLAUDE.md -> AGENTS.md")
-            if warning:
-                print_warning(warning)
+    if update_mode:
+        if claude_md.exists():
+            response = input("Update existing CLAUDE.md? (y/N): ").strip().lower()
+            if response == 'y':
+                # Remove symlink if it exists, then copy
+                if claude_md.is_symlink():
+                    claude_md.unlink()
+                shutil.copy2(claude_template, claude_md)
+                print_success("✓ Updated CLAUDE.md")
+                return True
+            else:
+                print_warning("⊘ Skipped CLAUDE.md")
+                return True
+        else:
+            shutil.copy2(claude_template, claude_md)
+            print_success("✓ Created CLAUDE.md")
+            return True
+    elif claude_md.exists() and not claude_md.is_symlink():
+        print_success("✓ Already exists (standalone file)")
+        return True
+    elif claude_md.is_symlink():
+        print_warning("⚠️  CLAUDE.md is a symlink (old format)")
+        response = input("Replace with standalone file? (Y/n): ").strip().lower()
+        if response != 'n':
+            claude_md.unlink()
+            shutil.copy2(claude_template, claude_md)
+            print_success("✓ Replaced symlink with standalone CLAUDE.md")
             return True
         else:
-            print_error(f"Failed to create symlink: {method}")
-            return False
+            print_warning("⊘ Kept symlink")
+            return True
     else:
-        print_success("✓ Already exists")
+        shutil.copy2(claude_template, claude_md)
+        print_success("✓ Created CLAUDE.md")
         return True
 
 
@@ -410,7 +431,7 @@ def print_summary(target_dir: Path, update_mode: bool):
     print()
     print(f"{colors.BLUE}Files managed:{colors.NC}")
     print("  • AGENTS.md (symlink to global constitution; auto-updates via toolkit)")
-    print("  • CLAUDE.md (symlink for Claude Code)")
+    print("  • CLAUDE.md (copied; Claude Code enforcement; refreshed via --update)")
     print("  • .agents/commands/ (symlink to toolkit scripts; agent-agnostic)")
     print("  • .cursor/commands/*.md (Cursor prompt wrappers for slash commands)")
     print("  • .cursor/rules/agents-workflow/RULE.md (copied; refreshed via --update)")
@@ -481,7 +502,7 @@ def main():
     if not create_agents_local_md(target_dir, args.update):
         sys.exit(1)
     
-    if not create_claude_md_symlink(target_dir):
+    if not create_claude_md(target_dir, args.update):
         sys.exit(1)
     
     if not create_agents_commands_symlink(target_dir):
