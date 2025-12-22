@@ -75,10 +75,19 @@ def main():
     print_info("Creating branch...")
     result = run_git('checkout', '-b', branch_name)
     if result.returncode != 0:
-        # Branch might already exist, try to check it out
-        result = run_git('checkout', branch_name)
-        if result.returncode != 0:
-            print_error(f"Failed to create/checkout branch: {result.stderr}")
+        # Check if branch already exists
+        check_result = run_git('show-ref', '--verify', f'refs/heads/{branch_name}')
+        if check_result.returncode == 0:
+            print_error(f"Branch '{branch_name}' already exists!")
+            print_error("This might indicate a previous incomplete workflow.")
+            print_error("Options:")
+            print_error(f"  1. Delete the existing branch: git branch -D {branch_name}")
+            print_error(f"  2. Check it out manually: git checkout {branch_name}")
+            print_error("  3. Choose a different branch name")
+            sys.exit(1)
+        else:
+            # Other error occurred
+            print_error(f"Failed to create branch: {result.stderr}")
             sys.exit(1)
     
     # Create .issue_screenshots directory
