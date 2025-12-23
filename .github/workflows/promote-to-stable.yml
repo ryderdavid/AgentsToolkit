@@ -74,16 +74,18 @@ jobs:
       
       - name: Create stable release
         run: |
-          NOTES="## Stable Release - ${{ steps.tags.outputs.date }}
+          cat > /tmp/stable-release-notes.md <<RELEASE_NOTES_EOF
+          ## Stable Release - ${{ steps.tags.outputs.date }}
 
           🎉 Promoted from \`${{ inputs.nightly_tag }}\` to stable
 
           ### Original Release Notes
-          ${{ steps.nightly.outputs.body }}"
+          ${{ steps.nightly.outputs.body }}
+          RELEASE_NOTES_EOF
 
           gh release create "${{ steps.tags.outputs.stable }}" \
             --title "Stable Release ${{ steps.tags.outputs.date }}" \
-            --notes "${NOTES}" \
+            --notes-file /tmp/stable-release-notes.md \
             --target "${{ steps.nightly.outputs.commit }}" \
             --latest
         env:
