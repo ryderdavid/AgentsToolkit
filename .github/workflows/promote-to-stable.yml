@@ -74,14 +74,17 @@ jobs:
       
       - name: Create stable release
         run: |
-          cat > /tmp/stable-release-notes.md <<RELEASE_NOTES_EOF
-          ## Stable Release - ${{ steps.tags.outputs.date }}
-
-          🎉 Promoted from \`${{ inputs.nightly_tag }}\` to stable
-
-          ### Original Release Notes
-          ${{ steps.nightly.outputs.body }}
-          RELEASE_NOTES_EOF
+          # Get nightly body safely using gh CLI
+          gh release view "${{ inputs.nightly_tag }}" --json body -q .body > /tmp/nightly-body.txt
+          
+          {
+            echo "## Stable Release - ${{ steps.tags.outputs.date }}"
+            echo ""
+            echo "🎉 Promoted from \`${{ inputs.nightly_tag }}\` to stable"
+            echo ""
+            echo "### Original Release Notes"
+            cat /tmp/nightly-body.txt
+          } > /tmp/stable-release-notes.md
 
           gh release create "${{ steps.tags.outputs.stable }}" \
             --title "Stable Release ${{ steps.tags.outputs.date }}" \
@@ -93,12 +96,17 @@ jobs:
       
       - name: Mark nightly as superseded
         run: |
-          UPDATED_BODY="> ⚠️ **Superseded by \`${{ steps.tags.outputs.stable }}\`**
-
-          ${{ steps.nightly.outputs.body }}"
+          # Get nightly body safely using gh CLI (reuse from previous step or fetch again)
+          gh release view "${{ inputs.nightly_tag }}" --json body -q .body > /tmp/nightly-body.txt
+          
+          {
+            echo "> ⚠️ **Superseded by \`${{ steps.tags.outputs.stable }}\`**"
+            echo ""
+            cat /tmp/nightly-body.txt
+          } > /tmp/nightly-superseded-notes.md
 
           gh release edit "${{ inputs.nightly_tag }}" \
-            --notes "${UPDATED_BODY}" \
+            --notes-file /tmp/nightly-superseded-notes.md \
             --prerelease \
             --latest=false
         env:
