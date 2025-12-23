@@ -1,12 +1,55 @@
 # AGENTS.local.md — AgentsToolkit Project Rules
 
-Project-specific rules extending the base [AGENTS.md](AGENTS.md).
+Project-specific rules extending the base [AGENTS.md](AGENTS.md). Precedence: this file wins on conflicts. Keep AGENTS.md focused on universal workflow; add only toolkit-specific context here.
+
+---
+
+## Purpose & Scope
+- Capture toolkit architecture, platform expectations, testing, release/tagging, and pitfalls.
+- Do **not** restate AGENTS.md workflow steps; link to them when needed.
+
+## Project Overview & Layout
+- Global install lives at `~/.agents_toolkit/` (or `%USERPROFILE%\\.agents_toolkit` on Windows) with `bin/` and `scripts/`.
+- `agentsdotmd-init` creates in each repo: symlinked `AGENTS.md`, symlinked `.agents/commands/`, copied `AGENTS.local.md`, `CLAUDE.md`, `.cursor/commands/`, `.cursor/rules/agents-workflow/`, optional `.github/` templates, and optional `.vscode/tasks.json`.
+- Hierarchy: AGENTS.local.md overrides AGENTS.md. Nested AGENTS.md files in monorepos follow the nearest-file-wins rule.
+
+## Symlink vs Copy Strategy
+- **Symlinked (auto-update):** `AGENTS.md`, `.agents/commands/`.
+- **Copied (refresh with `agentsdotmd-init --update`):** `CLAUDE.md`, `.cursor/commands/*.md`, `.cursor/rules/agents-workflow/RULE.md`, `.github/` templates.
+- **Copied once (never overwritten):** `AGENTS.local.md`.
+- Windows fallback chain: symlink → junction (dirs) → hard link (files) → copy; expect warnings when falling back.
+
+## Cross-Platform Notes
+- macOS/Linux: `agentsdotmd-init` is a symlink to `agentsdotmd-init.py`; available on PATH after install.
+- Windows: enable Developer Mode for symlinks; otherwise the fallback chain applies. Run scripts via `python .agents\\commands\\status.py` (or other commands). Cursor wrappers `/status`, `/issue`, `/branch`, `/pr` call the Python scripts directly.
+- Write scripts with `pathlib` and platform-neutral paths; avoid hard-coded separators.
+
+## Testing & Quality Gates
+- Run from toolkit root before PRs or releases:
+  - `./tests/test_functions.py` (covers branch naming, screenshot naming, commit/PR formats, detection helpers).
+- Treat git/gh operations as Tier 1 safe actions unless explicitly destructive (see AGENTS.md). Do not add new destructive behaviors without updating docs.
+
+## Release Workflow (toolkit tags)
+- **Nightly:** tag the latest validated `main` commit as `nightly-YYYYMMDD` (annotated), then `git push --tags`.
+- **Promote to stable:** choose the last good nightly commit, tag as `vX.Y.Z` (annotated), push tags. Document changes in PR/notes if added. No automation assumed—manual tagging only.
+- If tooling changes this flow, update this section and README accordingly.
+
+## Code Style & Docs
+- Python 3.8+; prefer stdlib and `pathlib`; keep scripts cross-platform.
+- CLI output: concise and actionable; avoid color-only signals.
+- Markdown: short headings, descriptive clickable GitHub links, keep AGENTS.md references intact; add repo-specific rules here instead of duplicating AGENTS.md.
+
+## Common Pitfalls
+- Do not edit symlinked files in-place; update toolkit source instead.
+- Windows without Developer Mode falls back to copies—rerun `agentsdotmd-init --update` after toolkit changes.
+- Keep `.issue_screenshots/` committed and branches pushed or issue images will break.
+- AGENTS.local.md is not auto-refreshed—manually keep it aligned when workflow changes.
 
 ---
 
 ## Word Budget Enforcement
 
-**When modifying `AGENTS.md`, you MUST update the word budget progress bar in `README.md`.**
+**When modifying `AGENTS.md`, you MUST update the word budget progress bar in `README.md`. Only do this when AGENTS.md changes (this file does not count).**
 
 ### Steps
 
@@ -32,29 +75,5 @@ AGENTS.md Word Budget (target: 1,000 words)
 ███████████████████████████░░░  750/1000 (75%)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Buffer remaining: 250 words for future additions
-```
-
----
-
-## Project Structure
-
-This is a global toolkit for enforcing issue-first workflows across AI agents.
-
-**Tech Stack:** Bash scripts, Markdown documentation
-
-**Key Files:**
-- `AGENTS.md` — Base workflow rules (symlinked to repos)
-- `docs/AGENTS_REFERENCE.md` — Command examples, templates
-- `scripts/*.py` — Workflow automation scripts
-- `templates/` — Templates for repo initialization
-
----
-
-## Testing
-
-Run tests before PRing changes to scripts:
-
-```bash
-./tests/test_functions.py
 ```
 
