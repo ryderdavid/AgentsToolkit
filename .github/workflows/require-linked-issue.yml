@@ -1,0 +1,28 @@
+name: Require linked issue
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+jobs:
+  require-issue:
+    name: require-linked-issue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR references an issue
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            echo "jq is required but not installed"; exit 1
+          fi
+          body=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH" || echo "")
+          title=$(jq -r .pull_request.title "$GITHUB_EVENT_PATH" || echo "")
+          combined="$title\n$body"
+          # Accept references like '#123', 'issue #123', 'Fixes #123', 'Closes #123'
+          if echo "$combined" | grep -Eq '(#|issue[[:space:]]+#)[0-9]+'; then
+            echo "Found issue reference in PR title/body."
+            exit 0
+          else
+            echo "::error::Pull request must reference an existing issue (e.g. 'Fixes #123' or include '#123' in the title or body)."
+            exit 1
+          fi
