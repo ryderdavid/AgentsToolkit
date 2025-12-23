@@ -12,6 +12,8 @@ Non-negotiable rules for all AI agents. Violations constitute workflow failures.
 ## Prime Directives
 
 1. **NEVER begin implementation without a structured, scoped GitHub issue.** The issue is the contract.
+   - **This applies to ALL changes**, no matter how small: documentation updates, template tweaks, typo fixes, etc.
+   - No exceptions for "quick fixes" — every change must be traceable via issue → branch → PR workflow.
 2. **NEVER write code before the issue scope is explicitly approved by the user.**
 3. **NEVER make file changes while on main/master.** Create a feature branch first.
 4. **ALWAYS verify you're on a feature branch before making file changes.**
@@ -27,6 +29,8 @@ Non-negotiable rules for all AI agents. Violations constitute workflow failures.
 2. **Clarify** the request. Ask questions if scope is ambiguous.
 3. **Draft issue** with Summary, Context, Acceptance Criteria, Out of Scope (see [Issue Template](docs/AGENTS_REFERENCE.md#issue-template)).
 4. **Get explicit approval** before proceeding.
+
+**Scope**: This workflow applies to **all file changes** — code, documentation, templates, configuration, even single-line fixes. The audit trail is non-negotiable.
 
 Use `gh issue create`. Reference screenshots using raw GitHub URLs after committing them.
 
