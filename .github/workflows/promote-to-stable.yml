@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       nightly_tag:
-        description: 'Nightly tag to promote (e.g., nightly-2025-12-22)'
+        description: 'Nightly tag to promote (e.g., nightly-2025-12-22-12345)'
         required: true
         type: string
 
@@ -23,9 +23,9 @@ jobs:
       
       - name: Validate nightly tag format
         run: |
-          if [[ ! "${{ inputs.nightly_tag }}" =~ ^nightly-[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+          if [[ ! "${{ inputs.nightly_tag }}" =~ ^nightly-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]+$ ]]; then
             echo "❌ Error: Invalid tag format"
-            echo "Expected: nightly-YYYY-MM-DD"
+            echo "Expected: nightly-YYYY-MM-DD-N (where N is run number)"
             echo "Got: ${{ inputs.nightly_tag }}"
             exit 1
           fi
@@ -34,7 +34,9 @@ jobs:
         id: tags
         run: |
           NIGHTLY="${{ inputs.nightly_tag }}"
+          # Strip 'nightly-' prefix and '-N' suffix to get YYYY-MM-DD
           DATE="${NIGHTLY#nightly-}"
+          DATE="${DATE%-*}"
           STABLE="stable-${DATE}"
           echo "date=${DATE}" >> $GITHUB_OUTPUT
           echo "stable=${STABLE}" >> $GITHUB_OUTPUT
