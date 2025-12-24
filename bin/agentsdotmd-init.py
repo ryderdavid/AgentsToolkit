@@ -70,7 +70,7 @@ def create_agents_md_symlink(target_dir: Path, update_mode: bool) -> bool:
     Returns:
         True if successful
     """
-    print_info("[1/9] Symlinking AGENTS.md...")
+    print_info("[1/8] Symlinking AGENTS.md...")
     
     agents_md = target_dir / 'AGENTS.md'
     source = TOOLKIT_DIR / 'AGENTS.md'
@@ -107,82 +107,38 @@ def create_agents_md_symlink(target_dir: Path, update_mode: bool) -> bool:
         return True
 
 
-def create_agents_local_md(target_dir: Path, update_mode: bool) -> bool:
-    """Create AGENTS.local.md from template.
-    
-    Returns:
-        True if successful
-    """
-    print()
-    print_info("[2/9] Creating AGENTS.local.md...")
-    
-    if update_mode:
-        print_warning("⊘ Skipped (preserving existing AGENTS.local.md)")
-        return True
-    
-    agents_local = target_dir / 'AGENTS.local.md'
-    template = TOOLKIT_DIR / 'templates' / 'AGENTS.local.md.example'
-    
-    if not agents_local.exists():
-        # Check template file exists before copying
-        if not template.exists():
-            print_error(f"Template not found: {template}")
-            return False
-        shutil.copy2(template, agents_local)
-        print_success("✓ Created with examples (uncomment to customize)")
-        return True
-    else:
-        print_success("✓ Already exists")
-        return True
-
-
 def create_claude_md(target_dir: Path, update_mode: bool) -> bool:
-    """Copy CLAUDE.md for Claude Code enforcement.
+    """Symlink CLAUDE.md for Claude Code enforcement.
     
     Returns:
         True if successful
     """
     print()
-    print_info("[3/9] Installing CLAUDE.md (Claude Code enforcement)...")
+    print_info("[2/8] Symlinking CLAUDE.md (Claude Code enforcement)...")
     
     claude_md = target_dir / 'CLAUDE.md'
-    claude_template = TOOLKIT_DIR / 'templates' / 'CLAUDE.md'
+    claude_source = TOOLKIT_DIR / 'templates' / 'CLAUDE.md'
     
-    if update_mode:
-        if claude_md.exists():
-            response = input("Update existing CLAUDE.md? (y/N): ").strip().lower()
-            if response == 'y':
-                # Remove symlink if it exists, then copy
-                if claude_md.is_symlink():
-                    claude_md.unlink()
-                shutil.copy2(claude_template, claude_md)
-                print_success("✓ Updated CLAUDE.md")
-                return True
-            else:
-                print_warning("⊘ Skipped CLAUDE.md")
-                return True
-        else:
-            shutil.copy2(claude_template, claude_md)
-            print_success("✓ Created CLAUDE.md")
+    if claude_md.exists() and not claude_md.is_symlink():
+        print_warning("⚠️  CLAUDE.md exists (not a symlink)")
+        response = input("Overwrite with symlink? (y/N): ").strip().lower()
+        if response != 'y':
+            print_warning("⊘ Skipped CLAUDE.md")
             return True
-    elif claude_md.exists() and not claude_md.is_symlink():
-        print_success("✓ Already exists (standalone file)")
+        claude_md.unlink()
+    
+    if claude_md.is_symlink():
+        claude_md.unlink()
+    
+    success, method, warning = create_link(claude_md, claude_source)
+    if success:
+        print_success("✓ Created CLAUDE.md -> ~/.agents_toolkit/templates/CLAUDE.md")
+        if warning:
+            print_warning(warning)
         return True
-    elif claude_md.is_symlink():
-        print_warning("⚠️  CLAUDE.md is a symlink (old format)")
-        response = input("Replace with standalone file? (Y/n): ").strip().lower()
-        if response != 'n':
-            claude_md.unlink()
-            shutil.copy2(claude_template, claude_md)
-            print_success("✓ Replaced symlink with standalone CLAUDE.md")
-            return True
-        else:
-            print_warning("⊘ Kept symlink")
-            return True
     else:
-        shutil.copy2(claude_template, claude_md)
-        print_success("✓ Created CLAUDE.md")
-        return True
+        print_error(f"Failed to create symlink: {method}")
+        return False
 
 
 def create_agents_commands_symlink(target_dir: Path) -> bool:
@@ -192,7 +148,7 @@ def create_agents_commands_symlink(target_dir: Path) -> bool:
         True if successful
     """
     print()
-    print_info("[4/9] Symlinking .agents/commands/...")
+    print_info("[3/8] Symlinking .agents/commands/...")
     
     agents_dir = target_dir / '.agents'
     agents_dir.mkdir(exist_ok=True)
@@ -222,7 +178,7 @@ def install_cursor_commands(target_dir: Path, update_mode: bool) -> bool:
         True if successful
     """
     print()
-    print_info("[5/9] Installing Cursor command wrappers...")
+    print_info("[4/8] Installing Cursor command wrappers...")
     
     commands_src = TOOLKIT_DIR / 'templates' / 'cursor-commands'
     commands_dst = target_dir / '.cursor' / 'commands'
@@ -269,7 +225,7 @@ def install_cursor_rules(target_dir: Path, update_mode: bool) -> bool:
         True if successful
     """
     print()
-    print_info("[6/9] Installing .cursor/rules/...")
+    print_info("[5/8] Installing .cursor/rules/...")
     
     rules_dir = target_dir / '.cursor' / 'rules' / 'agents-workflow'
     rules_dir.mkdir(parents=True, exist_ok=True)
@@ -304,7 +260,7 @@ def create_issue_screenshots_dir(target_dir: Path) -> bool:
         True if successful
     """
     print()
-    print_info("[7/9] Creating .issue_screenshots/...")
+    print_info("[6/8] Creating .issue_screenshots/...")
     
     screenshots_dir = target_dir / '.issue_screenshots'
     screenshots_dir.mkdir(exist_ok=True)
@@ -324,7 +280,7 @@ def install_github_templates(target_dir: Path, update_mode: bool) -> bool:
         True if successful
     """
     print()
-    print_info("[8/9] GitHub templates")
+    print_info("[7/8] GitHub templates")
     
     github_dir = target_dir / '.github'
     issue_template = github_dir / 'ISSUE_TEMPLATE.md'
@@ -383,7 +339,7 @@ def install_vscode_tasks(target_dir: Path, update_mode: bool) -> bool:
         True if successful
     """
     print()
-    print_info("[9/9] VS Code tasks")
+    print_info("[8/8] VS Code tasks")
     
     vscode_dir = target_dir / '.vscode'
     tasks_file = vscode_dir / 'tasks.json'
@@ -431,11 +387,10 @@ def print_summary(target_dir: Path, update_mode: bool):
     print()
     print(f"{colors.BLUE}Files managed:{colors.NC}")
     print("  • AGENTS.md (symlink to global constitution; auto-updates via toolkit)")
-    print("  • CLAUDE.md (copied; Claude Code enforcement; refreshed via --update)")
+    print("  • CLAUDE.md (symlink to toolkit template; auto-updates via toolkit)")
     print("  • .agents/commands/ (symlink to toolkit scripts; agent-agnostic)")
     print("  • .cursor/commands/*.md (Cursor prompt wrappers for slash commands)")
     print("  • .cursor/rules/agents-workflow/RULE.md (copied; refreshed via --update)")
-    print("  • AGENTS.local.md (repo overrides; left untouched in --update)")
     print("  • .issue_screenshots/")
     if update_mode:
         print("  • .github templates (updated only when already present)")
@@ -449,10 +404,9 @@ def print_summary(target_dir: Path, update_mode: bool):
         print("  1. Review updated files and commit if desired")
         print("  2. Open Cursor - rules will auto-load")
     else:
-        print("  1. Review AGENTS.local.md and uncomment customizations")
-        print("  2. Commit files: git add AGENTS.md CLAUDE.md .agents/ .cursor/ .issue_screenshots/")
-        print("  3. Open Cursor - rules will auto-load")
-    print("  4. Try: .agents/commands/status.py (Cursor users can also use /status)")
+        print("  1. Commit files: git add AGENTS.md CLAUDE.md .agents/ .cursor/ .issue_screenshots/")
+        print("  2. Open Cursor - rules will auto-load")
+    print("  3. Try: .agents/commands/status.py (Cursor users can also use /status)")
     print()
     print(f"{colors.YELLOW}Note: Symlinks are committed to git for team visibility{colors.NC}")
     print()
@@ -497,9 +451,6 @@ def main():
     
     # Run installation steps
     if not create_agents_md_symlink(target_dir, args.update):
-        sys.exit(1)
-    
-    if not create_agents_local_md(target_dir, args.update):
         sys.exit(1)
     
     if not create_claude_md(target_dir, args.update):

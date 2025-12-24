@@ -1,16 +1,11 @@
 ---
-description: "Mandatory workflow standards - hierarchical AGENTS.md enforcement"
+description: "Mandatory workflow standards - AGENTS.md enforcement"
 alwaysApply: true
 ---
 
 # CRITICAL: Workflow Standards
 
-**READ BOTH AGENTS.md FILES IN THIS PRECEDENCE ORDER:**
-
-1. **AGENTS.local.md** (if exists) - Repository-specific overrides and customizations
-2. **AGENTS.md** (base) - Universal workflow constitution (symlinked from ~/.agents_toolkit/)
-
-When conflicts exist, AGENTS.local.md takes precedence. Both files contain MANDATORY rules for all code changes.
+**READ AGENTS.md (base constitution) — symlinked from ~/.agents_toolkit/ and applies to all changes.**
 
 ## Prime Directives
 

@@ -314,7 +314,7 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     print()
     print(f"{colors.YELLOW}What agentsdotmd-init does:{colors.NC}")
     print("  • Symlinks AGENTS.md (global constitution)")
-    print("  • Creates AGENTS.local.md (repo-specific overrides)")
+    print("  • Symlinks CLAUDE.md (Claude Code enforcement)")
     print("  • Symlinks .agents/commands/ (workflow scripts; agent-agnostic)")
     print("  • Adds Cursor command wrappers in .cursor/commands/ (markdown prompts)")
     print("  • Installs .cursor/rules/ (Cursor enforcement)")
