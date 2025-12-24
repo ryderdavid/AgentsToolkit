@@ -1,5 +1,11 @@
 Commit and push current changes to the PR branch.
 
+**Commit Message Format:**
+See AGENTS.md for proper commit formatting:
+- Format: `#{issue-num}: {imperative description}` per [Commit Standards section](../../AGENTS.md#commit-standards)
+- Requirements: Atomic, compilable, meaningful (what/why not how)
+- Examples: [AGENTS_REFERENCE.md Command Cheat Sheet](../../docs/AGENTS_REFERENCE.md#command-cheat-sheet)
+
 **Workflow:**
 1. Check current branch (must not be main/master)
 2. Detect issue number from branch name or git config
@@ -36,5 +42,5 @@ Message: "Add push.py script"
 → Commits: `#37: Add push.py script`
 → Pushes to `origin/feat/37-add-push-command`
 
-See AGENTS.md Commit Standards section for format requirements.
+
 

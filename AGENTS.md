@@ -3,8 +3,6 @@
 Non-negotiable rules for all AI agents. Violations constitute workflow failures.
 
 **Scope:** Workflow standards - issue-first development, Git conventions, documentation.  
-**Extensibility:** Create `AGENTS.local.md` for project-specific guidance. See `templates/AGENTS.local.md.example`.  
-**Precedence:** `AGENTS.local.md` overrides this file.  
 **Reference:** Command examples at [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
 
 ---
@@ -79,9 +77,6 @@ See [PR Template](docs/AGENTS_REFERENCE.md#pr-template).
 | Situation | Action |
 |-----------|--------|
 | **Scope creep detected** | STOP, assess, propose split or backlog issue |
-| **Close to done** | Complete, merge, open follow-up |
-| **Not close** | Create backlog issue, don't implement here |
-| **Would break main** | Continue but document expanded scope |
 
 **Three-Iteration Rule:** After 3 feedback rounds, reassess scope with user.
 
@@ -134,11 +129,3 @@ End-of-round summaries must include clickable links to all artifacts with descri
 | Screenshots before commit | Broken image links | 🟡 MEDIUM |
 | Manually closing issues | Issues close automatically on PR merge | 🟡 MEDIUM |
 | Accepting sandbox limits for Tier 1 ops | Pre-approved safe operations should elevate | 🟡 MEDIUM |
-
----
-
-## Enforcement
-
-Follow this workflow. Self-check against anti-patterns. Prioritize documentation. Seek approval at checkpoints.
-
-**The issue is the contract. The PR is the delivery. Documentation is the proof.**

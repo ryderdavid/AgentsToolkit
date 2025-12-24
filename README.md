@@ -7,7 +7,7 @@ A global toolkit that enforces issue-first development workflows across AI codin
 ## Features
 
 - **🌍 Global Installation** - Install once, use everywhere
-- **📋 Hierarchical Configuration** - Base constitution + repo-specific overrides
+- **📋 Single Constitution** - Shared AGENTS.md symlinked into every repo
 - **🔗 Symlink Architecture** - Update once, all repos benefit automatically (with Windows fallback)
 - **🤖 Cross-Agent Compatible** - Works with Cursor, Claude Code, GitHub Copilot, Jules, Aider
 - **✅ Issue-First Workflow** - Enforces traceable development patterns
@@ -74,8 +74,7 @@ When you run `agentsdotmd-init` in a repository:
 ```
 your-repo/
 ├── AGENTS.md -> ~/.agents_toolkit/AGENTS.md          # Symlink to base constitution
-├── AGENTS.local.md                                    # Repo-specific overrides (customizable)
-├── CLAUDE.md                                          # Claude Code enforcement (copied, standalone)
+├── CLAUDE.md -> ~/.agents_toolkit/templates/CLAUDE.md # Claude Code enforcement (symlink)
 ├── .agents/
 │   └── commands/ -> ~/.agents_toolkit/scripts/        # Universal script location (symlink)
 ├── .cursor/
@@ -92,36 +91,16 @@ your-repo/
 
 ### Symlinks vs Copies
 
-- **Symlinked** (automatic updates): AGENTS.md, `.agents/commands/`
-- **Copied** (refreshed via `--update`): CLAUDE.md, `.cursor/commands/*.md`, `.cursor/rules/`, `.github/` templates
-- **Copied once** (customizable per-repo, never overwritten): AGENTS.local.md
+- **Symlinked** (automatic updates): AGENTS.md, CLAUDE.md, `.agents/commands/`
+- **Copied** (refreshed via `--update`): `.cursor/commands/*.md`, `.cursor/rules/`, `.github/` templates
 
 ## Documentation Structure
 
-The toolkit uses a multi-tier documentation system:
+- **AGENTS.md (Base Constitution)**  
+  Symlinked from `~/.agents_toolkit/AGENTS.md`. Contains universal workflow standards. See [AGENTS.md](AGENTS.md).
 
-### 1. AGENTS.md (Base Constitution)
-- Symlinked from `~/.agents_toolkit/AGENTS.md`
-- Contains universal workflow standards (~1,200 words)
-- Never modified per-repo
-- Updated by pulling toolkit changes
-- See [AGENTS.md](AGENTS.md)
-
-### 2. AGENTS.local.md (Repo Overrides)
-- Created in each repo with commented examples
-- Takes precedence over base AGENTS.md
-- Customize for project-specific needs
-- Example: "This monorepo uses Nx for build orchestration..."
-
-### 3. AGENTS_REFERENCE.md (Command Reference)
-- Contains command examples, templates, and detailed examples
-- Lives in `docs/AGENTS_REFERENCE.md`
-- Referenced from AGENTS.md for complete examples
-- See [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md)
-
-**Precedence:** When conflicts exist, AGENTS.local.md overrides AGENTS.md.
-
-AI tools (Cursor, GitHub Copilot, Claude Code) support hierarchical config using "nearest file in directory tree wins" pattern. For command examples and templates, see [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
+- **AGENTS_REFERENCE.md (Command Reference)**  
+  Command examples, templates, and detailed examples in `docs/AGENTS_REFERENCE.md`. See [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
 
 ### What Goes Where?
 
@@ -130,20 +109,7 @@ AI tools (Cursor, GitHub Copilot, Claude Code) support hierarchical config using
 - Git conventions (branches, commits, PRs)
 - Documentation requirements
 
-**AGENTS.local.md (Overrides)** - Project-specific context
-- Tech stack & versions
-- Build/test commands
-- Testing standards
-- Code style
-- Architecture patterns
-- Security boundaries
-- Performance requirements
-
-**Why This Split?**
-- Base AGENTS.md stays focused on workflow
-- Project specifics don't clutter the constitution
-- Updates to base workflow propagate automatically via symlinks
-- Extensible for future additions (testing frameworks, deployment, etc.)
+**Project-specific details** - Add directly to AGENTS.md or use nested AGENTS.md files in monorepos (closest file wins per agents.md spec).
 
 **Note:** Currently GitHub-focused, but AGENTS.md principles (traceable development, structured issues, linked PRs) are universal. Future support for other platforms (GitLab, Linear, etc.) is possible.
 
@@ -231,7 +197,7 @@ Safety tiers (per AGENTS.md):
 
 ```
 ┌─────────────────────────────────────┐
-│ AGENTS.md + AGENTS.local.md         │
+│ AGENTS.md                           │
 │ - When to create issues             │
 │ - Scope boundaries                  │
 │ - Workflow decisions                │
@@ -242,7 +208,7 @@ Safety tiers (per AGENTS.md):
 ┌─────────────────────────────────────┐
 │ Cursor Rule (Enforcement)           │
 │ - alwaysApply: true                 │
-│ - "Read both AGENTS.md files"       │
+│ - "Read AGENTS.md"                  │
 │ - "Use workflow scripts"            │
 │ ↓ (~100 tokens in context)          │
 └─────────────────────────────────────┘
@@ -324,12 +290,7 @@ python .agents\commands\pr.py
 
 ## VS Code + Claude Code Setup
 
-Claude Code reads `CLAUDE.md` which contains explicit workflow enforcement rules. Unlike a symlink (which Claude Code may not follow correctly), CLAUDE.md is a standalone file with "STOP" language at the top.
-
-**Why standalone instead of symlink?**
-- Claude Code sometimes ignores symlinked content
-- Explicit "STOP" rules at the top of CLAUDE.md are more effective
-- AGENTS.local.md also contains workflow enforcement as a backup
+Claude Code reads `CLAUDE.md` (symlinked to the toolkit template) which contains explicit workflow enforcement rules with "STOP" language at the top. Keep the symlink intact so updates flow automatically.
 
 **Running workflow scripts:**
 
@@ -372,33 +333,6 @@ cd ~/Projects/AgentsToolkit
 
 ## Customization
 
-### Repo-Specific Rules (AGENTS.local.md)
-
-After running `agentsdotmd-init`, edit `AGENTS.local.md`:
-
-```markdown
-# AGENTS.local.md — Repository-Specific Overrides
-
-## Project Structure
-This repository uses Next.js with TypeScript:
-- Frontend: `/app` directory
-- API: `/app/api`
-- Components: `/components`
-
-## Build Commands
-\`\`\`bash
-npm run dev    # Development server
-npm test       # Run tests (required before PR)
-npm run build  # Production build
-\`\`\`
-
-## Testing Requirements
-- Unit tests required for all new functions
-- E2E tests for critical user flows
-```
-
-Cursor/Claude Code will read both files, with AGENTS.local.md taking precedence.
-
 ### Monorepo Support
 
 For monorepos, you can:
@@ -412,7 +346,6 @@ For monorepos, you can:
    ```
    monorepo/
    ├── AGENTS.md               # Root (symlinked)
-   ├── AGENTS.local.md         # Root overrides
    ├── backend/
    │   └── AGENTS.md           # Backend-specific (created manually, not symlinked)
    └── frontend/
@@ -443,8 +376,6 @@ Symlinked files (AGENTS.md, CLAUDE.md, `.agents/commands/`) update automatically
 - `.cursor/rules/agents-workflow/RULE.md` (prompt before overwrite)
 - Existing `.github/ISSUE_TEMPLATE.md` and `PULL_REQUEST_TEMPLATE.md` (prompt; not installed if absent)
 
-`AGENTS.local.md` is never changed by `--update` so your local overrides remain intact.
-
 ## Architecture Details
 
 ### Global Installation Location
@@ -466,7 +397,7 @@ Symlinked files (AGENTS.md, CLAUDE.md, `.agents/commands/`) update automatically
 │   └── agents-workflow/
 │       └── RULE.md.template
 ├── templates/
-│   ├── AGENTS.local.md.example
+│   ├── CLAUDE.md
 │   ├── ISSUE_TEMPLATE.md
 │   └── PULL_REQUEST_TEMPLATE.md
 └── install.py
@@ -535,7 +466,7 @@ If your platform doesn't support symlinks:
 
 ```bash
 # From repository root
-rm AGENTS.md CLAUDE.md AGENTS.local.md
+rm AGENTS.md CLAUDE.md
 rm -rf .agents/commands .cursor/commands .cursor/rules/agents-workflow
 rm -rf .issue_screenshots
 ```
@@ -586,7 +517,7 @@ AgentsToolkit/
 │       └── RULE.md.template
 │
 ├── templates/                # Templates for repo initialization
-│   ├── AGENTS.local.md.example
+│   ├── CLAUDE.md
 │   ├── ISSUE_TEMPLATE.md
 │   └── PULL_REQUEST_TEMPLATE.md
 │
