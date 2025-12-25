@@ -1,0 +1,33 @@
+# Local development artifacts (created by toolkit when run in this repo)
+.agents/
+.cursor/
+.issue_screenshots/
+
+# Local configuration files
+CLAUDE.md
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+scripts/lib/__pycache__/
+
+# IDE and editor files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.log
+
+# Build artifacts (if any)
+build/
+dist/
+*.egg-info/
+
