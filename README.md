@@ -467,17 +467,22 @@ AgentsToolkit/
 ├── AGENTS.md                 # Workflow standards (source of truth)
 ├── install.py                # Global installer with agent config
 │
-├── commands/                 # Cursor command wrappers (markdown)
-│   ├── status.md
-│   ├── issue.md
-│   ├── branch.md
-│   ├── pr.md
-│   ├── push.md
-│   ├── followup.md
-│   ├── link.md
-│   ├── check-workflow.md
-│   ├── check-auth.md
-│   └── protect.md
+├── commands/                 # Canonical commands (source of truth)
+│   └── src/                  # Source Markdown commands
+│       ├── status.md
+│       ├── issue.md
+│       ├── branch.md
+│       ├── pr.md
+│       ├── push.md
+│       ├── followup.md
+│       ├── link.md
+│       ├── check-workflow.md
+│       ├── check-auth.md
+│       └── protect.md
+│
+├── bin/                      # Build and setup scripts
+│   ├── build-commands.sh     # Multi-agent command builder
+│   └── cursor_setup.sh       # Cursor User Rule helper
 │
 ├── scripts/                  # Workflow commands (Python)
 │   ├── issue.py

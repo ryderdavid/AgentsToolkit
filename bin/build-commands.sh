@@ -230,13 +230,14 @@ show_summary() {
 # ============================================================================
 
 usage() {
-    echo "Usage: $0 {build|install|validate|clean}"
+    echo "Usage: $0 {build|install|validate|clean|help}"
     echo ""
     echo "Commands:"
     echo "  build     Build commands for all agents (no install)"
     echo "  install   Build and install symlinks to agent configs"
     echo "  validate  Validate source commands only"
     echo "  clean     Remove build directory"
+    echo "  help      Show this help message"
 }
 
 case "${1:-}" in

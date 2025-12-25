@@ -141,21 +141,27 @@ def build_commands(install_dir: Path) -> bool:
         print_warning("⚠️  build-commands.sh not found, skipping command build")
         return True
 
-    if not shutil.which("bash"):
+    bash_path = shutil.which("bash")
+    if not bash_path:
         print_warning("⚠️  bash not found, skipping command build")
+        if is_windows():
+            print_info("    Install Git for Windows or WSL to enable multi-agent commands")
         return True
 
     env = os.environ.copy()
     env['AGENTSMD_HOME'] = str(install_dir)
 
     try:
-        subprocess.check_call(['bash', str(script), 'install'], env=env)
+        # bash_path is from shutil.which() which validates the executable exists
+        subprocess.check_call([bash_path, str(script), 'install'], env=env)
         print_success("✓ Commands built and installed for Cursor/Claude/Codex/Gemini")
         return True
     except subprocess.CalledProcessError as e:
         print_error(f"Failed to build/install commands: {e}")
         return False
-    except Exception as e:
+    except (OSError, ValueError) as e:
+        # OSError: executable not found or permission denied
+        # ValueError: invalid arguments
         print_error(f"Unexpected error running build-commands.sh: {e}")
         return False
 
