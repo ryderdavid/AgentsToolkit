@@ -133,37 +133,63 @@ def make_scripts_executable(install_dir: Path) -> bool:
 
 
 def build_commands(install_dir: Path) -> bool:
-    """Build and install agent commands via build-commands.sh."""
+    """Build and install agent commands via build-commands.sh or build-commands.ps1."""
     print_info("[3/4] Building and installing agent commands...")
 
-    script = install_dir / 'bin' / 'build-commands.sh'
-    if not script.exists():
-        print_warning("⚠️  build-commands.sh not found, skipping command build")
-        return True
+    if is_windows():
+        # Use PowerShell script on Windows
+        script = install_dir / 'bin' / 'build-commands.ps1'
+        if not script.exists():
+            print_warning("⚠️  build-commands.ps1 not found, skipping command build")
+            return True
 
-    bash_path = shutil.which("bash")
-    if not bash_path:
-        print_warning("⚠️  bash not found, skipping command build")
-        if is_windows():
-            print_info("    Install Git for Windows or WSL to enable multi-agent commands")
-        return True
+        env = os.environ.copy()
+        env['AGENTSMD_HOME'] = str(install_dir)
 
-    env = os.environ.copy()
-    env['AGENTSMD_HOME'] = str(install_dir)
+        try:
+            # Use PowerShell to execute the script
+            subprocess.check_call(
+                ['powershell', '-ExecutionPolicy', 'Bypass', '-File', str(script), 'install'],
+                env=env
+            )
+            print_success("✓ Commands built and installed for Cursor/Claude/Codex/Gemini")
+            return True
+        except subprocess.CalledProcessError as e:
+            print_error(f"Failed to build/install commands: {e}")
+            return False
+        except (OSError, ValueError) as e:
+            # OSError: executable not found or permission denied
+            # ValueError: invalid arguments
+            print_error(f"Unexpected error running build-commands.ps1: {e}")
+            return False
+    else:
+        # Use bash script on Unix-like systems
+        script = install_dir / 'bin' / 'build-commands.sh'
+        if not script.exists():
+            print_warning("⚠️  build-commands.sh not found, skipping command build")
+            return True
 
-    try:
-        # bash_path is from shutil.which() which validates the executable exists
-        subprocess.check_call([bash_path, str(script), 'install'], env=env)
-        print_success("✓ Commands built and installed for Cursor/Claude/Codex/Gemini")
-        return True
-    except subprocess.CalledProcessError as e:
-        print_error(f"Failed to build/install commands: {e}")
-        return False
-    except (OSError, ValueError) as e:
-        # OSError: executable not found or permission denied
-        # ValueError: invalid arguments
-        print_error(f"Unexpected error running build-commands.sh: {e}")
-        return False
+        bash_path = shutil.which("bash")
+        if not bash_path:
+            print_warning("⚠️  bash not found, skipping command build")
+            return True
+
+        env = os.environ.copy()
+        env['AGENTSMD_HOME'] = str(install_dir)
+
+        try:
+            # bash_path is from shutil.which() which validates the executable exists
+            subprocess.check_call([bash_path, str(script), 'install'], env=env)
+            print_success("✓ Commands built and installed for Cursor/Claude/Codex/Gemini")
+            return True
+        except subprocess.CalledProcessError as e:
+            print_error(f"Failed to build/install commands: {e}")
+            return False
+        except (OSError, ValueError) as e:
+            # OSError: executable not found or permission denied
+            # ValueError: invalid arguments
+            print_error(f"Unexpected error running build-commands.sh: {e}")
+            return False
 
 
 def create_unix_wrapper(install_dir: Path) -> bool:
