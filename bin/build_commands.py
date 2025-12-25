@@ -175,7 +175,7 @@ def convert_to_gemini(src: Path) -> None:
     """
     rel_path = src.relative_to(SRC_DIR)
     basename = rel_path.stem
-    dest = BUILD_DIR / "gemini" / "commands" / f"{basename}.toml"
+    dest = BUILD_DIR / "gemini" / "commands" / rel_path.with_suffix('.toml')
     
     dest.parent.mkdir(parents=True, exist_ok=True)
     
