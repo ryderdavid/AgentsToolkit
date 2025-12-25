@@ -6,7 +6,7 @@ See AGENTS.md for proper PR formatting:
 - Full PR template with examples: [AGENTS_REFERENCE.md PR Template](../../docs/AGENTS_REFERENCE.md#pr-template)
 - Required format: Title `[WIP] #{num}: {description}`, Body must include `Closes #{num}`
 
-Run: `python3 .agents/commands/pr.py`
+Run: `python3 ~/.agentsmd/scripts/pr.py`
 
 This detects the linked issue from git config and generates a proper PR.
 

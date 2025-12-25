@@ -8,7 +8,7 @@ Create a GitHub issue with proper branch and screenshot handling per AGENTS.md s
 **Workflow:**
 1. Ask user for: title, body (markdown), optional screenshot paths
 2. Detect branch type from title (or ask user to specify)
-3. Run: `python3 .agents/commands/issue.py "title" "body" [screenshot.png]`
+3. Run: `python3 ~/.agentsmd/scripts/issue.py "title" "body" [screenshot.png]`
 
 **The script automatically:**
 - Creates branch: `{type}/pending-{short-desc}` (derived from title)
@@ -30,6 +30,6 @@ See AGENTS.md for proper issue formatting:
 - Required sections: Summary, Context, Acceptance Criteria, Out of Scope
 
 Usage: Ask the user for title, body, and optional screenshot paths, then run:
-`python3 .agents/commands/issue.py "title" "body" [screenshot.png]`
+`python3 ~/.agentsmd/scripts/issue.py "title" "body" [screenshot.png]`
 
 
