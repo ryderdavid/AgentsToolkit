@@ -401,15 +401,15 @@ def configure_cursor(install_dir: Path) -> bool:
         else:
             print_success("    ✓ Commands linked to ~/.cursor/commands/")
     else:
-        print_warning("    ⚠️  Build outputs not found; run build-commands.sh install")
+        print_warning("    ⚠️  Build outputs not found; run build-commands.py install")
 
-    # Run cursor_setup.sh for User Rule (clipboard + instructions)
+    # Run cursor_setup.py for User Rule (clipboard + instructions)
     print()
-    cursor_setup = install_dir / 'bin' / 'cursor_setup.sh'
+    cursor_setup = install_dir / 'bin' / 'cursor_setup.py'
     if cursor_setup.exists():
-        subprocess.run(['bash', str(cursor_setup)])
+        subprocess.run([sys.executable, str(cursor_setup)])
     else:
-        print_warning("    ⚠️  cursor_setup.sh not found")
+        print_warning("    ⚠️  cursor_setup.py not found")
         print_info("    Manually add User Rule: 'Always read and follow ~/.agentsmd/AGENTS.md'")
     
     return True
@@ -500,7 +500,7 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     print(f"{colors.YELLOW}What agentsdotmd-init does:{colors.NC}")
     print("  • Symlinks AGENTS.md (global constitution)")
     print("  • Symlinks CLAUDE.md (Claude Code enforcement)")
-    print("  • Builds commands from ~/.agentsmd/commands/src via build-commands.sh")
+    print("  • Builds commands from ~/.agentsmd/commands/src via build-commands.py")
     print("  • Symlinks multi-agent commands: ~/.cursor/commands, ~/.claude/commands")
     print("  • Symlinks Codex/Gemini outputs: ~/.codex/prompts, ~/.gemini/commands")
     print("  • Installs .cursor/rules/ (Cursor enforcement)")

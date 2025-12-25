@@ -482,7 +482,7 @@ AgentsToolkit/
 │
 ├── bin/                      # Build and setup scripts
 │   ├── build-commands.py     # Multi-agent command builder (cross-platform)
-│   └── cursor_setup.sh       # Cursor User Rule helper
+│   └── cursor_setup.py       # Cursor User Rule helper
 │
 ├── scripts/                  # Workflow commands (Python)
 │   ├── issue.py
@@ -497,7 +497,7 @@ AgentsToolkit/
 │   └── protect.py
 │
 ├── bin/
-│   ├── cursor_setup.sh       # Cursor User Rule helper
+│   ├── cursor_setup.py       # Cursor User Rule helper
 │   └── legacy/
 │       └── agentsdotmd-init.py  # v1 script (archived)
 │
