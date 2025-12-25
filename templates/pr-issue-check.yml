@@ -1,0 +1,74 @@
+name: PR Issue Link Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check-issue-link:
+    runs-on: ubuntu-latest
+    name: Check PR links to issue
+    
+    steps:
+      - name: Check PR body for issue link
+        id: check
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+          
+          # Check for GitHub auto-linking keywords (case-insensitive)
+          # Pattern: Closes #123, Fixes #456, Resolves #789, etc.
+          if echo "$PR_BODY" | grep -iE '(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#[0-9]+' > /dev/null; then
+            echo "✅ PR body contains issue link"
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ PR body does not contain issue link"
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Post comment on failure
+        if: steps.check.outputs.status == 'failure' && github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ❌ PR must be linked to an issue
+              
+              This PR does not contain a link to a GitHub issue.
+              
+              Per [AGENTS.md](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/AGENTS.md) standards, all PRs must be linked to an issue using GitHub's auto-linking keywords.
+              
+              ### How to fix:
+              
+              Add one of these lines to your PR description:
+              - \`Closes #123\`
+              - \`Fixes #123\`
+              - \`Resolves #123\`
+              
+              (Replace \`123\` with your issue number)
+              
+              **Why this matters:**
+              - Ensures all work is traceable to requirements
+              - Automatically closes the issue when PR is merged
+              - Maintains audit trail for decisions
+              
+              See [GitHub's documentation](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) for more details.`
+            })
+      
+      - name: Fail if no issue link
+        if: steps.check.outputs.status == 'failure'
+        run: |
+          echo "::error::PR body must contain 'Closes #N', 'Fixes #N', or 'Resolves #N'"
+          exit 1
+
+
+
+
+
+
+
+
+
+

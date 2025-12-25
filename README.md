@@ -50,8 +50,9 @@ The installer will:
 1. Install toolkit to `~/.agentsmd/`
 2. Add to PATH
 3. Prompt for agent configuration (interactive menu)
-4. Symlink Cursor commands to `~/.cursor/commands/`
-5. Set up Cursor User Rule (clipboard + instructions)
+4. Build commands for Cursor/Claude/Codex/Gemini via `bin/build_commands.py`
+5. Symlink multi-agent commands (`~/.cursor/commands`, `~/.claude/commands`, `~/.codex/prompts`, `~/.gemini/commands`)
+6. Set up Cursor User Rule (clipboard + instructions)
 
 **Restart your terminal** (or `source ~/.zshrc`) to activate PATH.
 
@@ -74,17 +75,23 @@ cd ~/any-project
 ~/.agentsmd/
 ├── AGENTS.md                    # Workflow standards constitution
 ├── CLAUDE.md                    # Claude Code enforcement rules
-├── commands/                    # Cursor command wrappers (source of truth)
-│   ├── status.md
-│   ├── issue.md
-│   ├── branch.md
-│   ├── pr.md
-│   ├── push.md
-│   ├── followup.md
-│   ├── link.md
-│   ├── check-workflow.md
-│   ├── check-auth.md
-│   └── protect.md
+├── commands/                    # Canonical commands (source of truth)
+│   └── src/
+│       ├── status.md
+│       ├── issue.md
+│       ├── branch.md
+│       ├── pr.md
+│       ├── push.md
+│       ├── followup.md
+│       ├── link.md
+│       ├── check-workflow.md
+│       ├── check-auth.md
+│       └── protect.md
+├── build/                       # Generated agent-specific outputs (via build_commands.py)
+│   ├── cursor/commands/
+│   ├── claude/commands/
+│   ├── codex/prompts/
+│   └── gemini/commands/
 └── scripts/                     # Python workflow scripts
     ├── status.py
     ├── issue.py
@@ -102,9 +109,9 @@ cd ~/any-project
 
 ```
 ~/.cursor/
-└── commands/                    # Symlinks to ~/.agentsmd/commands/
-    ├── status.md -> ~/.agentsmd/commands/status.md
-    ├── issue.md -> ~/.agentsmd/commands/issue.md
+└── commands/ -> ~/.agentsmd/build/cursor/commands/   # Symlinked by build_commands.py
+    ├── status.md
+    ├── issue.md
     └── ... (all 10 commands)
 ```
 
@@ -117,6 +124,14 @@ your-repo/
 ```
 
 **That's it!** No other toolkit files needed in your repositories.
+
+## Supported Agents (commands)
+
+- Cursor: `~/.cursor/commands` (symlink to `~/.agentsmd/build/cursor/commands`)
+- Claude Code: `~/.claude/commands` (symlink to `~/.agentsmd/build/claude/commands`)
+- Codex CLI: `~/.codex/prompts` (symlink to `~/.agentsmd/build/codex/prompts`, invoked as `/prompts:<name>`)
+- Gemini CLI: `~/.gemini/commands` (symlink to `~/.agentsmd/build/gemini/commands`)
+- All outputs generated from `~/.agentsmd/commands/src` via `bin/build_commands.py install`
 
 ## Philosophy
 
@@ -218,6 +233,11 @@ Run scripts via terminal or VS Code tasks.
 Configured automatically during installation (if selected):
 - ✅ AGENTS.md symlinked to `~/.config/gemini/prompts/agents.md`
 
+### Codex CLI
+
+Configured automatically during installation:
+- ✅ Commands generated to `~/.codex/prompts` (invoke as `/prompts:<command>`)
+
 ### GitHub Copilot
 
 Create `.github/copilot-instructions.md` in your project:
@@ -305,9 +325,11 @@ Safety tiers (per AGENTS.md):
 
 | Agent | AGENTS.md Support | Global Commands | Script Access | Status |
 |-------|------------------|-----------------|---------------|--------|
-| **Cursor** | ✅ Native (User Rule) | ✅ Global `/commands` | Built-in | ✅ Fully supported |
+| **Cursor** | ✅ Native (User Rule) | ✅ `~/.cursor/commands` (symlink) | Built-in | ✅ Fully supported |
+| **Claude Code** | ✅ Via config.yml | ✅ `~/.claude/commands` (symlink) | Terminal/tasks | ✅ Fully supported |
+| **Codex CLI** | ⚠️ Manual prompt include | ✅ `~/.codex/prompts` (`/prompts:<name>`) | Terminal | ✅ Fully supported |
+| **Gemini CLI** | ✅ Via prompts directory | ✅ `~/.gemini/commands` (symlink) | Terminal | ✅ Fully supported |
 | **GitHub Copilot** | ✅ Native (Aug 2025) | ✅ Via workspace instructions | Terminal/tasks | ✅ Fully supported |
-| **Claude Code** | ✅ Via config.yml | ✅ Via rules config | Terminal/tasks | ✅ Fully supported |
 | **Jules** | ✅ Native | ✅ Repo root | Terminal | ✅ Fully supported |
 | **Aider** | ✅ Recommended | ✅ Standard | Terminal | ✅ Fully supported |
 
@@ -363,7 +385,8 @@ python3 install.py
 **Symlinked files update automatically:**
 - AGENTS.md
 - CLAUDE.md
-- Commands (`~/.agentsmd/commands/*.md`)
+- Commands source (`~/.agentsmd/commands/src/*.md`)
+- Built commands (`~/.agentsmd/build/**/*` regenerated via `bin/build_commands.py install`)
 - Scripts (`~/.agentsmd/scripts/*.py`)
 
 ## Testing
@@ -391,8 +414,9 @@ cd ~/Projects/AgentsToolkit
 # Verify symlinks
 ls -la ~/.cursor/commands/
 
-# Should show links to ~/.agentsmd/commands/*.md
-# If not, re-run: python3 install.py
+# Should point to ~/.agentsmd/build/cursor/commands/*
+# If not, run: ~/.agentsmd/bin/build_commands.py install
+# or re-run: python3 install.py
 ```
 
 ### GitHub CLI Not Working
@@ -443,17 +467,22 @@ AgentsToolkit/
 ├── AGENTS.md                 # Workflow standards (source of truth)
 ├── install.py                # Global installer with agent config
 │
-├── commands/                 # Cursor command wrappers (markdown)
-│   ├── status.md
-│   ├── issue.md
-│   ├── branch.md
-│   ├── pr.md
-│   ├── push.md
-│   ├── followup.md
-│   ├── link.md
-│   ├── check-workflow.md
-│   ├── check-auth.md
-│   └── protect.md
+├── commands/                 # Canonical commands (source of truth)
+│   └── src/                  # Source Markdown commands
+│       ├── status.md
+│       ├── issue.md
+│       ├── branch.md
+│       ├── pr.md
+│       ├── push.md
+│       ├── followup.md
+│       ├── link.md
+│       ├── check-workflow.md
+│       ├── check-auth.md
+│       └── protect.md
+│
+├── bin/                      # Build and setup scripts
+│   ├── build_commands.py      # Multi-agent command builder (cross-platform)
+│   └── cursor_setup.py       # Cursor User Rule helper
 │
 ├── scripts/                  # Workflow commands (Python)
 │   ├── issue.py
@@ -468,7 +497,7 @@ AgentsToolkit/
 │   └── protect.py
 │
 ├── bin/
-│   ├── cursor_setup.sh       # Cursor User Rule helper
+│   ├── cursor_setup.py       # Cursor User Rule helper
 │   └── legacy/
 │       └── agentsdotmd-init.py  # v1 script (archived)
 │

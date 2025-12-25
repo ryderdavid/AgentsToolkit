@@ -2,7 +2,8 @@
 """AgentsToolkit Uninstaller - Cross-platform.
 
 Removes toolkit files from a repository while preserving AGENTS.md
-and .github/ templates.
+and .github/ templates. Also cleans up global agent command symlinks
+installed by build_commands.py.
 """
 
 import shutil
@@ -17,6 +18,25 @@ from lib.common import (
     check_git_repo, get_repo_root
 )
 from lib.symlinks import remove_link
+
+
+def remove_global_agent_links():
+    """Remove global agent command symlinks created by build_commands.py."""
+    targets = {
+        "Cursor commands": Path.home() / '.cursor' / 'commands',
+        "Claude commands": Path.home() / '.claude' / 'commands',
+        "Codex prompts": Path.home() / '.codex' / 'prompts',
+        "Gemini commands": Path.home() / '.gemini' / 'commands',
+    }
+
+    for label, path in targets.items():
+        if path.is_symlink():
+            if remove_link(path):
+                print_success(f"✓ Removed {label}: {path}")
+            else:
+                print_warning(f"⚠  Could not remove {label}: {path}")
+        elif path.exists():
+            print_warning(f"⊘ Skipped {label} (not a symlink): {path}")
 
 
 def main():
@@ -39,6 +59,10 @@ def main():
     print("  • .cursor/rules/agents-workflow/")
     print("  • .cursor/commands/*.md")
     print("  • .issue_screenshots/ (if empty)")
+    print("  • ~/.cursor/commands (if symlink)")
+    print("  • ~/.claude/commands (if symlink)")
+    print("  • ~/.codex/prompts (if symlink)")
+    print("  • ~/.gemini/commands (if symlink)")
     print()
     print_error("AGENTS.md, .github/ templates will NOT be removed")
     print()
@@ -94,6 +118,9 @@ def main():
         else:
             print_warning("⊘ Kept .issue_screenshots/ (contains files)")
     
+    # Remove global agent command symlinks
+    remove_global_agent_links()
+
     print()
     print_success("Uninstallation complete")
     print()

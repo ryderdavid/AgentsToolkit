@@ -105,7 +105,7 @@ def make_scripts_executable(install_dir: Path) -> bool:
     Returns:
         True if successful
     """
-    print_info("[2/3] Making scripts executable...")
+    print_info("[2/4] Making scripts executable...")
     
     if is_windows():
         print_success("✓ Scripts executable by Python (Windows)")
@@ -129,6 +129,33 @@ def make_scripts_executable(install_dir: Path) -> bool:
     
     except Exception as e:
         print_error(f"Failed to make scripts executable: {e}")
+        return False
+
+
+def build_commands(install_dir: Path) -> bool:
+    """Build and install agent commands via build_commands.py."""
+    print_info("[3/4] Building and installing agent commands...")
+
+    script = install_dir / 'bin' / 'build_commands.py'
+    if not script.exists():
+        print_warning("⚠️  build_commands.py not found, skipping command build")
+        return True
+
+    env = os.environ.copy()
+    env['AGENTSMD_HOME'] = str(install_dir)
+
+    try:
+        # Use Python to execute the script (cross-platform)
+        subprocess.check_call([sys.executable, str(script), 'install'], env=env)
+        print_success("✓ Commands built and installed for Cursor/Claude/Codex/Gemini")
+        return True
+    except subprocess.CalledProcessError as e:
+        print_error(f"Failed to build/install commands: {e}")
+        return False
+    except (OSError, ValueError) as e:
+        # OSError: executable not found or permission denied
+        # ValueError: invalid arguments
+        print_error(f"Unexpected error running build_commands.py: {e}")
         return False
 
 
@@ -179,7 +206,7 @@ def add_to_path(install_dir: Path) -> bool:
     Returns:
         True if successful
     """
-    print_info(f"[3/3] Adding {install_dir / 'bin'} to PATH...")
+    print_info(f"[4/4] Adding {install_dir / 'bin'} to PATH...")
     
     bin_dir = install_dir / 'bin'
     
@@ -357,31 +384,37 @@ def configure_agents(install_dir: Path) -> bool:
 def configure_cursor(install_dir: Path) -> bool:
     """Configure Cursor: symlink commands + run User Rule helper."""
     print_info("  [Cursor]")
-    
-    # Create ~/.cursor/commands/ directory
+
+    # Ensure ~/.cursor/commands points to build outputs
     cursor_commands_dir = Path.home() / '.cursor' / 'commands'
-    cursor_commands_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Symlink all command files
-    commands_src = install_dir / 'commands'
-    
-    for cmd_file in commands_src.glob('*.md'):
-        link_path = cursor_commands_dir / cmd_file.name
-        if link_path.exists() or link_path.is_symlink():
-            link_path.unlink()
-        success, method, warning = create_link(link_path, cmd_file)
+    cursor_commands_dir.parent.mkdir(parents=True, exist_ok=True)
+
+    build_cursor_commands = install_dir / 'build' / 'cursor' / 'commands'
+    if build_cursor_commands.exists():
+        # Remove existing link/directory
+        if cursor_commands_dir.exists() or cursor_commands_dir.is_symlink():
+            if cursor_commands_dir.is_dir() and not cursor_commands_dir.is_symlink():
+                shutil.rmtree(cursor_commands_dir)
+            else:
+                cursor_commands_dir.unlink()
+        
+        success, method, warning = create_link(cursor_commands_dir, build_cursor_commands, force=True)
         if not success:
-            print_warning(f"    ⚠️  Could not symlink {cmd_file.name}: {method}")
-    
-    print_success("    ✓ Commands symlinked to ~/.cursor/commands/")
-    
-    # Run cursor_setup.sh for User Rule (clipboard + instructions)
-    print()
-    cursor_setup = install_dir / 'bin' / 'cursor_setup.sh'
-    if cursor_setup.exists():
-        subprocess.run(['bash', str(cursor_setup)])
+            print_warning(f"    ⚠️  Could not link Cursor commands: {method}")
+        if warning:
+            print_warning(f"    {warning}")
+        else:
+            print_success("    ✓ Commands linked to ~/.cursor/commands/")
     else:
-        print_warning("    ⚠️  cursor_setup.sh not found")
+        print_warning("    ⚠️  Build outputs not found; run build_commands.py install")
+
+    # Run cursor_setup.py for User Rule (clipboard + instructions)
+    print()
+    cursor_setup = install_dir / 'bin' / 'cursor_setup.py'
+    if cursor_setup.exists():
+        subprocess.run([sys.executable, str(cursor_setup)])
+    else:
+        print_warning("    ⚠️  cursor_setup.py not found")
         print_info("    Manually add User Rule: 'Always read and follow ~/.agentsmd/AGENTS.md'")
     
     return True
@@ -453,7 +486,10 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     if is_windows():
         print("  1. Restart your terminal (or open a new PowerShell window)")
     else:
-        print(f"  1. Restart your terminal (or run: source {shell_config})")
+        if shell_config:
+            print(f"  1. Restart your terminal (or run: source ~/{shell_config})")
+        else:
+            print("  1. Restart your terminal")
     print("  2. cd to any git repository")
     if is_windows():
         print("  3. Run: python agentsdotmd-init.py")
@@ -472,8 +508,9 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     print(f"{colors.YELLOW}What agentsdotmd-init does:{colors.NC}")
     print("  • Symlinks AGENTS.md (global constitution)")
     print("  • Symlinks CLAUDE.md (Claude Code enforcement)")
-    print("  • Symlinks .agents/commands/ (workflow scripts; agent-agnostic)")
-    print("  • Adds Cursor command wrappers in .cursor/commands/ (markdown prompts)")
+    print("  • Builds commands from ~/.agentsmd/commands/src via build_commands.py")
+    print("  • Symlinks multi-agent commands: ~/.cursor/commands, ~/.claude/commands")
+    print("  • Symlinks Codex/Gemini outputs: ~/.codex/prompts, ~/.gemini/commands")
     print("  • Installs .cursor/rules/ (Cursor enforcement)")
     print("  • Creates .issue_screenshots/ directory")
     print()
@@ -501,6 +538,10 @@ def main():
     if not make_scripts_executable(install_dir):
         sys.exit(1)
     
+    # Build and install agent commands
+    if not build_commands(install_dir):
+        sys.exit(1)
+
     # Create Unix wrapper (symlink agentsdotmd-init -> agentsdotmd-init.py)
     if not create_unix_wrapper(install_dir):
         sys.exit(1)
