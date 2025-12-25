@@ -93,6 +93,9 @@ def main():
     # Create .issue_screenshots directory
     screenshots_dir = Path('.issue_screenshots')
     screenshots_dir.mkdir(exist_ok=True)
+    gitkeep = screenshots_dir / '.gitkeep'
+    if not gitkeep.exists():
+        gitkeep.touch()
     
     # Process screenshots
     image_markdown = ""

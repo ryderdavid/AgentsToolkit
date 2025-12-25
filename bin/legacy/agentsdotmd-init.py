@@ -25,7 +25,7 @@ from lib.common import (
 from lib.symlinks import create_link, check_symlink_support
 
 
-TOOLKIT_DIR = Path.home() / '.agents_toolkit'
+TOOLKIT_DIR = Path.home() / '.agentsmd'
 
 
 def parse_args():
@@ -95,7 +95,7 @@ def create_agents_md_symlink(target_dir: Path, update_mode: bool) -> bool:
     elif not agents_md.exists():
         success, method, warning = create_link(agents_md, source)
         if success:
-            print_success(f"✓ Created AGENTS.md -> ~/.agents_toolkit/AGENTS.md")
+            print_success(f"✓ Created AGENTS.md -> ~/.agentsmd/AGENTS.md")
             if warning:
                 print_warning(warning)
             return True
@@ -132,7 +132,7 @@ def create_claude_md(target_dir: Path, update_mode: bool) -> bool:
     
     success, method, warning = create_link(claude_md, claude_source)
     if success:
-        print_success("✓ Created CLAUDE.md -> ~/.agents_toolkit/templates/CLAUDE.md")
+        print_success("✓ Created CLAUDE.md -> ~/.agentsmd/templates/CLAUDE.md")
         if warning:
             print_warning(warning)
         return True
@@ -159,7 +159,7 @@ def create_agents_commands_symlink(target_dir: Path) -> bool:
     if not commands_link.exists():
         success, method, warning = create_link(commands_link, commands_source)
         if success:
-            print_success("✓ Created .agents/commands/ -> ~/.agents_toolkit/scripts/")
+            print_success("✓ Created .agents/commands/ -> ~/.agentsmd/scripts/")
             if warning:
                 print_warning(warning)
             return True

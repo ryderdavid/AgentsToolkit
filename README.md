@@ -1,17 +1,19 @@
-# Agents Toolkit
+# AgentsToolkit v2
 
 A global toolkit that enforces issue-first development workflows across AI coding agents (Cursor, Claude Code, GitHub Copilot, Jules, Aider, etc.).
 
-**Now with native Windows support!** All scripts rewritten in Python for true cross-platform compatibility.
+**v2 Changes:** No per-project setup! Install once, use everywhere. See [Migration Guide](docs/v2-migration.md) if upgrading from v1.
+
+**Windows, macOS, and Linux supported!** All scripts are Python 3.8+ for cross-platform compatibility.
 
 ## Features
 
-- **🌍 Global Installation** - Install once, use everywhere
-- **📋 Single Constitution** - Shared AGENTS.md symlinked into every repo
-- **🔗 Symlink Architecture** - Update once, all repos benefit automatically (with Windows fallback)
+- **🌍 One Command Setup** - `python3 install.py` configures everything globally
+- **📋 Single Constitution** - Global AGENTS.md enforces workflow standards
+- **🎯 Works Everywhere** - Cursor commands available in all projects without per-project setup
 - **🤖 Cross-Agent Compatible** - Works with Cursor, Claude Code, GitHub Copilot, Jules, Aider
 - **✅ Issue-First Workflow** - Enforces traceable development patterns
-- **🚀 Zero Mental Context** - Simple `agentsdotmd-init` command
+- **🚀 Zero Per-Project Setup** - No more running init commands in each repo
 - **💻 Cross-Platform** - Windows, macOS, Linux (Python 3.8+)
 
 ## Prerequisites
@@ -33,85 +35,88 @@ python --version   # Windows
 
 ## Quick Start
 
-### One-Time Global Installation
+### One-Time Setup
 
-**All Platforms:**
 ```bash
 # Clone the repository
 git clone https://github.com/YOU/AgentsToolkit.git ~/Projects/AgentsToolkit
 
-# Run global installer
+# Install and configure
 cd ~/Projects/AgentsToolkit
 python3 install.py
-
-# Restart your terminal (or source your shell config)
-source ~/.zshrc  # or ~/.bashrc (Unix only)
 ```
 
-This installs the toolkit to `~/.agents_toolkit/` (or `%USERPROFILE%\.agents_toolkit` on Windows) and adds `agentsdotmd-init` to your PATH.
+The installer will:
+1. Install toolkit to `~/.agentsmd/`
+2. Add to PATH
+3. Prompt for agent configuration (interactive menu)
+4. Symlink Cursor commands to `~/.cursor/commands/`
+5. Set up Cursor User Rule (clipboard + instructions)
 
-### Initialize Any Repository
+**Restart your terminal** (or `source ~/.zshrc`) to activate PATH.
 
-**All Platforms:**
+### Use Anywhere
+
 ```bash
-# Navigate to any git repository
-cd ~/my-project
+cd ~/any-project
 
-# Initialize with toolkit
-agentsdotmd-init
-
-# For monorepos (optional)
-cd ~/my-monorepo
-agentsdotmd-init --subdir backend
+# Cursor users: Just type /status, /issue, /branch, etc.
+# Other agents: python3 ~/.agentsmd/scripts/status.py
 ```
 
-**Note:** On Unix systems, `agentsdotmd-init` is a symlink to `agentsdotmd-init.py`. On Windows, you can use either `agentsdotmd-init.py` or add `.py` to your PATHEXT.
+**That's it!** No per-project setup needed.
 
-## What Gets Created
+## What Gets Installed
 
-When you run `agentsdotmd-init` in a repository:
+### Global Installation (`~/.agentsmd/`)
+
+```
+~/.agentsmd/
+├── AGENTS.md                    # Workflow standards constitution
+├── CLAUDE.md                    # Claude Code enforcement rules
+├── commands/                    # Cursor command wrappers (source of truth)
+│   ├── status.md
+│   ├── issue.md
+│   ├── branch.md
+│   ├── pr.md
+│   ├── push.md
+│   ├── followup.md
+│   ├── link.md
+│   ├── check-workflow.md
+│   ├── check-auth.md
+│   └── protect.md
+└── scripts/                     # Python workflow scripts
+    ├── status.py
+    ├── issue.py
+    ├── branch.py
+    ├── pr.py
+    ├── push.py
+    ├── followup.py
+    ├── link.py
+    ├── check-workflow.py
+    ├── check-auth.py
+    └── protect.py
+```
+
+### Cursor Configuration (`~/.cursor/`)
+
+```
+~/.cursor/
+└── commands/                    # Symlinks to ~/.agentsmd/commands/
+    ├── status.md -> ~/.agentsmd/commands/status.md
+    ├── issue.md -> ~/.agentsmd/commands/issue.md
+    └── ... (all 10 commands)
+```
+
+### Per-Project (Auto-Created)
 
 ```
 your-repo/
-├── AGENTS.md -> ~/.agents_toolkit/AGENTS.md          # Symlink to base constitution
-├── CLAUDE.md -> ~/.agents_toolkit/templates/CLAUDE.md # Claude Code enforcement (symlink)
-├── .agents/
-│   └── commands/ -> ~/.agents_toolkit/scripts/        # Universal script location (symlink)
-├── .cursor/
-│   ├── commands/                                      # Cursor markdown wrappers for /commands
-│   │   ├── status.md, issue.md, branch.md, pr.md, etc.
-│   └── rules/agents-workflow/RULE.md                  # Cursor enforcement (copied, customizable)
-├── .issue_screenshots/                                # Screenshot storage (committed to git)
-├── .github/                                           # Optional GitHub templates
-│   ├── ISSUE_TEMPLATE.md
-│   └── PULL_REQUEST_TEMPLATE.md
-└── .vscode/                                           # Optional VS Code tasks
-    └── tasks.json
+└── .issue_screenshots/          # Created by scripts on first use
+    └── .gitkeep
 ```
 
-### Symlinks vs Copies
-
-- **Symlinked** (automatic updates): AGENTS.md, CLAUDE.md, `.agents/commands/`
-- **Copied** (refreshed via `--update`): `.cursor/commands/*.md`, `.cursor/rules/`, `.github/` templates
-
-## Documentation Structure
-
-- **AGENTS.md (Base Constitution)**  
-  Symlinked from `~/.agents_toolkit/AGENTS.md`. Contains universal workflow standards. See [AGENTS.md](AGENTS.md).
-
-- **AGENTS_REFERENCE.md (Command Reference)**  
-  Command examples, templates, and detailed examples in `docs/AGENTS_REFERENCE.md`. See [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
-
-### What Goes Where?
-
-**AGENTS.md (Base)** - Universal workflow standards
-- Issue-first development process
-- Git conventions (branches, commits, PRs)
-- Documentation requirements
-
-**Project-specific details** - Add directly to AGENTS.md or use nested AGENTS.md files in monorepos (closest file wins per agents.md spec).
-
-**Note:** Currently GitHub-focused, but AGENTS.md principles (traceable development, structured issues, linked PRs) are universal. Future support for other platforms (GitLab, Linear, etc.) is possible.
+**That's it!** No other toolkit files needed in your repositories.
 
 ## Philosophy
 
@@ -119,19 +124,47 @@ your-repo/
 
 The toolkit enforces:
 - ✅ Issue-first development (never code before creating an issue)
-- ✅ Branch naming: `{type}/{issue-num}-{description}` or `{type}/pending-{desc}`
+- ✅ Branch naming: `{type}/{issue-num}-{description}`
 - ✅ Screenshot handling in `.issue_screenshots/`
 - ✅ PR linking with `Closes #N` syntax
 - ✅ Commit format: `#42: Description`
 
-## Workflow Scripts
+## Workflow Commands
 
-All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/scripts/`). Cursor users can also use `/status`, `/issue`, etc. via the markdown wrappers in `.cursor/commands/`.
+### Via Cursor (Recommended)
 
-### Creating Issues
+Type slash commands in Cursor:
+- `/status` - Show workflow status
+- `/issue` - Create GitHub issue
+- `/branch` - Create feature branch
+- `/pr` - Create pull request
+- `/push` - Commit and push changes
+- `/followup` - Add issue comment
+- `/link` - Link existing PR to issue
+- `/check-workflow` - Validate workflow compliance
+- `/check-auth` - Check GitHub CLI authentication
+- `/protect` - Enable branch protection
+
+### Via Terminal (All Agents)
 
 ```bash
-.agents/commands/issue.py "Fix login button" "Button misaligned on mobile" screenshot.png
+python3 ~/.agentsmd/scripts/status.py
+python3 ~/.agentsmd/scripts/issue.py "title" "body" [screenshots]
+python3 ~/.agentsmd/scripts/branch.py feat "description"
+python3 ~/.agentsmd/scripts/pr.py
+python3 ~/.agentsmd/scripts/push.py "commit message"
+python3 ~/.agentsmd/scripts/followup.py <issue-num> "comment" [screenshots]
+python3 ~/.agentsmd/scripts/link.py <pr-num> <issue-num>
+```
+
+### Example: Creating an Issue
+
+```bash
+# Via Cursor
+/issue
+
+# Via terminal
+python3 ~/.agentsmd/scripts/issue.py "Fix login button" "Button misaligned on mobile" screenshot.png
 
 # What it does:
 # 1. Creates branch: fix/pending-fix-login-button
@@ -142,10 +175,11 @@ All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/
 # 6. Links branch to issue in git config
 ```
 
-### Checking Status
+### Example: Checking Status
 
 ```bash
-.agents/commands/status.py
+# Via Cursor
+/status
 
 # Output:
 # 📋 Current Workflow Status
@@ -158,32 +192,64 @@ All commands available via `.agents/commands/` (symlinked to `~/.agents_toolkit/
 # 📋 Next step: Create PR
 ```
 
-### Creating Pull Requests
+## Agent-Specific Setup
 
-```bash
-.agents/commands/pr.py
+### Cursor
 
-# What it does:
-# 1. Detects linked issue from git config
-# 2. Validates branch is pushed
-# 3. Generates PR with proper template
-# 4. Links with "Closes #42" syntax
+Configured automatically during installation:
+- ✅ Commands symlinked to `~/.cursor/commands/`
+- ✅ User Rule copied to clipboard (paste in Settings → Rules)
+
+**User Rule:** `Always read and follow ~/.agentsmd/AGENTS.md`
+
+### Claude Code (VS Code Extension)
+
+Create `.claude/config.yml` in your project:
+
+```yaml
+rules:
+  - '~/.agentsmd/AGENTS.md'
 ```
 
-### Other Commands
+Run scripts via terminal or VS Code tasks.
 
-- `branch.py [type] "description"` - Create branch (auto-detects type if omitted)
-- `link.py <pr-num> <issue-num>` - Link existing PR to issue
-- `followup.py <issue-num> "comment"` - Add comment to issue with optional screenshots
+### Gemini CLI
+
+Configured automatically during installation (if selected):
+- ✅ AGENTS.md symlinked to `~/.config/gemini/prompts/agents.md`
+
+### GitHub Copilot
+
+Create `.github/copilot-instructions.md` in your project:
+
+```markdown
+See AGENTS.md for workflow standards.
+```
+
+Reference: `~/.agentsmd/AGENTS.md`
+
+### OpenAI Codex
+
+Add to `~/.openai-codex-prompt`:
+
+```
+Always read and follow ~/.agentsmd/AGENTS.md
+```
+
+## Documentation
+
+- **[AGENTS.md](AGENTS.md)** - Workflow standards (issue-first development, Git conventions)
+- **[AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md)** - Command examples and templates
+- **[v2 Migration Guide](docs/v2-migration.md)** - Upgrading from v1
 
 ## Safety Guarantees
 
 All workflow scripts are restricted to safe (Tier 1) operations:
 - ✅ Create/edit issues, PRs, comments, branches
-- ✅ Normal git operations (`add`, `commit`, `push` without `--force`, `checkout`, `branch` create/rename)
+- ✅ Normal git operations (`add`, `commit`, `push`, `checkout`, `branch`)
 - ✅ Read-only status/log/diff/show commands
 - ❌ No deletes of issues/PRs/repos/branches
-- ❌ No force push, history rewrite, or `git reset --hard`
+- ❌ No force push or history rewrite
 - ❌ No automatic PR merges
 
 Safety tiers (per AGENTS.md):
@@ -197,7 +263,7 @@ Safety tiers (per AGENTS.md):
 
 ```
 ┌─────────────────────────────────────┐
-│ AGENTS.md                           │
+│ Global AGENTS.md                    │
 │ - When to create issues             │
 │ - Scope boundaries                  │
 │ - Workflow decisions                │
@@ -206,11 +272,9 @@ Safety tiers (per AGENTS.md):
                 │
                 ↓
 ┌─────────────────────────────────────┐
-│ Cursor Rule (Enforcement)           │
-│ - alwaysApply: true                 │
-│ - "Read AGENTS.md"                  │
-│ - "Use workflow scripts"            │
-│ ↓ (~100 tokens in context)          │
+│ Cursor User Rule                    │
+│ - "Read ~/.agentsmd/AGENTS.md"      │
+│ ↓ (~20 tokens in context)           │
 └─────────────────────────────────────┘
                 │
                 ↓
@@ -218,7 +282,7 @@ Safety tiers (per AGENTS.md):
 │ AI Decision Layer                   │
 │ - Consults AGENTS.md rules          │
 │ - Decides: "Need to create issue"   │
-│ - Executes: Python(issue.py)        │
+│ - Executes: python3 ~/.agentsmd/... │
 └─────────────────────────────────────┘
                 │
                 ↓
@@ -231,7 +295,7 @@ Safety tiers (per AGENTS.md):
 ```
 
 **Benefits:**
-- ✅ **~700 tokens** for workflow rules (vs 2000+ for explicit commands)
+- ✅ **~620 tokens** for workflow rules (vs 2000+ for explicit commands)
 - ✅ **Deterministic** execution of complex procedures
 - ✅ **Flexible** AI decision-making
 - ✅ **Automatic updates** via symlinks
@@ -239,66 +303,36 @@ Safety tiers (per AGENTS.md):
 
 ## Cross-Agent Compatibility
 
-| Agent | AGENTS.md Support | Hierarchical Config | Script Access | Status |
-|-------|------------------|---------------------|---------------|--------|
-| **Cursor** | ✅ Native | ✅ Nearest file wins | Built-in `/commands` (markdown wrappers → `.agents/commands/`) | Fully supported |
-| **GitHub Copilot** | ✅ Native (Aug 2025) | ✅ Nearest file wins | Terminal or tasks (`.agents/commands/`) | Fully supported |
-| **Claude Code** | ✅ Via CLAUDE.md | ✅ Hierarchical | Terminal (`.agents/commands/`), VS Code tasks, aliases | Fully supported |
-| **Jules** | ✅ Native | ✅ Repo root | Terminal (`.agents/commands/`) | Fully supported |
-| **Aider** | ✅ Recommended | ✅ Standard | Terminal (`.agents/commands/`) | Fully supported |
-
-The toolkit creates a standalone `CLAUDE.md` file with explicit workflow enforcement for Claude Code compatibility.
+| Agent | AGENTS.md Support | Global Commands | Script Access | Status |
+|-------|------------------|-----------------|---------------|--------|
+| **Cursor** | ✅ Native (User Rule) | ✅ Global `/commands` | Built-in | ✅ Fully supported |
+| **GitHub Copilot** | ✅ Native (Aug 2025) | ✅ Via workspace instructions | Terminal/tasks | ✅ Fully supported |
+| **Claude Code** | ✅ Via config.yml | ✅ Via rules config | Terminal/tasks | ✅ Fully supported |
+| **Jules** | ✅ Native | ✅ Repo root | Terminal | ✅ Fully supported |
+| **Aider** | ✅ Recommended | ✅ Standard | Terminal | ✅ Fully supported |
 
 ## Windows Support
 
-AgentsToolkit now has full Windows support via Python 3.8+ scripts.
+AgentsToolkit has full Windows support via Python 3.8+ scripts.
 
 ### Installation on Windows
 
 1. **Install Python 3.8+** from [python.org](https://python.org) or via `winget install Python.Python.3`
 2. **Install Git for Windows** from [git-scm.com](https://git-scm.com/)
 3. **Install GitHub CLI** from [cli.github.com](https://cli.github.com/) or via `winget install GitHub.cli`
-4. **Run the installer:** `python install.py` (see Quick Start above)
+4. **Run the installer:** `python install.py`
 
 ### Symlinks on Windows
 
-The toolkit uses a smart fallback chain for Windows compatibility:
+The toolkit uses a smart fallback chain:
 
 1. **Symlinks** (preferred) - Requires Developer Mode or Administrator privileges
-2. **Junctions** (directories only) - Works without special permissions
-3. **Hard links** (files only) - Same volume required
-4. **Copy** (last resort) - Manual updates needed via `agentsdotmd-init --update`
+2. **Junctions** (directories) - Works without special permissions
+3. **Hard links** (files) - Same volume required
+4. **Copy** (last resort) - Manual updates needed
 
-**To enable symlinks without admin:**
+**To enable symlinks:**
 - Windows 10/11: Settings → Update & Security → For Developers → Developer Mode
-
-If symlinks are unavailable, the installer will use junctions for directories and copy files, displaying appropriate warnings.
-
-### Running Scripts on Windows
-
-**Via Python directly:**
-```powershell
-python .agents\commands\status.py
-python .agents\commands\branch.py feat "add authentication"
-python .agents\commands\issue.py "Bug title" "Description"
-python .agents\commands\pr.py
-```
-
-**Via Cursor commands:** `/status`, `/branch`, `/issue`, `/pr` work automatically (Cursor wrappers call Python)
-
-**Via VS Code tasks:** Cmd+Shift+P → "Tasks: Run Task" → "Agents: Status" etc.
-
-## VS Code + Claude Code Setup
-
-Claude Code reads `CLAUDE.md` (symlinked to the toolkit template) which contains explicit workflow enforcement rules with "STOP" language at the top. Keep the symlink intact so updates flow automatically.
-
-**Running workflow scripts:**
-
-1. **Direct terminal:** `python3 .agents/commands/status.py` (or `python` on Windows)
-2. **VS Code tasks:** Cmd+Shift+P → "Tasks: Run Task" → "Agents: Status" (optional `.vscode/tasks.json` installed by `agentsdotmd-init` when you opt in)
-3. **Shell aliases:** add shortcuts such as `alias agents-status='python3 .agents/commands/status.py'`
-
-When prompting Claude Code, explicitly reference the repo-local script path (for example, "run python3 .agents/commands/status.py from the repo root") so it executes the workflow scripts.
 
 ## AGENTS.md Compliance
 
@@ -313,6 +347,25 @@ All scripts strictly follow AGENTS.md standards:
 | Commit messages | `#{issue-num}: description` | `#42: Add null check` |
 | PR linking | `Closes #{issue-num}` | `Closes #42` |
 
+## Updating the Toolkit
+
+To get toolkit updates:
+
+```bash
+# Pull latest toolkit changes
+cd ~/Projects/AgentsToolkit
+git pull
+
+# Re-run installer if needed
+python3 install.py
+```
+
+**Symlinked files update automatically:**
+- AGENTS.md
+- CLAUDE.md
+- Commands (`~/.agentsmd/commands/*.md`)
+- Scripts (`~/.agentsmd/scripts/*.py`)
+
 ## Testing
 
 Unit tests verify all deterministic functions:
@@ -322,120 +375,25 @@ cd ~/Projects/AgentsToolkit
 ./tests/test_functions.py
 
 # 39 tests covering:
-# ✓ detect_branch_type
+# ✓ Branch type detection
 # ✓ Branch slug generation
 # ✓ Branch name format (AGENTS.md)
 # ✓ Screenshot filename format
 # ✓ Commit message format
 # ✓ PR title format
-# ✓ detect_category
 ```
-
-## Customization
-
-### Monorepo Support
-
-For monorepos, you can:
-
-1. **Use `--subdir` flag:**
-   ```bash
-   agentsdotmd-init --subdir backend
-   ```
-
-2. **Create nested AGENTS.md files** (matches GitHub Copilot/Cursor behavior):
-   ```
-   monorepo/
-   ├── AGENTS.md               # Root (symlinked)
-   ├── backend/
-   │   └── AGENTS.md           # Backend-specific (created manually, not symlinked)
-   └── frontend/
-       └── AGENTS.md           # Frontend-specific
-   ```
-
-AI tools use "nearest file in directory tree wins" pattern.
-
-## Updating the Toolkit
-
-To get toolkit updates in all your repos:
-
-```bash
-# Pull latest toolkit changes
-cd ~/Projects/AgentsToolkit
-git pull
-
-# Re-run global installer (if install.py changed)
-python3 install.py
-
-# Refresh copied files in an existing repo
-cd /path/to/your/repo
-agentsdotmd-init --update
-```
-
-Symlinked files (AGENTS.md, CLAUDE.md, `.agents/commands/`) update automatically. Copied files refresh when you run `--update`:
-- `.cursor/commands/*.md` (Cursor command wrappers; prompt before overwrite)
-- `.cursor/rules/agents-workflow/RULE.md` (prompt before overwrite)
-- Existing `.github/ISSUE_TEMPLATE.md` and `PULL_REQUEST_TEMPLATE.md` (prompt; not installed if absent)
-
-## Architecture Details
-
-### Global Installation Location
-
-```
-~/.agents_toolkit/
-├── AGENTS.md              # Base constitution
-├── bin/
-│   ├── agentsdotmd-init.py  # Python script (cross-platform)
-│   └── agentsdotmd-init     # Symlink to .py (Unix only)
-├── scripts/              # Symlinked to repos
-│   ├── issue.py
-│   ├── branch.py
-│   ├── pr.py
-│   ├── status.py
-│   ├── link.py
-│   └── followup.py
-├── cursor-rules/
-│   └── agents-workflow/
-│       └── RULE.md.template
-├── templates/
-│   ├── CLAUDE.md
-│   ├── ISSUE_TEMPLATE.md
-│   └── PULL_REQUEST_TEMPLATE.md
-└── install.py
-```
-
-### Why Symlinks?
-
-**Symlinked files:**
-- Single source of truth
-- Automatic updates (fix once, all repos benefit)
-- Transparent to team (symlinks visible in git)
-- Easy to audit (`ls -la` shows link targets)
-
-**Copied files:**
-- Customizable per-repo
-- Safe to modify
-- Won't be overwritten by updates
 
 ## Troubleshooting
 
-### Command Not Found: agentsdotmd-init
+### Cursor Commands Not Working
 
 ```bash
-# Verify PATH was updated
-echo $PATH | grep agents_toolkit
+# Verify symlinks
+ls -la ~/.cursor/commands/
 
-# Re-source shell config
-source ~/.zshrc  # or ~/.bashrc
-
-# Manually verify
-ls -l ~/.agents_toolkit/bin/agentsdotmd-init
+# Should show links to ~/.agentsmd/commands/*.md
+# If not, re-run: python3 install.py
 ```
-
-### Cursor Not Loading Rules
-
-1. Restart Cursor
-2. Check `.cursor/rules/agents-workflow/RULE.md` exists
-3. Verify frontmatter has `alwaysApply: true`
 
 ### GitHub CLI Not Working
 
@@ -454,32 +412,18 @@ gh auth login
 2. Verify files in `.issue_screenshots/`
 3. Check raw GitHub URLs in issue body
 
-### Symlinks Not Working
-
-If your platform doesn't support symlinks:
-- Modify `agentsdotmd-init` to copy instead of symlink
-- Update manually when toolkit changes
-
 ## Uninstallation
-
-### Remove from a Repository
-
-```bash
-# From repository root
-rm AGENTS.md CLAUDE.md
-rm -rf .agents/commands .cursor/commands .cursor/rules/agents-workflow
-rm -rf .issue_screenshots
-```
 
 ### Remove Global Installation
 
 ```bash
-rm -rf ~/.agents_toolkit
+rm -rf ~/.agentsmd
+rm -rf ~/.cursor/commands
 
 # Remove from shell config
 # Edit ~/.zshrc or ~/.bashrc and delete:
-# # Agents Toolkit
-# export PATH="$HOME/.agents_toolkit/bin:$PATH"
+# # AgentsMD Toolkit
+# export PATH="$HOME/.agentsmd/bin:$PATH"
 ```
 
 ## Contributing
@@ -497,26 +441,38 @@ Contributions welcome! Please:
 AgentsToolkit/
 ├── README.md                 # This file
 ├── AGENTS.md                 # Workflow standards (source of truth)
-├── install.py                 # Global installer (cross-platform)
-├── uninstall.sh              # Uninstaller
+├── install.py                # Global installer with agent config
 │
-├── bin/
-│   ├── agentsdotmd-init.py  # Repo initialization command (Python)
-│   └── agentsdotmd-init    # Symlink to .py (Unix only)
+├── commands/                 # Cursor command wrappers (markdown)
+│   ├── status.md
+│   ├── issue.md
+│   ├── branch.md
+│   ├── pr.md
+│   ├── push.md
+│   ├── followup.md
+│   ├── link.md
+│   ├── check-workflow.md
+│   ├── check-auth.md
+│   └── protect.md
 │
-├── scripts/                  # Workflow commands
+├── scripts/                  # Workflow commands (Python)
 │   ├── issue.py
 │   ├── branch.py
 │   ├── pr.py
 │   ├── status.py
+│   ├── push.py
+│   ├── followup.py
 │   ├── link.py
-│   └── followup.py
+│   ├── check-workflow.py
+│   ├── check-auth.py
+│   └── protect.py
 │
-├── cursor-rules/             # Cursor-specific enforcement
-│   └── agents-workflow/
-│       └── RULE.md.template
+├── bin/
+│   ├── cursor_setup.sh       # Cursor User Rule helper
+│   └── legacy/
+│       └── agentsdotmd-init.py  # v1 script (archived)
 │
-├── templates/                # Templates for repo initialization
+├── templates/                # Templates for optional installs
 │   ├── CLAUDE.md
 │   ├── ISSUE_TEMPLATE.md
 │   └── PULL_REQUEST_TEMPLATE.md
@@ -525,6 +481,8 @@ AgentsToolkit/
 │   └── test_functions.py
 │
 └── docs/                     # Additional documentation
+    ├── AGENTS_REFERENCE.md
+    └── v2-migration.md
 ```
 
 ## License
@@ -541,14 +499,8 @@ Built on the AGENTS.md standard that emerged in July 2025, now supported by 60+ 
 
 ---
 
-## Appendix: AGENTS.md Word Budget
+## Why v2?
 
-```
-AGENTS.md Word Budget (target: 1,000 words)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-██████████████████████████████░░░░░░░░░░  754/1000 (75%)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Buffer remaining: 246 words for future additions
-```
+v2 eliminates the repetitive per-project setup that plagued v1. Now you install once and Cursor commands work everywhere. See the [Migration Guide](docs/v2-migration.md) for details.
 
-Per [AGENTS.md best practices](https://agents.md), top-level files should be ~300–1,200 words. Shorter files reduce token cost, latency, and instruction dilution.
+**Upgrading from v1?** Check the [Migration Guide](docs/v2-migration.md).

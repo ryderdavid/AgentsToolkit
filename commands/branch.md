@@ -8,7 +8,7 @@ See AGENTS.md for branch naming standards:
 - Examples: [AGENTS_REFERENCE.md Branch Naming](../../docs/AGENTS_REFERENCE.md#branch-naming-examples)
 
 Usage: Ask the user for branch type and description, then run:
-`python3 .agents/commands/branch.py [type] "description"`
+`python3 ~/.agentsmd/scripts/branch.py [type] "description"`
 
 Types: fix, feat, refactor, docs, chore
 

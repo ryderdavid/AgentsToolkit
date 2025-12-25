@@ -7,6 +7,6 @@ This is part of the AGENTS.md workflow when PRs are created manually:
 - This command is a fallback for manual linking
 
 Usage: Ask the user for PR number and issue number, then run:
-`python3 .agents/commands/link.py <pr-num> <issue-num>`
+`python3 ~/.agentsmd/scripts/link.py <pr-num> <issue-num>`
 
 

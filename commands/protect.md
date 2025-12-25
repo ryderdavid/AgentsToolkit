@@ -9,7 +9,7 @@ Applies GitHub branch protections per AGENTS.md workflow requirements:
 
 Requires admin access to repository.
 
-Run: `python3 .agents/commands/protect.py`
+Run: `python3 ~/.agentsmd/scripts/protect.py`
 
 Options:
 - `--branch BRANCH` - Specify branch to protect (default: auto-detect main/master)

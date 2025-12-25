@@ -74,6 +74,9 @@ def main():
         # Create screenshots directory
         screenshots_dir = Path('.issue_screenshots')
         screenshots_dir.mkdir(exist_ok=True)
+        gitkeep = screenshots_dir / '.gitkeep'
+        if not gitkeep.exists():
+            gitkeep.touch()
         
         date_prefix = datetime.now().strftime('%Y%m%d')
         

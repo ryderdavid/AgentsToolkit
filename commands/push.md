@@ -17,10 +17,10 @@ See AGENTS.md for proper commit formatting:
 **Usage:**
 ```bash
 # With commit message
-python3 .agents/commands/push.py "your commit message"
+python3 ~/.agentsmd/scripts/push.py "your commit message"
 
 # Interactive (will prompt for message)
-python3 .agents/commands/push.py
+python3 ~/.agentsmd/scripts/push.py
 ```
 
 **What it does:**

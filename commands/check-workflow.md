@@ -6,6 +6,6 @@ Ensures compliance with critical workflow standards:
 - [Branch Management](../../AGENTS.md#branch-management): Proper branch naming and issue linkage
 - [Anti-Patterns](../../AGENTS.md#anti-patterns-prohibited-behaviors): Catches common workflow violations
 
-Run: `python3 .agents/commands/check-workflow.py`
+Run: `python3 ~/.agentsmd/scripts/check-workflow.py`
 
 

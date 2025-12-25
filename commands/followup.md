@@ -7,6 +7,6 @@ See AGENTS.md for documenting feedback and progress:
 - Use for: feedback rounds (what was wrong, what changed, insights) and documenting failed approaches
 
 Usage: Ask the user for issue number, comment text, and optional screenshot paths, then run:
-`python3 .agents/commands/followup.py <issue-num> "comment" [screenshot.png]`
+`python3 ~/.agentsmd/scripts/followup.py <issue-num> "comment" [screenshot.png]`
 
 

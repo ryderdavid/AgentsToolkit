@@ -6,6 +6,6 @@ Verifies AGENTS.md workflow compliance by showing:
 - Linked issue (required per [Issue-First Development](../../AGENTS.md#issue-first-development))
 - Commit status and PR state
 
-Run: `python3 .agents/commands/status.py`
+Run: `python3 ~/.agentsmd/scripts/status.py`
 
 

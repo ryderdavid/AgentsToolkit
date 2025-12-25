@@ -28,7 +28,7 @@ def is_windows() -> bool:
 
 def get_install_dir() -> Path:
     """Get installation directory path."""
-    return Path.home() / '.agents_toolkit'
+    return Path.home() / '.agentsmd'
 
 
 def get_script_dir() -> Path:
@@ -214,14 +214,14 @@ def add_to_path_unix(bin_dir: Path) -> bool:
     
     # Check if already in PATH
     config_content = shell_config.read_text()
-    if '.agents_toolkit/bin' in config_content:
+    if '.agentsmd/bin' in config_content:
         print_success(f"✓ Already in PATH ({shell_config})")
         return True
     
     # Add to config
     try:
         with shell_config.open('a') as f:
-            f.write('\n# Agents Toolkit\n')
+            f.write('\n# AgentsMD Toolkit\n')
             f.write(f'export PATH="{bin_dir}:$PATH"\n')
         
         print_success(f"✓ Added to {shell_config}")
@@ -279,6 +279,163 @@ if ($path -notlike "*{bin_dir}*") {{
         return True
 
 
+def ensure_inquirer():
+    """Auto-install inquirer if missing."""
+    try:
+        import inquirer
+        return inquirer
+    except ImportError:
+        print_info("📦 Installing required dependency: inquirer...")
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "inquirer"])
+            import inquirer
+            return inquirer
+        except Exception as e:
+            print_warning(f"⚠️  Could not install inquirer: {e}")
+            print_info("Agent configuration will be skipped")
+            return None
+
+
+def configure_agents(install_dir: Path) -> bool:
+    """Interactive agent configuration with checkbox menu."""
+    print()
+    print("─" * 72)
+    print()
+    response = input("Configure AI agents now? [Y/n]: ").strip().lower()
+    
+    if response == 'n':
+        print_warning("⊘ Skipped agent configuration")
+        print_info("You can configure later by re-running install.py")
+        return True
+    
+    inquirer = ensure_inquirer()
+    if not inquirer:
+        return True  # Skip if inquirer couldn't be installed
+    
+    questions = [
+        inquirer.Checkbox(
+            'agents',
+            message='Select agents to configure (Space=select, Enter=confirm)',
+            choices=[
+                'Cursor (custom commands + User Rule)',
+                'Claude Code (instructions)',
+                'Gemini CLI (config symlink)',
+                'GitHub Copilot (instructions)',
+                'OpenAI Codex (instructions)',
+            ],
+        ),
+    ]
+    
+    answers = inquirer.prompt(questions)
+    selected = answers['agents'] if answers else []
+    
+    if not selected:
+        print_warning("⊘ No agents selected")
+        return True
+    
+    print()
+    print_info("Configuring selected agents...")
+    print()
+    
+    for agent in selected:
+        if 'Cursor' in agent:
+            configure_cursor(install_dir)
+        elif 'Claude Code' in agent:
+            configure_claude_code()
+        elif 'Gemini CLI' in agent:
+            configure_gemini_cli(install_dir)
+        elif 'GitHub Copilot' in agent:
+            configure_github_copilot()
+        elif 'OpenAI Codex' in agent:
+            configure_openai_codex()
+    
+    print()
+    print_success("✓ Agent configuration complete")
+    return True
+
+
+def configure_cursor(install_dir: Path) -> bool:
+    """Configure Cursor: symlink commands + run User Rule helper."""
+    print_info("  [Cursor]")
+    
+    # Create ~/.cursor/commands/ directory
+    cursor_commands_dir = Path.home() / '.cursor' / 'commands'
+    cursor_commands_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Symlink all command files
+    commands_src = install_dir / 'commands'
+    
+    for cmd_file in commands_src.glob('*.md'):
+        link_path = cursor_commands_dir / cmd_file.name
+        if link_path.exists() or link_path.is_symlink():
+            link_path.unlink()
+        success, method, warning = create_link(link_path, cmd_file)
+        if not success:
+            print_warning(f"    ⚠️  Could not symlink {cmd_file.name}: {method}")
+    
+    print_success("    ✓ Commands symlinked to ~/.cursor/commands/")
+    
+    # Run cursor_setup.sh for User Rule (clipboard + instructions)
+    print()
+    cursor_setup = install_dir / 'bin' / 'cursor_setup.sh'
+    if cursor_setup.exists():
+        subprocess.run(['bash', str(cursor_setup)])
+    else:
+        print_warning("    ⚠️  cursor_setup.sh not found")
+        print_info("    Manually add User Rule: 'Always read and follow ~/.agentsmd/AGENTS.md'")
+    
+    return True
+
+
+def configure_claude_code() -> bool:
+    """Display Claude Code configuration instructions."""
+    print_info("  [Claude Code]")
+    print_info("    1. Create .claude/config.yml in your project root")
+    print_info("    2. Add: rules: ['~/.agentsmd/AGENTS.md']")
+    print_success("    ✓ Instructions displayed")
+    return True
+
+
+def configure_gemini_cli(install_dir: Path) -> bool:
+    """Configure Gemini CLI by symlinking AGENTS.md."""
+    print_info("  [Gemini CLI]")
+    
+    gemini_prompts_dir = Path.home() / '.config' / 'gemini' / 'prompts'
+    gemini_prompts_dir.mkdir(parents=True, exist_ok=True)
+    
+    agents_md = install_dir / 'AGENTS.md'
+    link_path = gemini_prompts_dir / 'agents.md'
+    
+    if link_path.exists() or link_path.is_symlink():
+        link_path.unlink()
+    
+    success, method, warning = create_link(link_path, agents_md)
+    if success:
+        print_success("    ✓ Configured ~/.config/gemini/prompts/agents.md")
+    else:
+        print_warning(f"    ⚠️  Could not create symlink: {method}")
+    
+    return True
+
+
+def configure_github_copilot() -> bool:
+    """Display GitHub Copilot configuration instructions."""
+    print_info("  [GitHub Copilot]")
+    print_info("    1. Create .github/copilot-instructions.md in your project")
+    print_info("    2. Reference: 'See AGENTS.md for workflow standards'")
+    print_success("    ✓ Instructions displayed")
+    return True
+
+
+def configure_openai_codex() -> bool:
+    """Display OpenAI Codex configuration instructions."""
+    print_info("  [OpenAI Codex]")
+    print_info("    Add to ~/.openai-codex-prompt:")
+    print_info("    'Always read and follow ~/.agentsmd/AGENTS.md'")
+    print_success("    ✓ Instructions displayed")
+    return True
+
+
 def print_summary(install_dir: Path, shell_config: str = ""):
     """Print installation summary."""
     print()
@@ -287,10 +444,10 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     print(f"{colors.GREEN}================================================{colors.NC}")
     print()
     print(f"{colors.BLUE}Installed:{colors.NC}")
-    print(f"  ✓ Toolkit at: ~/.agents_toolkit/")
+    print(f"  ✓ Toolkit at: ~/.agentsmd/")
     print(f"  ✓ Command: agentsdotmd-init{'(.py)' if is_windows() else ''} (added to PATH)")
-    print(f"  ✓ Scripts: ~/.agents_toolkit/scripts/")
-    print(f"  ✓ Base AGENTS.md: ~/.agents_toolkit/AGENTS.md")
+    print(f"  ✓ Scripts: ~/.agentsmd/scripts/")
+    print(f"  ✓ Base AGENTS.md: ~/.agentsmd/AGENTS.md")
     print()
     print(f"{colors.BLUE}Next steps:{colors.NC}")
     if is_windows():
@@ -357,6 +514,10 @@ def main():
                 break
     
     if not add_to_path(install_dir):
+        sys.exit(1)
+    
+    # Configure agents interactively
+    if not configure_agents(install_dir):
         sys.exit(1)
     
     # Print summary
