@@ -3,7 +3,7 @@
 
 Removes toolkit files from a repository while preserving AGENTS.md
 and .github/ templates. Also cleans up global agent command symlinks
-installed by build-commands.sh.
+installed by build_commands.py.
 """
 
 import shutil
@@ -21,7 +21,7 @@ from lib.symlinks import remove_link
 
 
 def remove_global_agent_links():
-    """Remove global agent command symlinks created by build-commands.sh."""
+    """Remove global agent command symlinks created by build_commands.py."""
     targets = {
         "Cursor commands": Path.home() / '.cursor' / 'commands',
         "Claude commands": Path.home() / '.claude' / 'commands',

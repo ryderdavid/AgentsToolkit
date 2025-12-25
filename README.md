@@ -50,7 +50,7 @@ The installer will:
 1. Install toolkit to `~/.agentsmd/`
 2. Add to PATH
 3. Prompt for agent configuration (interactive menu)
-4. Build commands for Cursor/Claude/Codex/Gemini via `bin/build-commands.py`
+4. Build commands for Cursor/Claude/Codex/Gemini via `bin/build_commands.py`
 5. Symlink multi-agent commands (`~/.cursor/commands`, `~/.claude/commands`, `~/.codex/prompts`, `~/.gemini/commands`)
 6. Set up Cursor User Rule (clipboard + instructions)
 
@@ -87,7 +87,7 @@ cd ~/any-project
 │       ├── check-workflow.md
 │       ├── check-auth.md
 │       └── protect.md
-├── build/                       # Generated agent-specific outputs (via build-commands.py)
+├── build/                       # Generated agent-specific outputs (via build_commands.py)
 │   ├── cursor/commands/
 │   ├── claude/commands/
 │   ├── codex/prompts/
@@ -109,7 +109,7 @@ cd ~/any-project
 
 ```
 ~/.cursor/
-└── commands/ -> ~/.agentsmd/build/cursor/commands/   # Symlinked by build-commands.py
+└── commands/ -> ~/.agentsmd/build/cursor/commands/   # Symlinked by build_commands.py
     ├── status.md
     ├── issue.md
     └── ... (all 10 commands)
@@ -131,7 +131,7 @@ your-repo/
 - Claude Code: `~/.claude/commands` (symlink to `~/.agentsmd/build/claude/commands`)
 - Codex CLI: `~/.codex/prompts` (symlink to `~/.agentsmd/build/codex/prompts`, invoked as `/prompts:<name>`)
 - Gemini CLI: `~/.gemini/commands` (symlink to `~/.agentsmd/build/gemini/commands`)
-- All outputs generated from `~/.agentsmd/commands/src` via `bin/build-commands.py install`
+- All outputs generated from `~/.agentsmd/commands/src` via `bin/build_commands.py install`
 
 ## Philosophy
 
@@ -386,7 +386,7 @@ python3 install.py
 - AGENTS.md
 - CLAUDE.md
 - Commands source (`~/.agentsmd/commands/src/*.md`)
-- Built commands (`~/.agentsmd/build/**/*` regenerated via `bin/build-commands.py install`)
+- Built commands (`~/.agentsmd/build/**/*` regenerated via `bin/build_commands.py install`)
 - Scripts (`~/.agentsmd/scripts/*.py`)
 
 ## Testing
@@ -415,7 +415,7 @@ cd ~/Projects/AgentsToolkit
 ls -la ~/.cursor/commands/
 
 # Should point to ~/.agentsmd/build/cursor/commands/*
-# If not, run: ~/.agentsmd/bin/build-commands.py install
+# If not, run: ~/.agentsmd/bin/build_commands.py install
 # or re-run: python3 install.py
 ```
 
@@ -481,7 +481,7 @@ AgentsToolkit/
 │       └── protect.md
 │
 ├── bin/                      # Build and setup scripts
-│   ├── build-commands.py     # Multi-agent command builder (cross-platform)
+│   ├── build_commands.py      # Multi-agent command builder (cross-platform)
 │   └── cursor_setup.py       # Cursor User Rule helper
 │
 ├── scripts/                  # Workflow commands (Python)

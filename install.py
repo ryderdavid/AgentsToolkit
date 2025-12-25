@@ -133,12 +133,12 @@ def make_scripts_executable(install_dir: Path) -> bool:
 
 
 def build_commands(install_dir: Path) -> bool:
-    """Build and install agent commands via build-commands.py."""
+    """Build and install agent commands via build_commands.py."""
     print_info("[3/4] Building and installing agent commands...")
 
-    script = install_dir / 'bin' / 'build-commands.py'
+    script = install_dir / 'bin' / 'build_commands.py'
     if not script.exists():
-        print_warning("⚠️  build-commands.py not found, skipping command build")
+        print_warning("⚠️  build_commands.py not found, skipping command build")
         return True
 
     env = os.environ.copy()
@@ -155,7 +155,7 @@ def build_commands(install_dir: Path) -> bool:
     except (OSError, ValueError) as e:
         # OSError: executable not found or permission denied
         # ValueError: invalid arguments
-        print_error(f"Unexpected error running build-commands.py: {e}")
+        print_error(f"Unexpected error running build_commands.py: {e}")
         return False
 
 
@@ -401,7 +401,7 @@ def configure_cursor(install_dir: Path) -> bool:
         else:
             print_success("    ✓ Commands linked to ~/.cursor/commands/")
     else:
-        print_warning("    ⚠️  Build outputs not found; run build-commands.py install")
+        print_warning("    ⚠️  Build outputs not found; run build_commands.py install")
 
     # Run cursor_setup.py for User Rule (clipboard + instructions)
     print()
@@ -500,7 +500,7 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     print(f"{colors.YELLOW}What agentsdotmd-init does:{colors.NC}")
     print("  • Symlinks AGENTS.md (global constitution)")
     print("  • Symlinks CLAUDE.md (Claude Code enforcement)")
-    print("  • Builds commands from ~/.agentsmd/commands/src via build-commands.py")
+    print("  • Builds commands from ~/.agentsmd/commands/src via build_commands.py")
     print("  • Symlinks multi-agent commands: ~/.cursor/commands, ~/.claude/commands")
     print("  • Symlinks Codex/Gemini outputs: ~/.codex/prompts, ~/.gemini/commands")
     print("  • Installs .cursor/rules/ (Cursor enforcement)")
