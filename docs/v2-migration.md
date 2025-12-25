@@ -22,7 +22,7 @@ AgentsToolkit v2 introduces a fully global architecture that eliminates per-proj
 - **New:** No per-project setup needed
 
 ### Command Reference Updated
-- **Old:** Commands referenced `.agents/commands/status.py`
+- **Old:** Commands referenced `.agents/commands/status.~py`
 - **New:** Commands reference `~/.agentsmd/scripts/status.py`
 
 ### Files No Longer Created Per-Project
@@ -41,7 +41,7 @@ cp -r ~/.agents_toolkit ~/.agents_toolkit.backup
 ```
 
 ### 2. Uninstall v1
-
+~~
 ```bash
 # Remove old installation
 rm -rf ~/.agents_toolkit
@@ -238,4 +238,5 @@ For issues or questions:
 - GitHub Issues: https://github.com/ryderdavid/AgentsToolkit/issues
 - Check AGENTS.md for workflow standards
 - Review docs/AGENTS_REFERENCE.md for command examples
+
 
