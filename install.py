@@ -478,7 +478,6 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     print()
     print(f"{colors.BLUE}Installed:{colors.NC}")
     print(f"  ✓ Toolkit at: ~/.agentsmd/")
-    print(f"  ✓ Command: agentsdotmd-init{'(.py)' if is_windows() else ''} (added to PATH)")
     print(f"  ✓ Scripts: ~/.agentsmd/scripts/")
     print(f"  ✓ Base AGENTS.md: ~/.agentsmd/AGENTS.md")
     print()
@@ -491,28 +490,18 @@ def print_summary(install_dir: Path, shell_config: str = ""):
         else:
             print("  1. Restart your terminal")
     print("  2. cd to any git repository")
-    if is_windows():
-        print("  3. Run: python agentsdotmd-init.py")
-    else:
-        print("  3. Run: agentsdotmd-init")
+    print("  3. Start using commands! No per-repo setup needed.")
     print()
-    print(f"{colors.BLUE}Usage:{colors.NC}")
-    print("  cd ~/my-project")
-    if is_windows():
-        print("  python agentsdotmd-init.py          # Initialize repo with toolkit")
-        print("  python agentsdotmd-init.py --subdir backend  # For monorepo subdirectories")
-    else:
-        print("  agentsdotmd-init                    # Initialize repo with toolkit")
-        print("  agentsdotmd-init --subdir backend   # For monorepo subdirectories")
+    print(f"{colors.BLUE}What's configured globally:{colors.NC}")
+    print("  • AGENTS.md symlinked (global constitution)")
+    print("  • CLAUDE.md symlinked (Claude Code enforcement)")
+    print("  • Commands built from ~/.agentsmd/commands/src via build_commands.py")
+    print("  • Multi-agent commands symlinked: ~/.cursor/commands, ~/.claude/commands")
+    print("  • Codex/Gemini outputs: ~/.codex/prompts, ~/.gemini/commands")
+    print("  • Cursor rules available (if Cursor was configured)")
     print()
-    print(f"{colors.YELLOW}What agentsdotmd-init does:{colors.NC}")
-    print("  • Symlinks AGENTS.md (global constitution)")
-    print("  • Symlinks CLAUDE.md (Claude Code enforcement)")
-    print("  • Builds commands from ~/.agentsmd/commands/src via build_commands.py")
-    print("  • Symlinks multi-agent commands: ~/.cursor/commands, ~/.claude/commands")
-    print("  • Symlinks Codex/Gemini outputs: ~/.codex/prompts, ~/.gemini/commands")
-    print("  • Installs .cursor/rules/ (Cursor enforcement)")
-    print("  • Creates .issue_screenshots/ directory")
+    print(f"{colors.YELLOW}Note:{colors.NC} v2 has zero per-project setup!")
+    print("  Commands work in all repositories automatically.")
     print()
 
 
@@ -542,9 +531,7 @@ def main():
     if not build_commands(install_dir):
         sys.exit(1)
 
-    # Create Unix wrapper (symlink agentsdotmd-init -> agentsdotmd-init.py)
-    if not create_unix_wrapper(install_dir):
-        sys.exit(1)
+    # Note: agentsdotmd-init is obsolete in v2 (zero per-project setup)
     
     # Add to PATH
     shell_config = ""
