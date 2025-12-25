@@ -391,8 +391,13 @@ def configure_cursor(install_dir: Path) -> bool:
 
     build_cursor_commands = install_dir / 'build' / 'cursor' / 'commands'
     if build_cursor_commands.exists():
+        # Remove existing link/directory
         if cursor_commands_dir.exists() or cursor_commands_dir.is_symlink():
-            cursor_commands_dir.unlink()
+            if cursor_commands_dir.is_dir() and not cursor_commands_dir.is_symlink():
+                shutil.rmtree(cursor_commands_dir)
+            else:
+                cursor_commands_dir.unlink()
+        
         success, method, warning = create_link(cursor_commands_dir, build_cursor_commands, force=True)
         if not success:
             print_warning(f"    ⚠️  Could not link Cursor commands: {method}")
