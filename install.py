@@ -486,7 +486,10 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     if is_windows():
         print("  1. Restart your terminal (or open a new PowerShell window)")
     else:
-        print(f"  1. Restart your terminal (or run: source {shell_config})")
+        if shell_config:
+            print(f"  1. Restart your terminal (or run: source ~/{shell_config})")
+        else:
+            print("  1. Restart your terminal")
     print("  2. cd to any git repository")
     if is_windows():
         print("  3. Run: python agentsdotmd-init.py")

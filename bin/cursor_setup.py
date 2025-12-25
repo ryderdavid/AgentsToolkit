@@ -68,15 +68,8 @@ def open_cursor_settings() -> bool:
     
     try:
         if system == "Darwin":  # macOS
-            # Try cursor CLI first
-            if shutil.which("cursor"):
-                subprocess.Popen(["open", "-a", "Cursor"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                print_success("  ✓ Cursor opened")
-                print()
-                print("  Navigate to: Cursor → Settings → Cursor Settings → Rules")
-                return True
-            # Try direct app path
-            elif Path("/Applications/Cursor.app").exists():
+            # Check if Cursor.app exists before trying to open
+            if Path("/Applications/Cursor.app").exists():
                 subprocess.Popen(["open", "-a", "Cursor"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 print_success("  ✓ Cursor opened")
                 print()
