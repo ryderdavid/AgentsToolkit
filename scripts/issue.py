@@ -16,9 +16,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 from lib.common import (
     colors, print_error, print_success, print_info, print_warning,
     check_git_repo, get_current_branch, run_git,
-    detect_branch_type, sanitize_branch_name
+    detect_branch_type, sanitize_branch_name, get_repo_info
 )
-from lib.github import create_issue, get_repo_info, link_branch_to_issue
+from lib.github import create_issue, link_branch_to_issue
 
 
 def parse_args():
