@@ -7,6 +7,7 @@ Works on Windows, macOS, and Linux.
 Note: Workflow scripts expect GitHub CLI (gh) to be installed and authenticated.
 """
 
+import json
 import os
 import platform
 import shutil
