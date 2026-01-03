@@ -154,6 +154,46 @@ Closes #{issue-num}
 
 ---
 
+## Walkthrough Template
+
+Use this for `docs/walkthroughs/{issue}_W{N}.md` (N = W1, W2, W3... for that issue).
+
+```markdown
+# Walkthrough: #{issue} - W{N}
+
+**Issue:** [#{issue}: Title](link)
+**Branch:** `{branch-name}`
+**Date:** YYYY-MM-DD
+
+## Summary
+[1-2 sentences: what was implemented in this round]
+
+## Files Changed
+| File | Change Type | Description |
+|------|-------------|-------------|
+| `path/to/file` | Created/Modified/Deleted | Brief description |
+
+## Implementation Details
+[Key technical decisions, patterns used, rationale]
+
+## How to Verify
+1. [Step to test the changes]
+2. [Expected result]
+
+## Known Limitations
+- [Any caveats or edge cases not handled]
+
+## Next Steps
+- [ ] [Remaining work for this issue, if any]
+
+## Commits
+- [`abc1234`: Message](commit-link)
+```
+
+**Retention:** When an issue is closed, prompt whether to keep or archive/remove the walkthroughs.
+
+---
+
 ## GitHub Output Examples
 
 ### Good End-of-Round Summary
