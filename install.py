@@ -567,6 +567,7 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     print("  • Commands built from ~/.agentsmd/commands/src via build_commands.py")
     print("  • Multi-agent commands symlinked: ~/.cursor/commands, ~/.claude/commands")
     print("  • Codex/Gemini outputs: ~/.codex/prompts, ~/.gemini/commands")
+    print("  • Antigravity Workflows: ~/.gemini/antigravity/global_workflows")
     print("  • Cursor rules available (if Cursor was configured)")
     print()
     print(f"{colors.YELLOW}Note:{colors.NC} v2 has zero per-project setup!")
