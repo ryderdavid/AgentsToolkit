@@ -179,9 +179,12 @@ def convert_to_gemini(src: Path) -> None:
     
     dest.parent.mkdir(parents=True, exist_ok=True)
     
+    # Replace path for Gemini sandbox visibility
+    text = src.read_text().replace("~/.agentsmd/scripts", "~/.gemini/scripts")
+    
     content = f'''description = "AgentsToolkit {basename} command"
 prompt = """
-{src.read_text()}
+{text}
 """
 '''
     dest.write_text(content)
@@ -201,11 +204,14 @@ def convert_to_antigravity(src: Path) -> None:
     
     dest.parent.mkdir(parents=True, exist_ok=True)
     
+    # Replace path for Antigravity sandbox visibility
+    text = src.read_text().replace("~/.agentsmd/scripts", "~/.gemini/scripts")
+    
     content = f"""---
 name: {basename}
 description: AgentsToolkit {basename} command
 ---
-{src.read_text()}
+{text}
 """
     dest.write_text(content)
 

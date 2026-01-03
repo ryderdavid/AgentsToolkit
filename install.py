@@ -453,6 +453,22 @@ def configure_gemini_cli(install_dir: Path) -> bool:
     # 2. Configure Antigravity (~/.gemini)
     gemini_home = Path.home() / '.gemini'
     gemini_home.mkdir(exist_ok=True)
+
+    # 2a. Symlink scripts to ~/.gemini/scripts (for sandbox visibility)
+    gemini_scripts = gemini_home / 'scripts'
+    agents_scripts = install_dir / 'scripts'
+    
+    if gemini_scripts.exists() or gemini_scripts.is_symlink():
+        if gemini_scripts.is_dir() and not gemini_scripts.is_symlink():
+            shutil.rmtree(gemini_scripts)
+        else:
+            gemini_scripts.unlink()
+            
+    success, method, warning = create_link(gemini_scripts, agents_scripts)
+    if success:
+        print_success("    ✓ Symlinked ~/.gemini/scripts -> ~/.agentsmd/scripts")
+    else:
+        print_warning(f"    ⚠️  Could not create scripts symlink: {method}")
     
     # Update settings.json to include AGENTS.md in context
     settings_path = gemini_home / 'settings.json'
