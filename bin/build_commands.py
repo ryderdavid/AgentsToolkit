@@ -190,14 +190,24 @@ prompt = """
 def convert_to_antigravity(src: Path) -> None:
     """Convert source file to Antigravity Workflow format (Markdown).
     
+    Structure: global_workflows/{command_name}/global-workflow.md
+    Adds YAML frontmatter.
+    
     Args:
         src: Source markdown file path
     """
-    rel_path = src.relative_to(SRC_DIR)
-    dest = BUILD_DIR / "antigravity" / "global_workflows" / rel_path
+    basename = src.stem
+    dest = BUILD_DIR / "antigravity" / "global_workflows" / basename / "global-workflow.md"
     
     dest.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(src, dest)
+    
+    content = f"""---
+name: {basename}
+description: AgentsToolkit {basename} command
+---
+{src.read_text()}
+"""
+    dest.write_text(content)
 
 
 # ============================================================================
