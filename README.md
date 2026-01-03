@@ -545,3 +545,8 @@ Built on the AGENTS.md standard that emerged in July 2025, now supported by 60+ 
 v2 eliminates the repetitive per-project setup that plagued v1. Now you install once and Cursor commands work everywhere. See the [Migration Guide](docs/v2-migration.md) for details.
 
 **Upgrading from v1?** Check the [Migration Guide](docs/v2-migration.md).
+AGENTS.md Word Budget (target: 1,000 words)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+███████████████████████████████████░░░░░  883/1000 (88%)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Buffer remaining: 117 words for future additions
