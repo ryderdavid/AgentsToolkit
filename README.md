@@ -131,6 +131,7 @@ your-repo/
 - Claude Code: `~/.claude/commands` (symlink to `~/.agentsmd/build/claude/commands`)
 - Codex CLI: `~/.codex/prompts` (symlink to `~/.agentsmd/build/codex/prompts`, invoked as `/prompts:<name>`)
 - Gemini CLI: `~/.gemini/commands` (symlink to `~/.agentsmd/build/gemini/commands`)
+- Antigravity: `~/.gemini/antigravity/global_workflows` (symlink to `~/.agentsmd/build/antigravity/global_workflows`)
 - All outputs generated from `~/.agentsmd/commands/src` via `bin/build_commands.py install`
 
 ## Philosophy
@@ -233,6 +234,16 @@ Run scripts via terminal or VS Code tasks.
 Configured automatically during installation (if selected):
 - ✅ AGENTS.md symlinked to `~/.config/gemini/prompts/agents.md`
 
+### Antigravity (Google's AI IDE)
+
+Configured automatically during installation (if Gemini CLI/Antigravity selected):
+- ✅ Commands symlinked to `~/.gemini/antigravity/global_workflows/` (as Global Workflows)
+- ✅ Scripts symlinked to `~/.gemini/scripts/` (for sandbox visibility)
+- ✅ AGENTS.md imported via `~/.gemini/GEMINI.md` with `@~/.agentsmd/AGENTS.md`
+- ✅ `~/.gemini/settings.json` configured to include AGENTS.md in context
+
+**Note:** Antigravity uses the same configuration as Gemini CLI since it's built on Gemini technology.
+
 ### Codex CLI
 
 Configured automatically during installation:
@@ -329,6 +340,7 @@ Safety tiers (per AGENTS.md):
 | **Claude Code** | ✅ Via config.yml | ✅ `~/.claude/commands` (symlink) | Terminal/tasks | ✅ Fully supported |
 | **Codex CLI** | ⚠️ Manual prompt include | ✅ `~/.codex/prompts` (`/prompts:<name>`) | Terminal | ✅ Fully supported |
 | **Gemini CLI** | ✅ Via prompts directory | ✅ `~/.gemini/commands` (symlink) | Terminal | ✅ Fully supported |
+| **Antigravity** | ✅ Via GEMINI.md import | ✅ `~/.gemini/antigravity/global_workflows` (symlink) | Built-in | ✅ Fully supported |
 | **GitHub Copilot** | ✅ Native (Aug 2025) | ✅ Via workspace instructions | Terminal/tasks | ✅ Fully supported |
 | **Jules** | ✅ Native | ✅ Repo root | Terminal | ✅ Fully supported |
 | **Aider** | ✅ Recommended | ✅ Standard | Terminal | ✅ Fully supported |
