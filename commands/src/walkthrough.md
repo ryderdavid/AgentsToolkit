@@ -1,0 +1,56 @@
+Create or update a walkthrough document for the current implementation round.
+
+**Purpose:**
+Document what was implemented so far to ensure knowledge transfer, auditability, and alignment with [Walkthrough Documentation](../../AGENTS.md#walkthrough-documentation).
+
+**Location:** `docs/walkthroughs/{issue}_W{N}.md`
+- `{issue}` = GitHub issue number (e.g., `57`)
+- `{N}` = Sequential walkthrough number for that issue (W1, W2, W3…)
+
+**Walkthrough Template:**
+# Walkthrough: #{issue} - W{N}
+
+**Issue:** [#{issue}: Title](link)
+**Branch:** `{branch-name}`
+**Date:** YYYY-MM-DD
+
+## Summary
+[1-2 sentences: what was implemented in this round]
+
+## Files Changed
+| File | Change Type | Description |
+|------|-------------|-------------|
+| `path/to/file` | Created/Modified/Deleted | Brief description |
+
+## Implementation Details
+[Key technical decisions, patterns used, rationale]
+
+## How to Verify
+1. [Step to test the changes]
+2. [Expected result]
+
+## Known Limitations
+- [Any caveats or edge cases not handled]
+
+## Next Steps
+- [ ] [Remaining work for this issue, if any]
+
+## Commits
+- [`abc1234`: Message](commit-link)
+
+**Workflow:**
+1. Detect the current issue number from branch name (per AGENTS.md branch rules).
+2. Ensure `docs/walkthroughs/` exists (create if missing).
+3. Count existing walkthroughs for this issue (`{issue}_W*.md`) to determine the next `{N}` (starting at 1).
+4. Create `docs/walkthroughs/{issue}_W{N}.md` with the template above and populate details for this implementation round.
+5. Commit and push the walkthrough alongside the code changes for this round.
+
+**When to Create:**
+- After each substantial implementation round (MANDATORY per AGENTS.md).
+- When the user invokes `/walkthrough`.
+- Before marking a PR ready for review.
+
+**Retention on Issue Close:**
+- When the issue is closed, prompt the user whether to keep or archive/remove the walkthroughs for that issue.
+
+

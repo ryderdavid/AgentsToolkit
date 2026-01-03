@@ -18,6 +18,7 @@ Non-negotiable rules for all AI agents. Violations constitute workflow failures.
 5. **ALWAYS document work in GitHub issues and PRs—not just chat.**
 6. **ALWAYS provide clickable markdown hyperlinks for GitHub resources.**
 7. **ALWAYS end implementation rounds with clickable links to all artifacts** (issues, PRs, commits, branches).
+8. **ALWAYS produce a walkthrough document after each substantial implementation round.** Walkthroughs go in `docs/walkthroughs/{issue}_W{N}.md` (W1, W2, ...).
 
 ---
 
@@ -86,6 +87,33 @@ See [PR Template](docs/AGENTS_REFERENCE.md#pr-template).
 
 Document each feedback round in issue comments: what was wrong, what changed, insights gained.  
 Document failed approaches before trying alternatives.
+
+---
+
+## Walkthrough Documentation
+
+**After each substantial implementation round**, create a walkthrough document:
+
+**Location:** `docs/walkthroughs/{issue}_W{N}.md`
+- `{issue}` = GitHub issue number
+- `{N}` = Sequential number for the issue (W1, W2, W3...)
+
+**Required Sections:**
+1. Summary (what was implemented)
+2. Files Changed (table of modifications)
+3. Implementation Details (technical decisions)
+4. How to Verify (testing steps)
+5. Known Limitations (caveats)
+6. Commits (links to relevant commits)
+
+**When to produce:**
+- After completing each implementation round
+- Before marking PR ready for review
+- When user requests via `/walkthrough` command
+
+**Retention:** When an issue is closed, prompt the user whether to keep or archive/remove the walkthrough files.
+
+See [Walkthrough Template](docs/AGENTS_REFERENCE.md#walkthrough-template) for full format.
 
 ---
 
