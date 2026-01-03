@@ -156,7 +156,12 @@ Closes #{issue-num}
 
 ## Walkthrough Template
 
-Use this for `docs/walkthroughs/{issue}_W{N}.md` (N = W1, W2, W3... for that issue).
+Use this for `docs/walkthroughs/{issue-num}-{issue-slug}_W{N}.md` (e.g., `57-add-walkthrough-command_W1.md`).
+
+**Filename Format:**
+- `{issue-num}` = GitHub issue number
+- `{issue-slug}` = Issue title converted to URL-friendly format (lowercase, hyphens)
+- `{N}` = Sequential number (W1, W2, W3... for that issue)
 
 ```markdown
 # Walkthrough: #{issue} - W{N}
