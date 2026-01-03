@@ -47,16 +47,37 @@ def create_issue(
     Returns:
         Created issue dict with number and url, or None on failure
     """
-    cmd = ['issue', 'create', '--title', title, '--body', body]
+    import tempfile
+    import os
+
+    # Use a temporary file for the body to avoid shell argument limit/quoting issues
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.md') as tmp:
+        tmp.write(body)
+        tmp_path = tmp.name
     
-    if labels:
-        for label in labels:
-            cmd.extend(['--label', label])
-    
-    cmd.extend(['--json', 'number,url'])
-    
-    result, parsed = run_gh(*cmd, json_output=True)
-    return parsed
+    try:
+        cmd = ['issue', 'create', '--title', title, '--body-file', tmp_path]
+        
+        if labels:
+            for label in labels:
+                cmd.extend(['--label', label])
+        
+        # gh issue create outputs URL to stdout on success, does not support --json
+        result, _ = run_gh(*cmd, json_output=False)
+        
+        if result.returncode == 0 and result.stdout:
+            url = result.stdout.strip()
+            try:
+                # Extract number from URL: https://github.com/owner/repo/issues/123
+                number = int(url.split('/')[-1])
+                return {'number': number, 'url': url}
+            except (ValueError, IndexError):
+                pass
+        
+        return None
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
 
 def update_issue(
@@ -139,18 +160,39 @@ def create_pr(
     Returns:
         Created PR dict with number and url, or None on failure
     """
-    cmd = ['pr', 'create', '--title', title, '--body', body, '--base', base]
+    import tempfile
+    import os
     
-    if head:
-        cmd.extend(['--head', head])
-    
-    if draft:
-        cmd.append('--draft')
-    
-    cmd.extend(['--json', 'number,url'])
-    
-    result, parsed = run_gh(*cmd, json_output=True)
-    return parsed
+    # Use a temporary file for the body
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.md') as tmp:
+        tmp.write(body)
+        tmp_path = tmp.name
+
+    try:
+        cmd = ['pr', 'create', '--title', title, '--body-file', tmp_path, '--base', base]
+        
+        if head:
+            cmd.extend(['--head', head])
+        
+        if draft:
+            cmd.append('--draft')
+        
+        # gh pr create outputs URL to stdout, does not support --json
+        result, _ = run_gh(*cmd, json_output=False)
+        
+        if result.returncode == 0 and result.stdout:
+            url = result.stdout.strip()
+            try:
+                # Extract number from URL: https://github.com/owner/repo/pull/123
+                number = int(url.split('/')[-1])
+                return {'number': number, 'url': url}
+            except (ValueError, IndexError):
+                pass
+        
+        return None
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
 
 def update_pr(

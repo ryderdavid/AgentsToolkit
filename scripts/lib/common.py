@@ -140,11 +140,15 @@ def run_gh(
     """
     result = run_command(['gh', *args], cwd=cwd)
     
+    if result.returncode != 0 and result.stderr:
+        print_error(f"GitHub CLI Error: {result.stderr.strip()}")
+    
     if json_output and result.returncode == 0 and result.stdout:
         try:
             parsed = json.loads(result.stdout)
             return result, parsed
         except json.JSONDecodeError:
+            print_error(f"Failed to parse JSON output from gh: {result.stdout}")
             return result, None
     
     return result, None
