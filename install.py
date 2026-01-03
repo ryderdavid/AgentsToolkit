@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """AgentsToolkit Global Installer - Cross-platform.
 
-Installs toolkit to ~/.agents_toolkit and adds bin/ to PATH.
+Installs toolkit to ~/.agentsmd/ and adds bin/ to PATH.
 Works on Windows, macOS, and Linux.
 
 Note: Workflow scripts expect GitHub CLI (gh) to be installed and authenticated.
 """
 
+import json
 import os
 import platform
 import shutil
@@ -430,9 +431,10 @@ def configure_claude_code() -> bool:
 
 
 def configure_gemini_cli(install_dir: Path) -> bool:
-    """Configure Gemini CLI by symlinking AGENTS.md."""
-    print_info("  [Gemini CLI]")
+    """Configure Gemini CLI and Antigravity."""
+    print_info("  [Gemini CLI / Antigravity]")
     
+    # 1. Configure Gemini CLI prompts (legacy/standard CLI)
     gemini_prompts_dir = Path.home() / '.config' / 'gemini' / 'prompts'
     gemini_prompts_dir.mkdir(parents=True, exist_ok=True)
     
@@ -447,6 +449,89 @@ def configure_gemini_cli(install_dir: Path) -> bool:
         print_success("    ✓ Configured ~/.config/gemini/prompts/agents.md")
     else:
         print_warning(f"    ⚠️  Could not create symlink: {method}")
+
+    # 2. Configure Antigravity (~/.gemini)
+    gemini_home = Path.home() / '.gemini'
+    gemini_home.mkdir(exist_ok=True)
+
+    # 2a. Symlink scripts to ~/.gemini/scripts (for sandbox visibility)
+    gemini_scripts = gemini_home / 'scripts'
+    agents_scripts = install_dir / 'scripts'
+    
+    if gemini_scripts.exists() or gemini_scripts.is_symlink():
+        if gemini_scripts.is_dir() and not gemini_scripts.is_symlink():
+            shutil.rmtree(gemini_scripts)
+        else:
+            gemini_scripts.unlink()
+            
+    success, method, warning = create_link(gemini_scripts, agents_scripts)
+    if success:
+        print_success("    ✓ Symlinked ~/.gemini/scripts -> ~/.agentsmd/scripts")
+    else:
+        print_warning(f"    ⚠️  Could not create scripts symlink: {method}")
+    
+    # Update settings.json to include AGENTS.md in context
+    settings_path = gemini_home / 'settings.json'
+    settings = {}
+    if settings_path.exists():
+        try:
+            with open(settings_path, 'r') as f:
+                settings = json.load(f)
+        except Exception as e:
+            print_warning(f"    ⚠️  Failed to read {settings_path}: {e}")
+            # Continue with empty settings if read fails
+    
+    # Ensure 'context' structure exists
+    if 'context' not in settings:
+        settings['context'] = {}
+    
+    # Get current context.fileName or default
+    context_files = settings['context'].get('fileName', ["GEMINI.md"])
+    if isinstance(context_files, str):
+        context_files = [context_files]
+    
+    # Update context files if needed
+    changed = False
+    if "AGENTS.md" not in context_files:
+        context_files.insert(0, "AGENTS.md") # Prepend AGENTS.md
+        if "GEMINI.md" not in context_files:
+            context_files.append("GEMINI.md")
+        
+        settings['context']['fileName'] = context_files
+        changed = True
+    
+    if changed or not settings_path.exists():
+        try:
+            with open(settings_path, 'w') as f:
+                json.dump(settings, f, indent=2)
+            print_success(f"    ✓ Updated {settings_path} context.fileName")
+        except Exception as e:
+            print_error(f"    Failed to write {settings_path}: {e}")
+
+    # Update GEMINI.md to import AGENTS.md
+    gemini_md_path = gemini_home / 'GEMINI.md'
+    import_line = "@~/.agentsmd/AGENTS.md"
+    
+    if not gemini_md_path.exists():
+        try:
+            with open(gemini_md_path, 'w') as f:
+                f.write(f"{import_line}\n")
+            print_success(f"    ✓ Created {gemini_md_path} with import")
+        except Exception as e:
+            print_error(f"    Failed to create {gemini_md_path}: {e}")
+    else:
+        try:
+            content = gemini_md_path.read_text()
+            if import_line not in content:
+                with open(gemini_md_path, 'a') as f:
+                    if content and not content.endswith('\n'):
+                        f.write('\n')
+                    f.write(f"{import_line}\n")
+                print_success(f"    ✓ Appended import to {gemini_md_path}")
+            else:
+                print_success(f"    ✓ Import already present in {gemini_md_path}")
+        except Exception as e:
+            print_error(f"    Failed to update {gemini_md_path}: {e}")
     
     return True
 
@@ -498,6 +583,7 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     print("  • Commands built from ~/.agentsmd/commands/src via build_commands.py")
     print("  • Multi-agent commands symlinked: ~/.cursor/commands, ~/.claude/commands")
     print("  • Codex/Gemini outputs: ~/.codex/prompts, ~/.gemini/commands")
+    print("  • Antigravity Workflows: ~/.gemini/antigravity/global_workflows")
     print("  • Cursor rules available (if Cursor was configured)")
     print()
     print(f"{colors.YELLOW}Note:{colors.NC} v2 has zero per-project setup!")

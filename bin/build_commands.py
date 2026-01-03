@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """AgentsToolkit Unified Commands Build Script
 
-Converts Cursor-format Markdown commands to all agent formats (Cursor, Claude Code, Codex CLI, Gemini CLI).
+Converts Cursor-format Markdown commands to all agent formats (Cursor, Claude Code, Codex CLI, Gemini CLI, Antigravity).
 Cross-platform Python implementation.
 """
 
@@ -179,11 +179,40 @@ def convert_to_gemini(src: Path) -> None:
     
     dest.parent.mkdir(parents=True, exist_ok=True)
     
+    # Replace path for Gemini sandbox visibility
+    text = src.read_text().replace("~/.agentsmd/scripts", "~/.gemini/scripts")
+    
     content = f'''description = "AgentsToolkit {basename} command"
 prompt = """
-{src.read_text()}
+{text}
 """
 '''
+    dest.write_text(content)
+
+
+def convert_to_antigravity(src: Path) -> None:
+    """Convert source file to Antigravity Workflow format (Markdown).
+    
+    Structure: global_workflows/{command_name}.md
+    Adds YAML frontmatter.
+    
+    Args:
+        src: Source markdown file path
+    """
+    basename = src.stem
+    dest = BUILD_DIR / "antigravity" / "global_workflows" / f"{basename}.md"
+    
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Replace path for Antigravity sandbox visibility
+    text = src.read_text().replace("~/.agentsmd/scripts", "~/.gemini/scripts")
+    
+    content = f"""---
+name: {basename}
+description: AgentsToolkit {basename} command
+---
+{text}
+"""
     dest.write_text(content)
 
 
@@ -200,7 +229,7 @@ def build() -> None:
         shutil.rmtree(BUILD_DIR)
     
     # Create build directories
-    for agent_dir in ["cursor/commands", "claude/commands", "codex/prompts", "gemini/commands"]:
+    for agent_dir in ["cursor/commands", "claude/commands", "codex/prompts", "gemini/commands", "antigravity/global_workflows"]:
         (BUILD_DIR / agent_dir).mkdir(parents=True, exist_ok=True)
     
     count = 0
@@ -212,10 +241,11 @@ def build() -> None:
         convert_to_claude(src_file)
         convert_to_codex(src_file)
         convert_to_gemini(src_file)
+        convert_to_antigravity(src_file)
         
         count += 1
     
-    log_info(f"Built {count} commands for 4 agents")
+    log_info(f"Built {count} commands for 5 agents")
 
 
 # ============================================================================
@@ -231,6 +261,7 @@ def install_symlinks() -> None:
         "Claude Code": (Path.home() / ".claude" / "commands", BUILD_DIR / "claude" / "commands"),
         "Codex CLI": (Path.home() / ".codex" / "prompts", BUILD_DIR / "codex" / "prompts"),
         "Gemini CLI": (Path.home() / ".gemini" / "commands", BUILD_DIR / "gemini" / "commands"),
+        "Antigravity": (Path.home() / ".gemini" / "antigravity" / "global_workflows", BUILD_DIR / "antigravity" / "global_workflows"),
     }
     
     for agent_name, (link_path, target_path) in targets.items():
@@ -268,6 +299,7 @@ def show_summary() -> None:
     print("  Claude Code: /branch, /issue, /pr, /push, /status, ...")
     print("  Codex CLI:   /prompts:branch, /prompts:issue, ...")
     print("  Gemini CLI:  /branch, /issue, /pr, /push, /status, ...")
+    print("  Antigravity: /branch, /issue, /pr, /push, /status, ... (as Global Workflows)")
     print()
     print("Note: Codex uses /prompts: prefix for custom commands.")
     print()
