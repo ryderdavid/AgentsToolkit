@@ -340,22 +340,55 @@ def configure_agents(install_dir: Path) -> bool:
     if not inquirer:
         return True  # Skip if inquirer couldn't be installed
     
-    questions = [
-        inquirer.Checkbox(
-            'agents',
-            message='Select agents to configure (Space=select, Enter=confirm)',
-            choices=[
-                'Cursor (custom commands + User Rule)',
-                'Claude Code (instructions)',
-                'Gemini CLI (config symlink)',
-                'GitHub Copilot (instructions)',
-                'OpenAI Codex (instructions)',
-            ],
-        ),
+    # Define all agent options
+    all_agents = [
+        'Cursor (custom commands + User Rule)',
+        'Claude Code (instructions)',
+        'Gemini CLI (config symlink)',
+        'Antigravity (Google AI IDE)',
+        'GitHub Copilot (instructions)',
+        'OpenAI Codex (instructions)',
     ]
     
-    answers = inquirer.prompt(questions)
-    selected = answers['agents'] if answers else []
+    # Interactive selection with Select All/None support
+    selected = []
+    while True:
+        # Build choices with Select All/None at top
+        all_selected = len(selected) == len(all_agents)
+        select_toggle = 'Select None' if all_selected else 'Select All'
+        choices = [select_toggle] + all_agents
+        
+        questions = [
+            inquirer.Checkbox(
+                'agents',
+                message='Select agents to configure (Space=select, Enter=confirm)',
+                choices=choices,
+            ),
+        ]
+        
+        answers = inquirer.prompt(questions)
+        selected = answers['agents'] if answers else []
+        
+        # Handle Select All/None toggle
+        if select_toggle in selected:
+            if all_selected:
+                # Deselect all - user wants to skip configuration
+                selected = []
+            else:
+                # Select all agents - proceed with all selected
+                selected = all_agents.copy()
+            # Remove toggle option from selected (it's not an agent)
+            if select_toggle in selected:
+                selected.remove(select_toggle)
+            # Proceed with the selection (no need to re-prompt)
+            break
+        
+        # Remove Select All/None toggle option from selected if present (it's not an agent)
+        if select_toggle in selected:
+            selected.remove(select_toggle)
+        
+        # User confirmed their selection
+        break
     
     if not selected:
         print_warning("⊘ No agents selected")
@@ -372,6 +405,8 @@ def configure_agents(install_dir: Path) -> bool:
             configure_claude_code()
         elif 'Gemini CLI' in agent:
             configure_gemini_cli(install_dir)
+        elif 'Antigravity' in agent:
+            configure_antigravity(install_dir)
         elif 'GitHub Copilot' in agent:
             configure_github_copilot()
         elif 'OpenAI Codex' in agent:
@@ -431,10 +466,10 @@ def configure_claude_code() -> bool:
 
 
 def configure_gemini_cli(install_dir: Path) -> bool:
-    """Configure Gemini CLI and Antigravity."""
-    print_info("  [Gemini CLI / Antigravity]")
+    """Configure Gemini CLI."""
+    print_info("  [Gemini CLI]")
     
-    # 1. Configure Gemini CLI prompts (legacy/standard CLI)
+    # Configure Gemini CLI prompts (legacy/standard CLI)
     gemini_prompts_dir = Path.home() / '.config' / 'gemini' / 'prompts'
     gemini_prompts_dir.mkdir(parents=True, exist_ok=True)
     
@@ -449,8 +484,15 @@ def configure_gemini_cli(install_dir: Path) -> bool:
         print_success("    ✓ Configured ~/.config/gemini/prompts/agents.md")
     else:
         print_warning(f"    ⚠️  Could not create symlink: {method}")
+    
+    return True
 
-    # 2. Configure Antigravity (~/.gemini)
+
+def configure_antigravity(install_dir: Path) -> bool:
+    """Configure Antigravity (Google's AI IDE)."""
+    print_info("  [Antigravity]")
+    
+    # Configure Antigravity (~/.gemini)
     gemini_home = Path.home() / '.gemini'
     gemini_home.mkdir(exist_ok=True)
 
