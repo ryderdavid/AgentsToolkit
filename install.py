@@ -133,9 +133,69 @@ def make_scripts_executable(install_dir: Path) -> bool:
         return False
 
 
+def build_typescript_registry(install_dir: Path) -> bool:
+    """Build TypeScript agent registry (npm install + npm run build).
+    
+    The build_commands.py script depends on the compiled TypeScript registry
+    at dist/core/agent-registry.js. This function ensures it exists before
+    running build_commands.py.
+    
+    Returns:
+        True if successful or if npm/Node.js unavailable (fallback to bundled JSON)
+    """
+    package_json = install_dir / 'package.json'
+    if not package_json.exists():
+        print_warning("⚠️  package.json not found, skipping TypeScript build")
+        return True
+    
+    # Check if Node.js and npm are available
+    try:
+        subprocess.run(['node', '--version'], capture_output=True, check=True)
+        subprocess.run(['npm', '--version'], capture_output=True, check=True)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print_warning("⚠️  Node.js/npm not available, will use bundled registry")
+        return True
+    
+    print_info("  Building TypeScript agent registry...")
+    
+    try:
+        # Run npm install (skip if node_modules exists and is recent)
+        node_modules = install_dir / 'node_modules'
+        if not node_modules.exists():
+            subprocess.check_call(
+                ['npm', 'install'],
+                cwd=str(install_dir),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE
+            )
+            print_success("  ✓ npm install complete")
+        
+        # Run npm run build
+        subprocess.check_call(
+            ['npm', 'run', 'build'],
+            cwd=str(install_dir),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE
+        )
+        print_success("  ✓ TypeScript registry built")
+        return True
+    
+    except subprocess.CalledProcessError as e:
+        print_warning(f"⚠️  TypeScript build failed: {e}")
+        print_info("  Will use bundled registry fallback")
+        return True
+    except (OSError, ValueError) as e:
+        print_warning(f"⚠️  Could not run npm: {e}")
+        return True
+
+
 def build_commands(install_dir: Path) -> bool:
     """Build and install agent commands via build_commands.py."""
     print_info("[3/4] Building and installing agent commands...")
+    
+    # First, ensure the TypeScript registry is built (or fallback is available)
+    if not build_typescript_registry(install_dir):
+        return False
 
     script = install_dir / 'bin' / 'build_commands.py'
     if not script.exists():
@@ -322,6 +382,44 @@ def ensure_inquirer():
             print_warning(f"⚠️  Could not install inquirer: {e}")
             print_info("Agent configuration will be skipped")
             return None
+
+
+def configure_rule_packs(install_dir: Path) -> bool:
+    """Configure which rule packs to use (modular vs legacy)."""
+    print()
+    print("─" * 72)
+    print()
+    print_info("Rule Pack Configuration")
+    print()
+    print("  AgentsToolkit v2.0 introduces modular rule packs:")
+    print("  - core: Universal VCS-agnostic workflow rules")
+    print("  - github-hygiene: GitHub-specific workflow standards")
+    print("  - azure-devops: Azure DevOps-specific workflow standards")
+    print()
+    
+    response = input("Use modular rule packs? [Y/n]: ").strip().lower()
+    
+    if response == 'n':
+        # Use legacy monolithic AGENTS.md
+        agents_md = install_dir / 'AGENTS.md'
+        legacy_md = install_dir / 'AGENTS.legacy.md'
+        
+        if legacy_md.exists():
+            # Backup current AGENTS.md and use legacy
+            import shutil
+            if agents_md.exists():
+                shutil.copy2(agents_md, install_dir / 'AGENTS.modular.md')
+            shutil.copy2(legacy_md, agents_md)
+            print_success("✓ Using legacy monolithic AGENTS.md")
+            print_info("  Modular version saved as AGENTS.modular.md")
+        else:
+            print_warning("⚠️  AGENTS.legacy.md not found, keeping current AGENTS.md")
+    else:
+        print_success("✓ Using modular rule packs (default)")
+        print_info("  Active packs: core + github-hygiene")
+        print_info("  To use Azure DevOps, edit AGENTS.md imports")
+    
+    return True
 
 
 def configure_agents(install_dir: Path) -> bool:
@@ -564,6 +662,7 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     print(f"{colors.BLUE}Installed:{colors.NC}")
     print(f"  ✓ Toolkit at: ~/.agentsmd/")
     print(f"  ✓ Scripts: ~/.agentsmd/scripts/")
+    print(f"  ✓ Rule Packs: ~/.agentsmd/rule-packs/")
     print(f"  ✓ Base AGENTS.md: ~/.agentsmd/AGENTS.md")
     print()
     print(f"{colors.BLUE}Next steps:{colors.NC}")
@@ -579,6 +678,7 @@ def print_summary(install_dir: Path, shell_config: str = ""):
     print()
     print(f"{colors.BLUE}What's configured globally:{colors.NC}")
     print("  • AGENTS.md symlinked (global constitution)")
+    print("  • Rule packs: core, github-hygiene, azure-devops")
     print("  • CLAUDE.md symlinked (Claude Code enforcement)")
     print("  • Commands built from ~/.agentsmd/commands/src via build_commands.py")
     print("  • Multi-agent commands symlinked: ~/.cursor/commands, ~/.claude/commands")
@@ -628,6 +728,10 @@ def main():
                 break
     
     if not add_to_path(install_dir):
+        sys.exit(1)
+    
+    # Configure rule packs
+    if not configure_rule_packs(install_dir):
         sys.exit(1)
     
     # Configure agents interactively
