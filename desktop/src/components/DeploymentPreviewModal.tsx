@@ -14,6 +14,7 @@ import { ValidationResultsPanel } from './ValidationResultsPanel';
 import { CharacterBudget } from './CharacterBudget';
 import type { DeploymentConfig, PreparedDeployment, ValidationReport } from '@/lib/types';
 import type { AgentDefinition } from '@/lib/agents';
+import { useDeploymentConfigStore } from '@/stores/deploymentConfigStore';
 
 interface DeploymentPreviewModalProps {
   agent: AgentDefinition;
@@ -41,9 +42,11 @@ export function DeploymentPreviewModal({
     validateDeployment, 
     isLoading 
   } = useAgentDeployment();
+  const configStore = useDeploymentConfigStore();
 
   useEffect(() => {
     if (isOpen) {
+      setForceOverwrite(config.forceOverwrite);
       // Fetch preview and validation
       Promise.all([
         previewDeployment(agent.id, config),
@@ -71,6 +74,8 @@ export function DeploymentPreviewModal({
 
   const handleDeploy = () => {
     if (canDeploy) {
+      // Persist the user's latest choice before deploying
+      configStore.setForceOverwrite(agent.id, forceOverwrite);
       onDeploy();
     }
   };
@@ -226,7 +231,11 @@ export function DeploymentPreviewModal({
                   <input
                     type="checkbox"
                     checked={forceOverwrite}
-                    onChange={(e) => setForceOverwrite(e.target.checked)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setForceOverwrite(checked);
+                      configStore.setForceOverwrite(agent.id, checked);
+                    }}
                     className="rounded"
                   />
                   <span className="text-sm">Force overwrite existing files</span>
