@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://agentstoolkit.dev/schemas/command-definition.schema.json",
+  "title": "CommandDefinition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "description", "scriptPath"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Machine-friendly identifier, lowercase with hyphens (derived from filename)."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable command name."
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of what the command does (first line of markdown)."
+    },
+    "scriptPath": {
+      "type": "string",
+      "description": "Path to the Python script that executes this command."
+    },
+    "agentCompatibility": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "description": "Array of agent IDs this command is compatible with. Empty means all agents."
+    },
+    "requiresGitHub": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this command requires GitHub CLI (gh) to be authenticated."
+    },
+    "outReferences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of file paths referenced by this command (rule-packs, docs, templates)."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["workflow", "git", "documentation", "utility"],
+      "description": "Command category for organization and filtering."
+    },
+    "template": {
+      "type": "string",
+      "description": "Optional template content for commands that generate files."
+    },
+    "characterCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Character count of the command markdown content."
+    },
+    "wordCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Word count of the command markdown content."
+    },
+    "sourcePath": {
+      "type": "string",
+      "description": "Path to the source markdown file."
+    }
+  }
+}

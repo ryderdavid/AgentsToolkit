@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Package, Bot, Terminal, Settings } from 'lucide-react';
+import { Home, Package, Bot, Terminal, Settings, FileText } from 'lucide-react';
 
 export function Layout() {
   const location = useLocation();
@@ -9,6 +9,7 @@ export function Layout() {
     { path: '/rule-packs', label: 'Rule Packs', icon: Package },
     { path: '/agents', label: 'Agents', icon: Bot },
     { path: '/commands', label: 'Commands', icon: Terminal },
+    { path: '/out-references', label: 'Out-References', icon: FileText },
     { path: '/settings', label: 'Settings', icon: Settings },
   ];
 

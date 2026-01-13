@@ -41,6 +41,8 @@ export interface RulePack {
   targetAgents: string[];
   /** Array of markdown files in load order */
   files: string[];
+  /** Optional out-reference links associated with this pack */
+  outReferences?: string[];
   /** Pack metadata */
   metadata: PackMetadata;
 }

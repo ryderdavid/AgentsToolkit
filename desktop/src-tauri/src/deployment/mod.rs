@@ -4,6 +4,8 @@
 //! and custom commands to various AI coding agents.
 
 pub mod agents;
+pub mod command_loader;
+pub mod command_validator;
 pub mod converters;
 pub mod deployer;
 pub mod error;
@@ -18,6 +20,11 @@ use std::sync::Arc;
 
 use crate::fs_manager;
 use crate::ipc;
+use crate::command_registry;
+use crate::out_reference_manager;
+use crate::types::RulePack;
+use crate::deployment::validator::DeploymentValidator;
+use serde_json;
 
 pub use deployer::{
     AgentDeployer, AgentStatus, BudgetUsage, DeploymentConfig, DeploymentOutput,
@@ -44,6 +51,27 @@ impl DeploymentManager {
             backup_manager: BackupManager::new()?,
             logger: logger::DeploymentLogger::new()?,
         })
+    }
+
+    fn merge_with_command_validation(
+        &self,
+        mut validation: ValidationReport,
+        config: &DeploymentConfig,
+    ) -> DeploymentResult<ValidationReport> {
+        if config.custom_command_ids.is_empty() {
+            return Ok(validation);
+        }
+
+        let command_validation = DeploymentValidator::validate_commands_for_agent(
+            &config.custom_command_ids,
+            &config.agent_id,
+        )?;
+
+        validation.warnings.extend(command_validation.warnings);
+        validation.errors.extend(command_validation.errors);
+        validation.valid = validation.valid && command_validation.valid && validation.errors.is_empty();
+
+        Ok(validation)
     }
 
     /// Deploy to a specific agent
@@ -76,6 +104,19 @@ impl DeploymentManager {
 
         // Validate deployment
         let validation = match deployer.validate(&prepared) {
+            Ok(v) => v,
+            Err(e) => {
+                self.logger.log_failure(
+                    &config.agent_id,
+                    logger::DeploymentOperation::Validate,
+                    vec![e.to_string()],
+                    None,
+                )?;
+                return Err(e);
+            }
+        };
+
+        let validation = match self.merge_with_command_validation(validation, config) {
             Ok(v) => v,
             Err(e) => {
                 self.logger.log_failure(
@@ -264,7 +305,8 @@ impl DeploymentManager {
             .ok_or_else(|| DeploymentError::agent_not_found(&config.agent_id))?;
 
         let prepared = deployer.prepare(config)?;
-        deployer.validate(&prepared)
+        let validation = deployer.validate(&prepared)?;
+        self.merge_with_command_validation(validation, config)
     }
 
     /// Preview a deployment without executing it
@@ -307,6 +349,76 @@ pub fn generate_agents_md_content(
     }
 
     Ok(result.content)
+}
+
+/// Resolved out-reference ready for deployment
+#[derive(Debug, Clone)]
+pub struct ResolvedOutReference {
+    pub file_path: String,
+    pub source_path: PathBuf,
+    pub content: String,
+}
+
+/// Collect out-references required by the selected commands and packs
+pub fn collect_out_references_for_selection(
+    command_ids: &[String],
+    pack_ids: &[String],
+) -> DeploymentResult<Vec<ResolvedOutReference>> {
+    let mut requested_paths: Vec<String> = Vec::new();
+
+    // Commands
+    for command_id in command_ids {
+        let command = command_registry::get_command_by_id(command_id)
+            .map_err(DeploymentError::ConfigurationError)?;
+        requested_paths.extend(command.out_references.clone());
+    }
+
+    // Packs (respect overrides stored in metadata)
+    let pack_overrides = fs_manager::read_pack_out_ref_overrides().unwrap_or_default();
+    for pack_id in pack_ids {
+        let json = fs_manager::read_pack_json(pack_id.clone())
+            .map_err(|e| DeploymentError::ConfigurationError(e.to_string()))?;
+        let mut pack: RulePack = serde_json::from_str(&json)
+            .map_err(|e| DeploymentError::ConfigurationError(e.to_string()))?;
+        if let Some(refs) = pack_overrides.get(pack_id) {
+            pack.out_references = refs.clone();
+        }
+        requested_paths.extend(pack.out_references.clone());
+    }
+
+    requested_paths.sort();
+    requested_paths.dedup();
+
+    if requested_paths.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let available_refs = out_reference_manager::list_out_references()
+        .map_err(DeploymentError::ConfigurationError)?;
+    let base_dir = out_reference_manager::get_out_references_dir();
+    let mut resolved: Vec<ResolvedOutReference> = Vec::new();
+
+    for path in requested_paths {
+        if let Some(meta) = available_refs
+            .iter()
+            .find(|r| path.contains(&r.file_path) || r.file_path.contains(&path))
+        {
+            let content = out_reference_manager::read_out_reference_content(meta.id.clone())
+                .map_err(DeploymentError::ConfigurationError)?;
+            resolved.push(ResolvedOutReference {
+                file_path: meta.file_path.clone(),
+                source_path: base_dir.join(&meta.file_path),
+                content,
+            });
+        } else {
+            return Err(DeploymentError::ConfigurationError(format!(
+                "Out-reference not found for path: {}",
+                path
+            )));
+        }
+    }
+
+    Ok(resolved)
 }
 
 /// Shared base deployer implementation for common functionality

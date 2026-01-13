@@ -284,4 +284,39 @@ console.log(budget.withinLimit);  // false for Copilot
 - **Troubleshooting:**  
   - If budget exceeds limits, remove packs or switch to an agent with a higher limit.  
   - If dependencies fail to resolve, review the dependency modal for missing or circular references.  
-  - Use “Generate AGENTS.md” to copy composed content when deploying to agents.
+  - Use "Generate AGENTS.md" to copy composed content when deploying to agents.
+
+## Custom Commands
+
+Rule packs work alongside custom commands. Commands are executable instructions that trigger workflows (e.g., create issues, PRs, walkthroughs).
+
+### Integration with Rule Packs
+
+Commands often reference rule pack files as "out-references":
+
+```markdown
+# In commands/src/issue.md
+See [Issue Template](../../rule-packs/github-hygiene/issue-first.md) for formatting.
+```
+
+This creates a link between the command and the rule pack content.
+
+### Character Budget Considerations
+
+When deploying both rule packs and commands, the combined character count matters:
+
+| Content | Characters |
+|---------|------------|
+| Core + GitHub Hygiene | ~7,000 |
+| Standard Commands (8) | ~8,000 |
+| **Total** | **~15,000** |
+
+For agents with limited budgets (e.g., Copilot at 8,000), prioritize:
+1. Essential rule packs only
+2. Fewer commands
+3. Use out-references where supported
+
+### See Also
+
+- [Commands Guide](./commands-guide.md) — Full command documentation
+- [AGENTS_REFERENCE.md](./AGENTS_REFERENCE.md) — Complete reference

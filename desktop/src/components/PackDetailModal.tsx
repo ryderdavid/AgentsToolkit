@@ -1,9 +1,14 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { X, Link2, Unlink } from 'lucide-react';
 import { packApi } from '@/lib/api';
 import { usePackStore } from '@/stores/packStore';
 import { PackPreview } from './PackPreview';
+import { OutReferenceBrowser } from './OutReferenceBrowser';
+import { outReferenceApi } from '@/lib/outReferences';
+import type { OutReference, RulePack } from '@/lib/types';
+
+type PackWithRefs = RulePack & { outReferences?: string[] };
 
 type PackDetailModalProps = {
   packId: string;
@@ -13,6 +18,7 @@ type PackDetailModalProps = {
 export function PackDetailModal({ packId, onClose }: PackDetailModalProps) {
   const { enabledPackIds, enablePacks, disablePacks } = usePackStore();
   const [showFullContent, setShowFullContent] = useState(false);
+   const queryClient = useQueryClient();
 
   const { data: pack, isLoading } = useQuery({
     queryKey: ['pack', 'detail', packId],
@@ -23,6 +29,52 @@ export function PackDetailModal({ packId, onClose }: PackDetailModalProps) {
     queryKey: ['pack', 'deps', packId],
     queryFn: () => packApi.resolveDependencies(packId),
   });
+
+  const { data: outReferences } = useQuery({
+    queryKey: ['out-references', 'all'],
+    queryFn: () => outReferenceApi.listAll(),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const updateRefs = useMutation({
+    mutationFn: (refs: string[]) => packApi.updatePackOutReferences(packId, refs),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pack', 'detail', packId] });
+      queryClient.invalidateQueries({ queryKey: ['pack', 'deps', packId] });
+      queryClient.invalidateQueries({ queryKey: ['out-references', 'all'] });
+      queryClient.invalidateQueries({ queryKey: ['out-reference-links'] });
+    },
+  });
+
+  const linkedRefs: OutReference[] = useMemo(() => {
+    if (!pack || !outReferences) return [];
+    const refs = (pack as PackWithRefs).outReferences ?? [];
+    return refs
+      .map(refPath =>
+        outReferences.find(r => refPath.includes(r.filePath) || r.filePath.includes(refPath))
+      )
+      .filter((r): r is OutReference => Boolean(r));
+  }, [pack, outReferences]);
+
+  const linkedRefIds = useMemo(() => linkedRefs.map(r => r.id), [linkedRefs]);
+
+  const handleLink = (id: string) => {
+    if (!outReferences || !pack) return;
+    const ref = outReferences.find(r => r.id === id);
+    if (!ref) return;
+    const current = ((pack as PackWithRefs).outReferences ?? []).slice();
+    const nextRefs = Array.from(new Set([...current, ref.filePath]));
+    updateRefs.mutate(nextRefs);
+  };
+
+  const handleUnlink = (id: string) => {
+    if (!outReferences || !pack) return;
+    const ref = outReferences.find(r => r.id === id);
+    if (!ref) return;
+    const current = ((pack as PackWithRefs).outReferences ?? []).slice();
+    const nextRefs = current.filter(path => !(path.includes(ref.filePath) || ref.filePath.includes(path)));
+    updateRefs.mutate(nextRefs);
+  };
 
   const isEnabled = enabledPackIds.includes(packId);
   const dependencyList = useMemo(() => dependencies?.order ?? [], [dependencies]);
@@ -141,6 +193,53 @@ export function PackDetailModal({ packId, onClose }: PackDetailModalProps) {
                       </li>
                     ))}
                   </ul>
+                </div>
+
+                <div className="border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">Out-References</p>
+                    {updateRefs.isPending && (
+                      <span className="text-xs text-slate-500">Saving…</span>
+                    )}
+                  </div>
+                  {linkedRefs.length === 0 && (
+                    <p className="text-sm text-slate-500">No out-references linked.</p>
+                  )}
+                  {linkedRefs.length > 0 && (
+                    <div className="space-y-2">
+                      {linkedRefs.map(ref => (
+                        <div
+                          key={ref.id}
+                          className="flex items-center justify-between p-2 bg-slate-50 rounded border"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-slate-900">{ref.name}</p>
+                            <p className="text-xs text-slate-500">{ref.filePath}</p>
+                          </div>
+                          <button
+                            onClick={() => handleUnlink(ref.id)}
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 border border-red-200 rounded hover:bg-red-50"
+                          >
+                            <Unlink size={12} />
+                            Unlink
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="pt-1 border-t">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Link2 size={14} className="text-slate-500" />
+                      <span className="text-sm font-medium text-slate-800">Manage Links</span>
+                    </div>
+                    <OutReferenceBrowser
+                      onSelectRef={() => {}}
+                      selectable
+                      onLink={handleLink}
+                      onUnlink={handleUnlink}
+                      selectedIds={linkedRefIds}
+                    />
+                  </div>
                 </div>
               </>
             )}

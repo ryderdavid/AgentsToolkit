@@ -209,17 +209,44 @@ export function DeploymentPreviewModal({
                   )}
 
                   {activeTab === 'commands' && preview && (
-                    <div className="space-y-3">
-                      {Object.entries(preview.commands).map(([path, content]) => (
-                        <div key={path} className="border rounded-lg">
-                          <div className="px-3 py-2 bg-slate-50 border-b text-sm font-mono text-slate-600">
-                            {path}
-                          </div>
-                          <pre className="p-3 text-xs font-mono overflow-x-auto max-h-32">
-                            {content}
-                          </pre>
+                    <div className="space-y-4">
+                      {/* Commands summary */}
+                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Terminal size={16} className="text-blue-600" />
+                          <span className="text-sm font-medium text-blue-800">
+                            {Object.keys(preview.commands).length} command(s) to deploy
+                          </span>
                         </div>
-                      ))}
+                        <span className="text-sm text-blue-600">
+                          {Object.values(preview.commands).reduce((acc, c) => acc + c.length, 0).toLocaleString()} characters
+                        </span>
+                      </div>
+                      
+                      {/* Command list */}
+                      <div className="space-y-3">
+                        {Object.entries(preview.commands).map(([path, content]) => (
+                          <div key={path} className="border rounded-lg">
+                            <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-b">
+                              <span className="text-sm font-mono text-slate-600">{path}</span>
+                              <span className="text-xs text-slate-400">{content.length} chars</span>
+                            </div>
+                            <pre className="p-3 text-xs font-mono overflow-x-auto max-h-32">
+                              {content}
+                            </pre>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Command format info */}
+                      <div className="p-3 bg-slate-50 rounded-lg text-sm text-slate-600">
+                        <span className="font-medium">Format:</span> {preview.commandFormat}
+                        {agent.fileFormat !== 'markdown' && (
+                          <span className="ml-2 text-slate-500">
+                            (converted to {agent.fileFormat})
+                          </span>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

@@ -5,6 +5,7 @@
 use std::fs;
 use std::path::PathBuf;
 
+use crate::deployment::command_loader;
 use crate::deployment::converters::MarkdownConverter;
 use crate::deployment::deployer::{
     AgentDeployer, AgentStatus, BudgetUsage, DeploymentConfig, DeploymentOutput,
@@ -14,7 +15,7 @@ use crate::deployment::error::{DeploymentError, DeploymentResult};
 use crate::deployment::project::ProjectDetector;
 use crate::deployment::state::DeploymentState;
 use crate::deployment::validator::DeploymentValidator;
-use crate::deployment::{generate_agents_md_content, BaseDeployer};
+use crate::deployment::{collect_out_references_for_selection, generate_agents_md_content, BaseDeployer};
 use crate::fs_manager;
 use crate::symlink;
 use crate::types::AgentDefinition;
@@ -29,6 +30,14 @@ impl CursorDeployer {
         Self {
             base: BaseDeployer::new(agent),
         }
+    }
+
+    /// Get the Cursor out-references directory (user-level)
+    fn get_out_references_dir(&self) -> PathBuf {
+        dirs::home_dir()
+            .unwrap_or_else(|| PathBuf::from("."))
+            .join(".cursor")
+            .join("out-references")
     }
 
     /// Get the Cursor commands directory (user-level)
@@ -102,6 +111,21 @@ impl AgentDeployer for CursorDeployer {
         let agents_md_path = agentsmd_home.join("AGENTS.md");
         prepared.add_target_path(agents_md_path);
 
+        // Collect out-references used by commands/packs
+        let resolved_refs = collect_out_references_for_selection(
+            &config.custom_command_ids,
+            &config.pack_ids,
+        )?;
+        if !resolved_refs.is_empty() {
+            let cursor_out_ref_dir = self.get_out_references_dir();
+            prepared.add_target_path(cursor_out_ref_dir.clone());
+
+            for resolved in &resolved_refs {
+                prepared.add_out_reference(resolved.file_path.clone(), resolved.content.clone());
+                prepared.add_target_path(cursor_out_ref_dir.join(&resolved.file_path));
+            }
+        }
+
         // Branch on target level for destination paths
         match config.target_level {
             TargetLevel::Project => {
@@ -114,18 +138,29 @@ impl AgentDeployer for CursorDeployer {
                 // User-level: prepare custom commands as markdown files
                 let commands_dir = self.get_commands_dir();
                 for command_id in &config.custom_command_ids {
-                    // For now, create a simple command structure
-                    // In a full implementation, this would load command definitions
-                    let command_content = MarkdownConverter::to_cursor_command(
-                        command_id,
-                        &format!("Custom command: {}", command_id),
-                        "Execute this command to perform the specified action.",
-                    );
-                    prepared.add_command(format!("{}.md", command_id), command_content);
-                    
-                    // Add each command file path for backup
-                    let command_path = commands_dir.join(format!("{}.md", command_id));
-                    prepared.add_target_path(command_path);
+                    // Load and convert command from registry
+                    match command_loader::load_command_for_deployment(command_id, "cursor") {
+                        Ok((filename, content)) => {
+                            prepared.add_command(filename.clone(), content);
+                            
+                            // Add each command file path for backup
+                            let command_path = commands_dir.join(&filename);
+                            prepared.add_target_path(command_path);
+                        }
+                        Err(e) => {
+                            // Fallback to simple command structure if registry fails
+                            log::warn!("Failed to load command '{}' from registry: {}", command_id, e);
+                            let command_content = MarkdownConverter::to_cursor_command(
+                                command_id,
+                                &format!("Custom command: {}", command_id),
+                                "Execute this command to perform the specified action.",
+                            );
+                            prepared.add_command(format!("{}.md", command_id), command_content);
+                            
+                            let command_path = commands_dir.join(format!("{}.md", command_id));
+                            prepared.add_target_path(command_path);
+                        }
+                    }
                 }
 
                 // Add commands directory if we have commands
@@ -141,10 +176,15 @@ impl AgentDeployer for CursorDeployer {
     fn validate(&self, prepared: &PreparedDeployment) -> DeploymentResult<ValidationReport> {
         // Check character limit (1M for Cursor)
         let limit = self.character_limit();
-        let validation = DeploymentValidator::validate_character_budget(
-            &prepared.agents_md_content,
-            limit,
-        );
+        let agents_chars = prepared.agents_md_content.len() as u64;
+        let command_chars: u64 = prepared
+            .commands
+            .values()
+            .map(|c| c.len() as u64)
+            .sum();
+        let out_reference_chars = prepared.out_reference_chars();
+        let validation =
+            DeploymentValidator::validate_full_budget(agents_chars, command_chars, out_reference_chars, limit);
 
         let mut warnings = validation.warnings;
         let mut errors = validation.errors;
@@ -257,6 +297,40 @@ impl AgentDeployer for CursorDeployer {
                      \n\
                      Or reference it directly using @~/.agentsmd/AGENTS.md in your prompts.".to_string()
                 );
+            }
+        }
+
+        // Deploy out-references (symlinks to ~/.agentsmd/out-references)
+        if !prepared.out_references.is_empty() {
+            let out_ref_dir = self.get_out_references_dir();
+            fs::create_dir_all(&out_ref_dir).map_err(|e| {
+                DeploymentError::fs_error(&out_ref_dir, format!("Failed to create out-references directory: {}", e))
+            })?;
+
+            for (rel_path, _content) in &prepared.out_references {
+                let source_path = fs_manager::get_agentsmd_home()
+                    .join("out-references")
+                    .join(rel_path);
+                let dest_path = out_ref_dir.join(rel_path);
+
+                if let Some(parent) = dest_path.parent() {
+                    fs::create_dir_all(parent).ok();
+                }
+
+                match symlink::create_link(dest_path.clone(), source_path.clone(), config.force_overwrite) {
+                    Ok((_, warning)) => {
+                        deployed_files.push(dest_path.to_string_lossy().to_string());
+                        if let Some(w) = warning {
+                            warnings.push(w);
+                        }
+                    }
+                    Err(e) => {
+                        return Err(DeploymentError::fs_error(
+                            &dest_path,
+                            format!("Failed to deploy out-reference: {}", e),
+                        ));
+                    }
+                }
             }
         }
 

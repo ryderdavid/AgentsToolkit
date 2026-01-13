@@ -34,6 +34,8 @@ pub struct RulePack {
     pub dependencies: Vec<String>,
     pub target_agents: Vec<String>,
     pub files: Vec<String>,
+    #[serde(default)]
+    pub out_references: Vec<String>,
     pub metadata: PackMetadata,
 }
 
@@ -56,6 +58,8 @@ pub struct LoadedPack {
     pub dependencies: Vec<String>,
     pub target_agents: Vec<String>,
     pub files: Vec<String>,
+    #[serde(default)]
+    pub out_references: Vec<String>,
     pub metadata: PackMetadata,
     pub path: String,
     pub content: String,
@@ -131,4 +135,128 @@ pub enum LinkMethod {
     Hardlink,
     Copy,
     Existing,
+}
+
+// ============================================================================
+// Command Types
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CommandMetadata {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub script_path: String,
+    pub agent_compatibility: Vec<String>,
+    pub requires_github: bool,
+    pub out_references: Vec<String>,
+    pub category: String, // "workflow" | "git" | "documentation" | "utility"
+    pub template: Option<String>,
+    pub character_count: u64,
+    pub word_count: u64,
+    pub source_path: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CommandCompatibilityResult {
+    pub compatible: bool,
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CommandBudgetItem {
+    pub command_id: String,
+    pub chars: u64,
+    pub words: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CommandBudgetInfo {
+    pub total_chars: u64,
+    pub command_breakdown: Vec<CommandBudgetItem>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CommandValidationError {
+    pub command_id: String,
+    pub message: String,
+    pub severity: String, // "error" | "warning"
+    pub file: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CommandValidationResult {
+    pub valid: bool,
+    pub errors: Vec<CommandValidationError>,
+    pub warnings: Vec<CommandValidationError>,
+}
+
+// ============================================================================
+// Out-Reference Types
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutReference {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub category: OutReferenceCategory,
+    pub file_path: String,
+    pub format: FileFormat,
+    pub tags: Vec<String>,
+    pub linked_from: Vec<String>,
+    pub character_count: u64,
+    pub word_count: u64,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum OutReferenceCategory {
+    Templates,
+    Examples,
+    Schemas,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum FileFormat {
+    Markdown,
+    Json,
+    Yaml,
+    Text,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutReferenceValidationReport {
+    pub valid: bool,
+    pub broken_links: Vec<BrokenLink>,
+    pub unused_references: Vec<String>,
+    pub orphaned_files: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BrokenLink {
+    pub source_type: String,
+    pub source_id: String,
+    pub target_path: String,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReferenceLink {
+    pub link_type: String,
+    pub id: String,
+    pub name: String,
+    pub link_count: u64,
 }

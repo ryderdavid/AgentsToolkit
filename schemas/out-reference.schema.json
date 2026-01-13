@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://agentstoolkit.dev/schemas/out-reference.schema.json",
+  "title": "Out-Reference Definition",
+  "description": "Schema for out-reference metadata stored in ~/.agentsmd/out-references/metadata.json",
+  "type": "object",
+  "required": ["id", "name", "category", "filePath", "format", "createdAt", "updatedAt"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier (UUID v4)",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for the out-reference",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of the out-reference content",
+      "maxLength": 500,
+      "default": ""
+    },
+    "category": {
+      "type": "string",
+      "description": "Category for organizing out-references",
+      "enum": ["templates", "examples", "schemas"]
+    },
+    "filePath": {
+      "type": "string",
+      "description": "Relative path to the file within out-references directory",
+      "minLength": 1
+    },
+    "format": {
+      "type": "string",
+      "description": "File format/type",
+      "enum": ["markdown", "json", "yaml", "text"]
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags for filtering and discovery",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "linkedFrom": {
+      "type": "array",
+      "description": "IDs of commands or rule packs that reference this file",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "characterCount": {
+      "type": "integer",
+      "description": "Total character count of the file content",
+      "minimum": 0,
+      "default": 0
+    },
+    "wordCount": {
+      "type": "integer",
+      "description": "Total word count of the file content",
+      "minimum": 0,
+      "default": 0
+    },
+    "createdAt": {
+      "type": "string",
+      "description": "ISO 8601 timestamp of creation",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "description": "ISO 8601 timestamp of last update",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

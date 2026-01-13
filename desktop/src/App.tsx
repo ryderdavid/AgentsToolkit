@@ -4,6 +4,7 @@ import { Dashboard } from './views/Dashboard';
 import { RulePacksView } from './views/RulePacksView';
 import { AgentsView } from './views/AgentsView';
 import { CommandsView } from './views/CommandsView';
+import { OutReferencesView } from './views/OutReferencesView';
 import { SettingsView } from './views/SettingsView';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -17,6 +18,7 @@ export function App() {
             <Route path="rule-packs" element={<RulePacksView />} />
             <Route path="agents" element={<AgentsView />} />
             <Route path="commands" element={<CommandsView />} />
+            <Route path="out-references" element={<OutReferencesView />} />
             <Route path="settings" element={<SettingsView />} />
           </Route>
         </Routes>

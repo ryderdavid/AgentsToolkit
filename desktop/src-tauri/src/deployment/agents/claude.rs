@@ -5,6 +5,7 @@
 use std::fs;
 use std::path::PathBuf;
 
+use crate::deployment::command_loader;
 use crate::deployment::converters::MarkdownConverter;
 use crate::deployment::deployer::{
     AgentDeployer, AgentStatus, DeploymentConfig, DeploymentOutput,
@@ -14,7 +15,7 @@ use crate::deployment::error::{DeploymentError, DeploymentResult};
 use crate::deployment::project::ProjectDetector;
 use crate::deployment::state::DeploymentState;
 use crate::deployment::validator::DeploymentValidator;
-use crate::deployment::{generate_agents_md_content, BaseDeployer};
+use crate::deployment::{collect_out_references_for_selection, generate_agents_md_content, BaseDeployer};
 use crate::fs_manager;
 use crate::symlink;
 use crate::types::AgentDefinition;
@@ -29,6 +30,11 @@ impl ClaudeDeployer {
         Self {
             base: BaseDeployer::new(agent),
         }
+    }
+
+    /// Get the Claude out-references directory
+    fn get_out_references_dir(&self) -> PathBuf {
+        self.get_claude_dir().join("references")
     }
 
     /// Get the Claude config directory
@@ -113,6 +119,20 @@ impl AgentDeployer for ClaudeDeployer {
         let agents_md_source = agentsmd_home.join("AGENTS.md");
         prepared.add_target_path(agents_md_source);
 
+        // Collect out-references used by commands/packs
+        let resolved_refs = collect_out_references_for_selection(
+            &config.custom_command_ids,
+            &config.pack_ids,
+        )?;
+        if !resolved_refs.is_empty() {
+            let out_ref_dir = self.get_out_references_dir();
+            prepared.add_target_path(out_ref_dir.clone());
+            for resolved in &resolved_refs {
+                prepared.add_out_reference(resolved.file_path.clone(), resolved.content.clone());
+                prepared.add_target_path(out_ref_dir.join(&resolved.file_path));
+            }
+        }
+
         // Branch on target level for destination paths
         match config.target_level {
             TargetLevel::Project => {
@@ -129,16 +149,32 @@ impl AgentDeployer for ClaudeDeployer {
                 // Prepare custom commands with frontmatter
                 let commands_dir = self.get_commands_dir();
                 for command_id in &config.custom_command_ids {
-                    let command_content = MarkdownConverter::to_claude_command(
-                        command_id,
-                        &format!("Custom command: {}", command_id),
-                        "Execute this command to perform the specified action.",
-                    );
-                    prepared.add_command(format!("{}.md", command_id), command_content);
-                    
-                    // Add each command file path for backup
-                    let command_path = commands_dir.join(format!("{}.md", command_id));
-                    prepared.add_target_path(command_path);
+                    match command_loader::load_command_for_deployment(command_id, self.agent_id()) {
+                        Ok((filename, content)) => {
+                            prepared.add_command(filename.clone(), content);
+
+                            // Add each command file path for backup
+                            let command_path = commands_dir.join(&filename);
+                            prepared.add_target_path(command_path);
+                        }
+                        Err(e) => {
+                            log::warn!(
+                                "Failed to load command '{}' for Claude deployment: {}",
+                                command_id,
+                                e
+                            );
+                            let fallback_content = MarkdownConverter::to_claude_command(
+                                command_id,
+                                &format!("Custom command: {}", command_id),
+                                "Execute this command to perform the specified action.",
+                            );
+                            let fallback_name = format!("{}.md", command_id);
+                            prepared.add_command(fallback_name.clone(), fallback_content);
+
+                            let command_path = commands_dir.join(fallback_name);
+                            prepared.add_target_path(command_path);
+                        }
+                    }
                 }
 
                 // Add commands directory if we have commands
@@ -154,10 +190,14 @@ impl AgentDeployer for ClaudeDeployer {
     fn validate(&self, prepared: &PreparedDeployment) -> DeploymentResult<ValidationReport> {
         // Check character limit (200K for Claude)
         let limit = self.character_limit();
-        let validation = DeploymentValidator::validate_character_budget(
-            &prepared.agents_md_content,
-            limit,
-        );
+        let agents_chars = prepared.agents_md_content.len() as u64;
+        let command_chars: u64 = prepared
+            .commands
+            .values()
+            .map(|c| c.len() as u64)
+            .sum();
+        let validation =
+            DeploymentValidator::validate_full_budget(agents_chars, command_chars, prepared.out_reference_chars(), limit);
 
         let mut warnings = validation.warnings;
         let mut errors = validation.errors;
@@ -290,6 +330,40 @@ impl AgentDeployer for ClaudeDeployer {
                                 ));
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        // Deploy out-references (symlinks into ~/.claude/references)
+        if !prepared.out_references.is_empty() {
+            let out_ref_dir = self.get_out_references_dir();
+            fs::create_dir_all(&out_ref_dir).map_err(|e| {
+                DeploymentError::fs_error(&out_ref_dir, format!("Failed to create references directory: {}", e))
+            })?;
+
+            for (rel_path, _content) in &prepared.out_references {
+                let source_path = fs_manager::get_agentsmd_home()
+                    .join("out-references")
+                    .join(rel_path);
+                let dest_path = out_ref_dir.join(rel_path);
+
+                if let Some(parent) = dest_path.parent() {
+                    fs::create_dir_all(parent).ok();
+                }
+
+                match symlink::create_link(dest_path.clone(), source_path.clone(), config.force_overwrite) {
+                    Ok((_, warning)) => {
+                        deployed_files.push(dest_path.to_string_lossy().to_string());
+                        if let Some(w) = warning {
+                            warnings.push(w);
+                        }
+                    }
+                    Err(e) => {
+                        return Err(DeploymentError::fs_error(
+                            &dest_path,
+                            format!("Failed to deploy out-reference: {}", e),
+                        ));
                     }
                 }
             }

@@ -103,6 +103,8 @@ pub struct PreparedDeployment {
     pub commands: HashMap<String, String>,
     /// Config files to create/update (path -> content)
     pub config_files: HashMap<String, String>,
+    /// Out-reference files to deploy (path -> content)
+    pub out_references: HashMap<String, String>,
     /// Target paths for each file
     pub target_paths: Vec<PathBuf>,
     /// Character count of the deployment
@@ -118,6 +120,7 @@ impl PreparedDeployment {
             agents_md_content,
             commands: HashMap::new(),
             config_files: HashMap::new(),
+            out_references: HashMap::new(),
             target_paths: Vec::new(),
             character_count,
             command_format: "markdown".to_string(),
@@ -133,8 +136,18 @@ impl PreparedDeployment {
         self.config_files.insert(path, content);
     }
 
+    pub fn add_out_reference(&mut self, path: String, content: String) {
+        self.character_count += content.len() as u64;
+        self.out_references.insert(path, content);
+    }
+
     pub fn add_target_path(&mut self, path: PathBuf) {
         self.target_paths.push(path);
+    }
+
+    /// Get total character count for out-references
+    pub fn out_reference_chars(&self) -> u64 {
+        self.out_references.values().map(|c| c.len() as u64).sum()
     }
 }
 

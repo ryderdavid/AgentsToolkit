@@ -32,6 +32,8 @@ export const packApi = {
   resolveDependencies: (packId: string) => invoke<DependencyResolution>('resolve_dependencies', { packId }),
   loadPackFile: (packId: string, file: string) =>
     invoke<string>('load_pack_file', { packId, file }),
+  updatePackOutReferences: (packId: string, references: string[]) =>
+    invoke<RulePack>('update_pack_out_references', { packId, references }),
   calculateBudget: (packIds: string[], agentId?: string | null) =>
     invoke<BudgetInfo>('calculate_budget', { packIds, agentId }),
   validateComposition: (packIds: string[], agentId?: string | null) =>
@@ -97,3 +99,9 @@ export const deploymentApi = {
 
 // Keep old export for backwards compatibility
 export const deployApi = symlinkApi;
+
+// Re-export command API from commands module
+export { commandApi } from './commands';
+
+// Re-export out-reference API
+export { outReferenceApi } from './outReferences';

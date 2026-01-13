@@ -3,9 +3,11 @@
 //! Provides validation utilities for checking character limits, format requirements,
 //! and other constraints before deployment.
 
+use super::command_validator;
 use super::converters::FileFormat;
 use super::deployer::{BudgetUsage, ValidationReport};
 use super::error::{DeploymentError, DeploymentResult};
+use crate::command_registry;
 use crate::fs_manager;
 
 /// Validates deployment configurations and content
@@ -192,6 +194,94 @@ impl DeploymentValidator {
             warnings,
             budget: BudgetUsage::default(),
         })
+    }
+
+    /// Validate commands for an agent
+    /// 
+    /// Checks command compatibility, character limits, and format requirements
+    pub fn validate_commands_for_agent(
+        command_ids: &[String],
+        agent_id: &str,
+    ) -> DeploymentResult<ValidationResult> {
+        let result = command_validator::validate_commands_for_agent(command_ids, agent_id)?;
+        
+        Ok(ValidationResult {
+            valid: result.valid,
+            errors: result.errors,
+            warnings: result.warnings,
+            budget: BudgetUsage::default(),
+        })
+    }
+
+    /// Validate combined content (AGENTS.md + commands) against budget
+    pub fn validate_combined_budget(
+        agents_md_chars: u64,
+        command_chars: u64,
+        limit: Option<u64>,
+    ) -> ValidationResult {
+        Self::validate_full_budget(agents_md_chars, command_chars, 0, limit)
+    }
+
+    /// Validate full deployment budget including out-references
+    pub fn validate_full_budget(
+        agents_md_chars: u64,
+        command_chars: u64,
+        out_reference_chars: u64,
+        limit: Option<u64>,
+    ) -> ValidationResult {
+        let total = agents_md_chars + command_chars + out_reference_chars;
+
+        match limit {
+            Some(max) => {
+                let percentage = (total as f64 / max as f64) * 100.0;
+                let within_limit = total <= max;
+
+                let mut warnings = Vec::new();
+                let mut errors = Vec::new();
+
+                let breakdown = if out_reference_chars > 0 {
+                    format!(
+                        "\n  - AGENTS.md: {} chars\n  - Commands: {} chars\n  - Out-References: {} chars",
+                        agents_md_chars, command_chars, out_reference_chars
+                    )
+                } else {
+                    format!(
+                        "\n  - AGENTS.md: {} chars\n  - Commands: {} chars",
+                        agents_md_chars, command_chars
+                    )
+                };
+
+                if !within_limit {
+                    errors.push(format!(
+                        "Combined content exceeds character limit: {} / {} ({:.1}%){}",
+                        total, max, percentage, breakdown
+                    ));
+                } else if percentage > 80.0 {
+                    warnings.push(format!(
+                        "Combined content uses {:.1}% of character limit ({} / {}){}",
+                        percentage, total, max, breakdown
+                    ));
+                }
+
+                ValidationResult {
+                    valid: within_limit,
+                    errors,
+                    warnings,
+                    budget: BudgetUsage {
+                        current_chars: total,
+                        max_chars: Some(max),
+                        percentage: Some(percentage),
+                        within_limit,
+                    },
+                }
+            }
+            None => ValidationResult {
+                valid: true,
+                errors: Vec::new(),
+                warnings: Vec::new(),
+                budget: BudgetUsage::unlimited(total),
+            },
+        }
     }
 
     /// Combine multiple validation results

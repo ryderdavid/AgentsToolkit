@@ -1,3 +1,4 @@
+use crate::command_registry;
 use crate::deployment::{
     self, AgentStatus, DeploymentConfig, DeploymentManager, DeploymentOutput,
     PreparedDeployment, ValidationReport,
@@ -38,6 +39,7 @@ fn load_pack_full_internal(pack_id: &str) -> Result<LoadedPack, String> {
         dependencies: pack.dependencies,
         target_agents: pack.target_agents,
         files: pack.files,
+        out_references: pack.out_references,
         metadata: pack.metadata,
         path: pack_path.to_string_lossy().to_string(),
         content,
@@ -219,13 +221,20 @@ pub fn validate_agent(agent: AgentDefinition) -> Result<(), String> {
 pub fn list_available_packs() -> Result<Vec<RulePack>, String> {
     let pack_ids = fs_manager::list_rule_packs()
         .map_err(|e| format!("Failed to list packs: {}", e))?;
+    let overrides = fs_manager::read_pack_out_ref_overrides()
+        .unwrap_or_default();
     
     let mut packs = Vec::new();
     for pack_id in pack_ids {
         match fs_manager::read_pack_json(pack_id.clone()) {
             Ok(json_str) => {
                 match serde_json::from_str::<RulePack>(&json_str) {
-                    Ok(pack) => packs.push(pack),
+                    Ok(mut pack) => {
+                        if let Some(refs) = overrides.get(&pack.id) {
+                            pack.out_references = refs.clone();
+                        }
+                        packs.push(pack)
+                    }
                     Err(e) => {
                         log::warn!("Failed to parse pack.json for {}: {}", pack_id, e);
                     }
@@ -245,9 +254,37 @@ pub fn list_available_packs() -> Result<Vec<RulePack>, String> {
 pub fn load_pack(pack_id: String) -> Result<RulePack, String> {
     let json_str = fs_manager::read_pack_json(pack_id.clone())
         .map_err(|e| format!("Failed to load pack {}: {}", pack_id, e))?;
-    
-    serde_json::from_str::<RulePack>(&json_str)
-        .map_err(|e| format!("Failed to parse pack.json: {}", e))
+
+    let mut pack: RulePack = serde_json::from_str::<RulePack>(&json_str)
+        .map_err(|e| format!("Failed to parse pack.json: {}", e))?;
+
+    if let Ok(overrides) = fs_manager::read_pack_out_ref_overrides() {
+        if let Some(refs) = overrides.get(&pack.id) {
+            pack.out_references = refs.clone();
+        }
+    }
+
+    Ok(pack)
+}
+
+/// Update out-references linked to a pack and return updated metadata
+#[tauri::command]
+pub fn update_pack_out_references(
+    pack_id: String,
+    references: Vec<String>,
+) -> Result<RulePack, String> {
+    let mut overrides = fs_manager::read_pack_out_ref_overrides()
+        .map_err(|e| e.to_string())?;
+
+    let mut refs = references;
+    refs.sort();
+    refs.dedup();
+
+    overrides.insert(pack_id.clone(), refs);
+    fs_manager::write_pack_out_ref_overrides(&overrides)
+        .map_err(|e| e.to_string())?;
+
+    load_pack(pack_id)
 }
 
 /// Load a pack with full content
@@ -670,4 +707,167 @@ pub fn get_deployable_agents() -> Result<Vec<String>, String> {
     let manager = guard.as_ref().ok_or("Deployment manager not initialized")?;
     
     Ok(manager.available_agents())
+}
+
+// ============================================================================
+// Command Registry Commands
+// ============================================================================
+
+/// List all available commands
+#[tauri::command]
+pub fn list_available_commands() -> Result<Vec<CommandMetadata>, String> {
+    command_registry::load_commands()
+}
+
+/// Get a command by its ID
+#[tauri::command]
+pub fn get_command_by_id(command_id: String) -> Result<CommandMetadata, String> {
+    command_registry::get_command_by_id(&command_id)
+}
+
+/// Get commands compatible with a specific agent
+#[tauri::command]
+pub fn get_commands_for_agent(agent_id: String) -> Result<Vec<CommandMetadata>, String> {
+    command_registry::get_commands_for_agent(&agent_id)
+}
+
+/// Get commands by category
+#[tauri::command]
+pub fn get_commands_by_category(category: String) -> Result<Vec<CommandMetadata>, String> {
+    command_registry::get_commands_by_category(&category)
+}
+
+/// Load raw command content (markdown)
+#[tauri::command]
+pub fn load_command_content(command_id: String) -> Result<String, String> {
+    command_registry::get_command_content(&command_id)
+}
+
+/// Update a command's out-references and return refreshed metadata
+#[tauri::command]
+pub fn update_command_out_references(
+    command_id: String,
+    references: Vec<String>,
+) -> Result<CommandMetadata, String> {
+    command_registry::update_command_out_references(&command_id, references)?;
+    command_registry::get_command_by_id(&command_id)
+}
+
+/// Validate command compatibility with a specific agent
+#[tauri::command]
+pub fn validate_command_for_agent(
+    command_id: String,
+    agent_id: String,
+) -> Result<CommandCompatibilityResult, String> {
+    command_registry::validate_command_for_agent(&command_id, &agent_id)
+}
+
+/// Calculate budget for a set of commands
+#[tauri::command]
+pub fn calculate_command_budget(command_ids: Vec<String>) -> Result<CommandBudgetInfo, String> {
+    command_registry::calculate_command_budget(&command_ids)
+}
+
+/// Clear the command cache (for refreshing after file changes)
+#[tauri::command]
+pub fn refresh_commands() -> Result<(), String> {
+    command_registry::clear_cache();
+    Ok(())
+}
+
+// ============================================================================
+// Out-Reference Commands
+// ============================================================================
+
+use crate::out_reference_manager;
+use crate::types::{OutReference, OutReferenceValidationReport, ReferenceLink};
+
+/// List all out-references
+#[tauri::command]
+pub fn list_out_references() -> Result<Vec<OutReference>, String> {
+    out_reference_manager::list_out_references()
+}
+
+/// Get a single out-reference by ID
+#[tauri::command]
+pub fn get_out_reference(id: String) -> Result<OutReference, String> {
+    out_reference_manager::get_out_reference(id)
+}
+
+/// Create a new out-reference
+#[tauri::command]
+pub fn create_out_reference(
+    name: String,
+    description: String,
+    category: String,
+    content: String,
+    format: String,
+    tags: Vec<String>,
+) -> Result<OutReference, String> {
+    out_reference_manager::create_out_reference(name, description, category, content, format, tags)
+}
+
+/// Update an out-reference's content
+#[tauri::command]
+pub fn update_out_reference(id: String, content: String) -> Result<(), String> {
+    out_reference_manager::update_out_reference(id, content)
+}
+
+/// Update an out-reference's metadata
+#[tauri::command]
+pub fn update_out_reference_metadata(
+    id: String,
+    name: Option<String>,
+    description: Option<String>,
+    tags: Option<Vec<String>>,
+) -> Result<OutReference, String> {
+    out_reference_manager::update_out_reference_metadata(id, name, description, tags)
+}
+
+/// Delete an out-reference
+#[tauri::command]
+pub fn delete_out_reference(id: String) -> Result<(), String> {
+    out_reference_manager::delete_out_reference(id)
+}
+
+/// Read the content of an out-reference
+#[tauri::command]
+pub fn read_out_reference_content(id: String) -> Result<String, String> {
+    out_reference_manager::read_out_reference_content(id)
+}
+
+/// Write content to an out-reference
+#[tauri::command]
+pub fn write_out_reference_content(id: String, content: String) -> Result<(), String> {
+    out_reference_manager::write_out_reference_content(id, content)
+}
+
+/// Validate all out-references
+#[tauri::command]
+pub fn validate_out_references() -> Result<OutReferenceValidationReport, String> {
+    out_reference_manager::validate_out_references()
+}
+
+/// Find what references a specific out-reference
+#[tauri::command]
+pub fn find_references_to(id: String) -> Result<Vec<ReferenceLink>, String> {
+    out_reference_manager::find_references_to(id)
+}
+
+/// Export out-references to a JSON bundle
+#[tauri::command]
+pub fn export_out_references(ids: Vec<String>) -> Result<String, String> {
+    out_reference_manager::export_out_references(ids)
+}
+
+/// Import out-references from a JSON bundle
+#[tauri::command]
+pub fn import_out_references(bundle: String) -> Result<Vec<OutReference>, String> {
+    out_reference_manager::import_out_references(bundle)
+}
+
+/// Get out-reference statistics
+#[tauri::command]
+pub fn get_out_reference_stats() -> Result<out_reference_manager::OutReferenceStats, String> {
+    out_reference_manager::get_out_reference_stats()
 }
