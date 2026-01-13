@@ -573,3 +573,8 @@ AGENTS.md Word Budget (target: 1,000 words)
 ███████████████████████████████████░░░░░  883/1000 (88%)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Buffer remaining: 117 words for future additions
+AGENTS.md Word Budget (target: 1,000 words)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  153/1000 (15%)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Buffer remaining: 847 words for future additions
