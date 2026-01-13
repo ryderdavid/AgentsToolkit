@@ -24,12 +24,10 @@ Title: "Fix login button alignment"
 → Renames to: `fix/74-fix-login-button`
 
 **GitHub Issue Format:**
-See AGENTS.md for proper issue formatting:
-- Issue template structure: [Issue-First Development section](../../AGENTS.md#issue-first-development)
-- Full template with examples: [AGENTS_REFERENCE.md Issue Template](../../docs/AGENTS_REFERENCE.md#issue-template)
+See rule packs for proper issue formatting:
+- Issue template: [rule-packs/github-hygiene/issue-first.md](../../rule-packs/github-hygiene/issue-first.md)
+- Full reference: [AGENTS_REFERENCE.md Issue Template](../../docs/AGENTS_REFERENCE.md#issue-template)
 - Required sections: Summary, Context, Acceptance Criteria, Out of Scope
 
 Usage: Ask the user for title, body, and optional screenshot paths, then run:
 `python3 ~/.agentsmd/scripts/issue.py "title" "body" [screenshot.png]`
-
-

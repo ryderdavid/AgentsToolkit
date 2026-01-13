@@ -6,12 +6,64 @@ This document provides command examples, templates, and detailed examples refere
 
 ## Table of Contents
 
-1. [Command Cheat Sheet](#command-cheat-sheet)
-2. [Issue Template](#issue-template)
-3. [PR Template](#pr-template)
-4. [GitHub Output Examples](#github-output-examples)
-5. [CLI Formatting Guidance](#cli-formatting-guidance)
-6. [Anti-Patterns Reference](#anti-patterns-reference)
+1. [Rule Packs System](#rule-packs-system)
+2. [Command Cheat Sheet](#command-cheat-sheet)
+3. [Issue Template](#issue-template)
+4. [PR Template](#pr-template)
+5. [GitHub Output Examples](#github-output-examples)
+6. [CLI Formatting Guidance](#cli-formatting-guidance)
+7. [Anti-Patterns Reference](#anti-patterns-reference)
+
+---
+
+## Rule Packs System
+
+AgentsToolkit v2.0 introduces modular rule packs. Instead of a monolithic AGENTS.md, rules are organized into composable packs.
+
+### Available Packs
+
+| Pack | Description | Dependencies |
+|------|-------------|--------------|
+| `core` | Universal VCS-agnostic workflow rules | None |
+| `github-hygiene` | GitHub-specific standards | `core` |
+| `azure-devops` | Azure DevOps-specific standards | `core` |
+
+### Pack Structure
+
+```
+rule-packs/
+├── core/
+│   ├── pack.json
+│   ├── prime-directives.md
+│   ├── scope-management.md
+│   ├── feedback-discipline.md
+│   └── safety-execution.md
+├── github-hygiene/
+│   └── ... (8 files)
+└── azure-devops/
+    └── ... (6 files)
+```
+
+### Character Budget
+
+| Composition | Words | Characters | Copilot Safe? |
+|-------------|-------|------------|---------------|
+| Core only | ~450 | ~2,800 | ✅ Yes |
+| Core + GitHub | ~1,100 | ~7,000 | ⚠️ 87% |
+| Core + Azure | ~1,000 | ~6,400 | ⚠️ 80% |
+
+### Customization
+
+To use Azure DevOps instead of GitHub, edit `AGENTS.md` and replace:
+```
+@rule-packs/github-hygiene/...
+```
+with:
+```
+@rule-packs/azure-devops/...
+```
+
+See [Rule Packs Guide](rule-packs-guide.md) for detailed documentation.
 
 ---
 

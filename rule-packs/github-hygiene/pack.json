@@ -1,0 +1,24 @@
+{
+  "id": "github-hygiene",
+  "name": "GitHub Workflow Hygiene",
+  "version": "1.0.0",
+  "description": "GitHub-specific workflow standards (slimmed for space efficiency)",
+  "dependencies": ["core"],
+  "targetAgents": ["*"],
+  "files": [
+    "issue-first.md",
+    "branch-management.md",
+    "screenshot-handling.md",
+    "pr-protocol.md",
+    "commit-standards.md",
+    "walkthrough-docs.md",
+    "github-output.md",
+    "anti-patterns.md"
+  ],
+  "metadata": {
+    "wordCount": 650,
+    "characterCount": 4200,
+    "category": "vcs",
+    "tags": ["github", "git", "workflow", "issues", "pull-requests"]
+  }
+}

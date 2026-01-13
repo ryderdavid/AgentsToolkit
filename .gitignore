@@ -31,4 +31,9 @@ build/
 dist/
 *.egg-info/
 
+# Node/TypeScript
+node_modules/
+*.tsbuildinfo
+src/**/*.js
+
 

@@ -16,12 +16,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
 
 from lib.common import colors, print_error, print_success, print_warning, print_info
 from lib.symlinks import create_link
+from lib.agent_registry import load_agent_registry, AgentRegistryError
 
 # ============================================================================
 # Configuration
 # ============================================================================
 
 RESERVED_COMMANDS = ["help", "clear", "model", "quit", "exit", "compact", "init", "review", "plan"]
+SUPPORTED_AGENT_IDS = ["cursor", "claude", "codex", "gemini", "antigravity"]
 
 AGENTSMD_DIR = Path(os.environ.get("AGENTSMD_HOME", Path.home() / ".agentsmd"))
 SRC_DIR = AGENTSMD_DIR / "commands" / "src"
@@ -50,6 +52,27 @@ def log_error(msg: str) -> None:
 def log_step(msg: str) -> None:
     """Log step message."""
     print_info(f"→ {msg}")
+
+
+# ============================================================================
+# Registry Helpers
+# ============================================================================
+
+def load_registry():
+    """Load agent registry data and return as dict keyed by id."""
+    try:
+        agents = load_agent_registry()
+    except AgentRegistryError as exc:
+        log_error(f"Failed to load agent registry: {exc}")
+        sys.exit(1)
+
+    agent_map = {agent["id"]: agent for agent in agents}
+    return agent_map
+
+
+def expand_path(path_str: str) -> Path:
+    """Resolve user paths like ~/.cursor/commands."""
+    return Path(os.path.expanduser(path_str)).resolve()
 
 
 # ============================================================================
@@ -114,27 +137,27 @@ def validate_all() -> None:
 # Conversion Functions
 # ============================================================================
 
-def convert_to_cursor(src: Path) -> None:
+def convert_to_cursor(src: Path, dest_root: Path) -> None:
     """Convert source file to Cursor format (direct copy).
     
     Args:
         src: Source markdown file path
     """
     rel_path = src.relative_to(SRC_DIR)
-    dest = BUILD_DIR / "cursor" / "commands" / rel_path
+    dest = dest_root / rel_path
     
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dest)
 
 
-def convert_to_claude(src: Path) -> None:
+def convert_to_claude(src: Path, dest_root: Path) -> None:
     """Convert source file to Claude Code format (add frontmatter).
     
     Args:
         src: Source markdown file path
     """
     rel_path = src.relative_to(SRC_DIR)
-    dest = BUILD_DIR / "claude" / "commands" / rel_path
+    dest = dest_root / rel_path
     basename = src.stem
     
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -147,14 +170,14 @@ description: AgentsToolkit {basename} command
     dest.write_text(content)
 
 
-def convert_to_codex(src: Path) -> None:
+def convert_to_codex(src: Path, dest_root: Path) -> None:
     """Convert source file to Codex CLI format (add frontmatter).
     
     Args:
         src: Source markdown file path
     """
     rel_path = src.relative_to(SRC_DIR)
-    dest = BUILD_DIR / "codex" / "prompts" / rel_path
+    dest = dest_root / rel_path
     basename = src.stem
     
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -167,7 +190,7 @@ description: AgentsToolkit {basename} command
     dest.write_text(content)
 
 
-def convert_to_gemini(src: Path) -> None:
+def convert_to_gemini(src: Path, dest_root: Path) -> None:
     """Convert source file to Gemini CLI format (TOML).
     
     Args:
@@ -175,7 +198,7 @@ def convert_to_gemini(src: Path) -> None:
     """
     rel_path = src.relative_to(SRC_DIR)
     basename = rel_path.stem
-    dest = BUILD_DIR / "gemini" / "commands" / rel_path.with_suffix('.toml')
+    dest = dest_root / rel_path.with_suffix('.toml')
     
     dest.parent.mkdir(parents=True, exist_ok=True)
     
@@ -190,7 +213,7 @@ prompt = """
     dest.write_text(content)
 
 
-def convert_to_antigravity(src: Path) -> None:
+def convert_to_antigravity(src: Path, dest_root: Path) -> None:
     """Convert source file to Antigravity Workflow format (Markdown).
     
     Structure: global_workflows/{command_name}.md
@@ -200,7 +223,7 @@ def convert_to_antigravity(src: Path) -> None:
         src: Source markdown file path
     """
     basename = src.stem
-    dest = BUILD_DIR / "antigravity" / "global_workflows" / f"{basename}.md"
+    dest = dest_root / f"{basename}.md"
     
     dest.parent.mkdir(parents=True, exist_ok=True)
     
@@ -224,28 +247,36 @@ def build() -> None:
     """Build commands for all agents."""
     log_step(f"Building commands from {SRC_DIR}")
     
+    registry = load_registry()
+    missing_agents = [agent_id for agent_id in SUPPORTED_AGENT_IDS if agent_id not in registry]
+    if missing_agents:
+        log_error(f"Registry missing required agents: {', '.join(missing_agents)}")
+        sys.exit(1)
+
+    dest_roots = {agent_id: BUILD_DIR / registry[agent_id]["buildOutput"] for agent_id in SUPPORTED_AGENT_IDS}
+
     # Clean previous build
     if BUILD_DIR.exists():
         shutil.rmtree(BUILD_DIR)
     
     # Create build directories
-    for agent_dir in ["cursor/commands", "claude/commands", "codex/prompts", "gemini/commands", "antigravity/global_workflows"]:
-        (BUILD_DIR / agent_dir).mkdir(parents=True, exist_ok=True)
+    for dest in dest_roots.values():
+        dest.mkdir(parents=True, exist_ok=True)
     
     count = 0
     for src_file in sorted(SRC_DIR.glob("*.md")):
         rel_path = src_file.relative_to(SRC_DIR)
         log_info(f"Converting: {rel_path}")
         
-        convert_to_cursor(src_file)
-        convert_to_claude(src_file)
-        convert_to_codex(src_file)
-        convert_to_gemini(src_file)
-        convert_to_antigravity(src_file)
+        convert_to_cursor(src_file, dest_roots["cursor"])
+        convert_to_claude(src_file, dest_roots["claude"])
+        convert_to_codex(src_file, dest_roots["codex"])
+        convert_to_gemini(src_file, dest_roots["gemini"])
+        convert_to_antigravity(src_file, dest_roots["antigravity"])
         
         count += 1
     
-    log_info(f"Built {count} commands for 5 agents")
+    log_info(f"Built {count} commands for {len(SUPPORTED_AGENT_IDS)} agents")
 
 
 # ============================================================================
@@ -256,15 +287,15 @@ def install_symlinks() -> None:
     """Install symlinks to agent config directories."""
     log_step("Installing symlinks to agent config directories...")
     
-    targets = {
-        "Cursor": (Path.home() / ".cursor" / "commands", BUILD_DIR / "cursor" / "commands"),
-        "Claude Code": (Path.home() / ".claude" / "commands", BUILD_DIR / "claude" / "commands"),
-        "Codex CLI": (Path.home() / ".codex" / "prompts", BUILD_DIR / "codex" / "prompts"),
-        "Gemini CLI": (Path.home() / ".gemini" / "commands", BUILD_DIR / "gemini" / "commands"),
-        "Antigravity": (Path.home() / ".gemini" / "antigravity" / "global_workflows", BUILD_DIR / "antigravity" / "global_workflows"),
-    }
-    
-    for agent_name, (link_path, target_path) in targets.items():
+    registry = load_registry()
+    for agent_id in SUPPORTED_AGENT_IDS:
+        agent = registry.get(agent_id)
+        if not agent or agent.get("deploymentStrategy") != "symlink":
+            continue
+
+        link_path = expand_path(agent["configPaths"][0])
+        target_path = BUILD_DIR / agent["buildOutput"]
+
         # Ensure parent directory exists
         link_path.parent.mkdir(parents=True, exist_ok=True)
         
@@ -279,7 +310,7 @@ def install_symlinks() -> None:
         success, method, warning = create_link(link_path, target_path, force=True)
         if success:
             display_path = str(link_path).replace(str(Path.home()), "~")
-            log_info(f"{agent_name}: {display_path}")
+            log_info(f"{agent['name']}: {display_path}")
             if warning:
                 log_warn(warning)
         else:

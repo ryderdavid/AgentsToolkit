@@ -1,7 +1,7 @@
 Create or update a walkthrough document for the current implementation round.
 
 **Purpose:**
-Document what was implemented so far to ensure knowledge transfer, auditability, and alignment with [Walkthrough Documentation](../../AGENTS.md#walkthrough-documentation).
+Document what was implemented so far to ensure knowledge transfer, auditability, and alignment with [Walkthrough Documentation](../../rule-packs/github-hygiene/walkthrough-docs.md).
 
 **Location:** `docs/walkthroughs/{issue-num}-{issue-slug}_W{N}.md`
 - `{issue-num}` = GitHub issue number (e.g., `57`)
@@ -61,5 +61,3 @@ Document what was implemented so far to ensure knowledge transfer, auditability,
 
 **Retention on Issue Close:**
 - When the issue is closed, prompt the user whether to keep or archive/remove the walkthroughs for that issue.
-
-

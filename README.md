@@ -9,6 +9,7 @@ A global toolkit that enforces issue-first development workflows across AI codin
 ## Features
 
 - **🌍 One Command Setup** - `python3 install.py` configures everything globally
+- **📦 Modular Rule Packs** - Mix-and-match GitHub, Azure DevOps, or custom rules
 - **📋 Single Constitution** - Global AGENTS.md enforces workflow standards
 - **🎯 Works Everywhere** - Cursor commands available in all projects without per-project setup
 - **🤖 Cross-Agent Compatible** - Works with Cursor, Claude Code, GitHub Copilot, Jules, Aider
@@ -270,8 +271,25 @@ Always read and follow ~/.agentsmd/AGENTS.md
 ## Documentation
 
 - **[AGENTS.md](AGENTS.md)** - Workflow standards (issue-first development, Git conventions)
+- **[Rule Packs Guide](docs/rule-packs-guide.md)** - Modular rule pack system
 - **[AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md)** - Command examples and templates
 - **[v2 Migration Guide](docs/v2-migration.md)** - Upgrading from v1
+
+## Rule Packs
+
+AgentsToolkit v2.0 introduces modular rule packs for flexible configuration:
+
+| Pack | Description | Use Case |
+|------|-------------|----------|
+| `core` | Universal VCS-agnostic rules | All projects |
+| `github-hygiene` | GitHub-specific standards | GitHub repositories |
+| `azure-devops` | Azure DevOps standards | Azure DevOps projects |
+
+**Default:** Core + GitHub Hygiene (~1,100 words, ~7,000 chars)
+
+To switch to Azure DevOps, edit `AGENTS.md` imports or use legacy mode during installation.
+
+See [Rule Packs Guide](docs/rule-packs-guide.md) for details.
 
 ## Safety Guarantees
 

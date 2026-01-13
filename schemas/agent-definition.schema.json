@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://agentstoolkit.dev/schemas/agent-definition.schema.json",
+  "title": "AgentDefinition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "configPaths",
+    "agentsMdSupport",
+    "commandFormat",
+    "characterLimits",
+    "deploymentStrategy",
+    "buildOutput",
+    "fileFormat"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Machine-friendly identifier, lowercase with hyphens."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human readable agent name."
+    },
+    "configPaths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "Filesystem paths where commands or instructions are installed."
+    },
+    "agentsMdSupport": {
+      "type": "string",
+      "enum": ["native", "config", "manual", "none"],
+      "description": "How the agent ingests AGENTS.md."
+    },
+    "commandFormat": {
+      "type": "string",
+      "enum": ["slash", "prompts-prefix", "cli", "workflow", "inline"],
+      "description": "Invocation format for custom commands."
+    },
+    "characterLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxChars", "supportsOutReferences"],
+      "properties": {
+        "maxChars": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "Maximum character budget for prompts (null if unspecified)."
+        },
+        "supportsOutReferences": {
+          "type": "boolean",
+          "description": "Whether the agent can reference external files/URLs."
+        }
+      }
+    },
+    "deploymentStrategy": {
+      "type": "string",
+      "enum": ["symlink", "copy", "inline", "api"],
+      "description": "How commands are delivered to the agent."
+    },
+    "buildOutput": {
+      "type": "string",
+      "description": "Path under build/ where generated files should be placed."
+    },
+    "fileFormat": {
+      "type": "string",
+      "enum": ["markdown", "toml", "yaml", "json"],
+      "description": "File format for generated command artifacts."
+    },
+    "requiresFrontmatter": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether generated files need YAML frontmatter."
+    },
+    "sandboxScriptPath": {
+      "type": ["string", "null"],
+      "description": "Alternate script path for sandboxed environments."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Optional freeform notes."
+    }
+  }
+}

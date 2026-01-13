@@ -1,10 +1,10 @@
 Commit and push current changes to the PR branch.
 
 **Commit Message Format:**
-See AGENTS.md for proper commit formatting:
-- Format: `#{issue-num}: {imperative description}` per [Commit Standards section](../../AGENTS.md#commit-standards)
+See rule packs for proper commit formatting:
+- Format: `#{issue-num}: {imperative description}` per [rule-packs/github-hygiene/commit-standards.md](../../rule-packs/github-hygiene/commit-standards.md)
 - Requirements: Atomic, compilable, meaningful (what/why not how)
-- Examples: [AGENTS_REFERENCE.md Command Cheat Sheet](../../docs/AGENTS_REFERENCE.md#command-cheat-sheet)
+- Full reference: [AGENTS_REFERENCE.md Command Cheat Sheet](../../docs/AGENTS_REFERENCE.md#command-cheat-sheet)
 
 **Workflow:**
 1. Check current branch (must not be main/master)
@@ -41,6 +41,3 @@ Branch: `feat/37-add-push-command`
 Message: "Add push.py script"
 → Commits: `#37: Add push.py script`
 → Pushes to `origin/feat/37-add-push-command`
-
-
-

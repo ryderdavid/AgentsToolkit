@@ -1,0 +1,20 @@
+{
+  "id": "core",
+  "name": "Core Workflow Standards",
+  "version": "1.0.0",
+  "description": "Universal VCS-agnostic workflow rules that apply to all development environments",
+  "dependencies": [],
+  "targetAgents": ["*"],
+  "files": [
+    "prime-directives.md",
+    "scope-management.md",
+    "feedback-discipline.md",
+    "safety-execution.md"
+  ],
+  "metadata": {
+    "wordCount": 450,
+    "characterCount": 2800,
+    "category": "universal",
+    "tags": ["workflow", "fundamentals", "vcs-agnostic"]
+  }
+}

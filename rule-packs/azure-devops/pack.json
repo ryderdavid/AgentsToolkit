@@ -1,0 +1,22 @@
+{
+  "id": "azure-devops",
+  "name": "Azure DevOps Workflow Hygiene",
+  "version": "1.0.0",
+  "description": "Azure DevOps-specific workflow standards",
+  "dependencies": ["core"],
+  "targetAgents": ["*"],
+  "files": [
+    "work-item-first.md",
+    "branch-management.md",
+    "pr-protocol.md",
+    "commit-standards.md",
+    "azure-output.md",
+    "anti-patterns.md"
+  ],
+  "metadata": {
+    "wordCount": 550,
+    "characterCount": 3600,
+    "category": "vcs",
+    "tags": ["azure-devops", "git", "workflow", "work-items", "pull-requests"]
+  }
+}

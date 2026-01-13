@@ -1,0 +1,162 @@
+# AGENTS.md — Mandatory Agent Behavior & Workflow Standards
+
+Non-negotiable rules for all AI agents. Violations constitute workflow failures.
+
+**Scope:** Workflow standards - issue-first development, Git conventions, documentation.  
+**Reference:** Command examples at [AGENTS_REFERENCE.md](docs/AGENTS_REFERENCE.md).
+
+---
+
+## Prime Directives
+
+1. **NEVER begin implementation without a structured, scoped GitHub issue.** The issue is the contract.
+   - **This applies to ALL changes**, no matter how small: documentation updates, template tweaks, typo fixes, etc.
+   - No exceptions for "quick fixes" — every change must be traceable via issue → branch → PR workflow.
+2. **NEVER write code before the issue scope is explicitly approved by the user.**
+3. **NEVER make file changes while on main/master.** Create a feature branch first.
+4. **ALWAYS verify you're on a feature branch before making file changes.**
+5. **ALWAYS document work in GitHub issues and PRs—not just chat.**
+6. **ALWAYS provide clickable markdown hyperlinks for GitHub resources.**
+7. **ALWAYS end implementation rounds with clickable links to all artifacts** (issues, PRs, commits, branches).
+8. **ALWAYS produce a walkthrough document after each substantial implementation round.** Walkthroughs go in `docs/walkthroughs/{issue-num}-{issue-slug}_W{N}.md` (e.g., `57-add-walkthrough-command_W1.md`).
+
+---
+
+## Issue-First Development
+
+1. **STOP.** Do not write code.
+2. **Clarify** the request. Ask questions if scope is ambiguous.
+3. **Draft issue** with Summary, Context, Acceptance Criteria, Out of Scope (see [Issue Template](docs/AGENTS_REFERENCE.md#issue-template)).
+4. **Get explicit approval** before proceeding.
+
+**Scope**: This workflow applies to **all file changes** — code, documentation, templates, configuration, even single-line fixes. The audit trail is non-negotiable.
+
+Use `gh issue create`. Reference screenshots using raw GitHub URLs after committing them.
+
+---
+
+## Branch Management
+
+**Create feature branch BEFORE any file changes.** Check with `git branch --show-current`.
+
+**Naming:** `{type}/{issue-num}-{short-description}`  
+Types: `fix/`, `feat/`, `refactor/`, `docs/`, `chore/`  
+If issue pending: `{type}/pending-{desc}`, rename after issue creation.
+
+**Rules:** One branch per issue. Never commit to main/master.
+
+---
+
+## Screenshot Handling
+
+**Directory:** `.issue_screenshots/` (committed)  
+**Naming:** `YYYYMMDD_{issue-num}_{branch}_{desc}.{ext}`
+
+Commit and push screenshots before referencing in issues.
+
+---
+
+## Pull Request Protocol
+
+Create draft PR immediately: `gh pr create --draft --title "[WIP] #{num}: {desc}" --body "Closes #{num}"`
+
+Before marking ready: all acceptance criteria checked, journey documented, commits squashed if noisy.
+
+See [PR Template](docs/AGENTS_REFERENCE.md#pr-template).
+
+---
+
+## Commit Standards
+
+**Format:** `#{issue-num}: {imperative description}`  
+**Requirements:** Atomic, compilable, meaningful (what/why not how).
+
+---
+
+## Scope Management
+
+| Situation | Action |
+|-----------|--------|
+| **Scope creep detected** | STOP, assess, propose split or backlog issue |
+
+**Three-Iteration Rule:** After 3 feedback rounds, reassess scope with user.
+
+---
+
+## Feedback Discipline
+
+Document each feedback round in issue comments: what was wrong, what changed, insights gained.  
+Document failed approaches before trying alternatives.
+
+---
+
+## Walkthrough Documentation
+
+**After each substantial implementation round**, create a walkthrough document:
+
+**Location:** `docs/walkthroughs/{issue-num}-{issue-slug}_W{N}.md`
+- `{issue-num}` = GitHub issue number (e.g., `57`)
+- `{issue-slug}` = Issue title converted to URL-friendly format (lowercase, hyphens, e.g., `add-walkthrough-command`)
+- `{N}` = Sequential number for the issue (W1, W2, W3...)
+
+**Example:** `docs/walkthroughs/57-add-walkthrough-command_W1.md`
+
+**Required Sections:**
+1. Summary (what was implemented)
+2. Files Changed (table of modifications)
+3. Implementation Details (technical decisions)
+4. How to Verify (testing steps)
+5. Known Limitations (caveats)
+6. Commits (links to relevant commits)
+
+**When to produce:**
+- After completing each implementation round
+- Before marking PR ready for review
+- When user requests via `/walkthrough` command
+
+**Retention:** When an issue is closed, prompt the user whether to keep or archive/remove the walkthrough files.
+
+See [Walkthrough Template](docs/AGENTS_REFERENCE.md#walkthrough-template) for full format.
+
+---
+
+## GitHub Output
+
+ALL URLs as markdown links: `[#42: Fix upload](link)` not bare URLs.  
+End-of-round summaries must include clickable links to all artifacts with descriptive anchor text.
+
+**Format:** `### 🔗 GitHub Artifacts` section with issue, PR, branch, commits as `[#N: Title](url)` or `[hash: msg](url)`.
+
+---
+
+## Safety & Execution
+
+| Tier | Commands | Action |
+|------|----------|--------|
+| **1** | `gh issue/pr create/edit/comment/view/list`, `git add/commit/push/checkout/branch/status` | Execute |
+| **2** | `gh issue/pr close` | Confirm first |
+| **3** | `delete`, `merge`, `--force`, `reset --hard` | Only on explicit request |
+
+**For Tier 1 operations:** Run `gh`/`git` commands with elevation outside sandbox. Don't claim sandbox limitations for pre-approved safe operations—elevate and execute. See [README](README.md#safety-guarantees) for rationale.
+
+**Before changes:** Issue exists? On feature branch? Branch name correct? Tier identified?
+
+---
+
+## Anti-Patterns (Prohibited Behaviors)
+
+| Anti-Pattern | Why Prohibited | Severity |
+|--------------|----------------|----------|
+| Coding before issue approval | Violates issue-first; scope ambiguity | ⛔ BLOCKER |
+| File changes on main/master | Bypasses PR review; breaks workflow | ⛔ BLOCKER |
+| Non-clickable GitHub URLs | Poor UX; harder to navigate | ⛔ BLOCKER |
+| Weak anchor text in links | Non-descriptive; use meaningful text | ⛔ BLOCKER |
+| Missing end-of-round artifact links | No audit trail; violates Prime Directive 7 | ⛔ BLOCKER |
+| Branches off branches | Complicates history; one branch per issue | 🔴 HIGH |
+| Expanding scope silently | Leads to bloated PRs; scope creep | 🔴 HIGH |
+| Vague PR descriptions | Unreviewable; no audit trail | 🔴 HIGH |
+| Closing issues before merge | Premature closure; broken workflow | 🔴 HIGH |
+| Undocumented failed approaches | Wastes future effort; loses knowledge | 🟡 MEDIUM |
+| Screenshots before commit | Broken image links | 🟡 MEDIUM |
+| Manually closing issues | Issues close automatically on PR merge | 🟡 MEDIUM |
+| Accepting sandbox limits for Tier 1 ops | Pre-approved safe operations should elevate | 🟡 MEDIUM |
