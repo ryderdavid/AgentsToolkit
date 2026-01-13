@@ -1,3 +1,4 @@
+pub mod deployment;
 pub mod fs_manager;
 pub mod ipc;
 pub mod symlink;

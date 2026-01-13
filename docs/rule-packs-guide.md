@@ -264,3 +264,24 @@ console.log(budget.withinLimit);  // false for Copilot
 3. **Monitor your budget** — Run `validate-packs` to see character usage
 4. **Keep custom packs small** — Focus on team-specific additions
 5. **Version your packs** — Use semver for tracking changes
+
+## Rule Pack Management UI (Desktop)
+
+- **Layout:** Three-column view — Available Packs, Active Composition, Per-Agent Budget. Validation alerts appear at the top with actionable messages.
+- **Enable/Disable:** Use the toggle on each Rule Pack card. Dependencies auto-resolve; circular dependencies show an error modal.
+- **Search & Filter:** Search by name/description/tags and filter by category (Universal, VCS, Workflow).
+- **Pack Details:** Click a card to open the detail modal with metadata, dependencies, files, and markdown preview. Use “Enable Pack” in the footer to activate it.
+- **Active Composition:** Shows enabled packs, combined stats, breakdown table, dependency tree, and validation alerts. Clear all, load presets, or generate AGENTS.md from here.
+- **Per-Agent Budgets:** Cards show character limits, usage percentages, and status badges. Select an agent to highlight its budget.
+- **Presets:** Built-in presets include Minimal, GitHub Standard, Azure DevOps, and Maximum. Custom presets are stored locally and can be saved/deleted from the preset selector.
+- **Export/Import:** Export the current configuration to JSON via Tauri file dialog, import from JSON, or copy/share the config payload.
+- **Statistics:** Local-only usage stats track most-used packs and can be exported as CSV.
+- **Keyboard Shortcuts:**  
+  - `Cmd/Ctrl + K` focus search  
+  - `Cmd/Ctrl + A` enable all packs  
+  - `Esc` closes the detail modal  
+  - `?` opens the shortcuts help modal (planned)
+- **Troubleshooting:**  
+  - If budget exceeds limits, remove packs or switch to an agent with a higher limit.  
+  - If dependencies fail to resolve, review the dependency modal for missing or circular references.  
+  - Use “Generate AGENTS.md” to copy composed content when deploying to agents.

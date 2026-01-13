@@ -1,4 +1,3 @@
-import { Bot } from 'lucide-react';
 import type { AgentDefinition } from '@/lib/types';
 import { getAgentIcon } from '@/lib/agents';
 import { StatusBadge } from './StatusBadge';

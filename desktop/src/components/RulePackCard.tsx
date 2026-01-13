@@ -7,11 +7,15 @@ interface RulePackCardProps {
   pack: RulePack;
   isEnabled?: boolean;
   onToggle?: () => void;
+  onSelect?: () => void;
 }
 
-export function RulePackCard({ pack, isEnabled = false, onToggle }: RulePackCardProps) {
+export function RulePackCard({ pack, isEnabled = false, onToggle, onSelect }: RulePackCardProps) {
   return (
-    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+    <div
+      className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onSelect}
+    >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <Package size={20} className="text-slate-600" />
@@ -51,7 +55,10 @@ export function RulePackCard({ pack, isEnabled = false, onToggle }: RulePackCard
 
       {onToggle && (
         <button
-          onClick={onToggle}
+          onClick={e => {
+            e.stopPropagation();
+            onToggle();
+          }}
           className={`w-full px-3 py-2 text-sm rounded ${
             isEnabled 
               ? 'bg-red-100 text-red-700 hover:bg-red-200' 

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { agentApi, packApi } from '@/lib/api';
+import { packApi } from '@/lib/api';
 import { getAllAgents } from '@/lib/agents';
 import { CheckCircle, Package, Bot, Terminal } from 'lucide-react';
 
@@ -20,7 +20,7 @@ export function Dashboard() {
   const agents = getAllAgents();
   
   // Load packs from Rust backend (IPC)
-  const { data: packs, isLoading: packsLoading } = useQuery({
+  const { data: packs } = useQuery({
     queryKey: ['packs'],
     queryFn: packApi.listAvailablePacks,
   });

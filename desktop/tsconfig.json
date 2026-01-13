@@ -19,7 +19,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@core/*": ["../src/core/*"]
-    }
+    },
+    "types": ["vitest"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

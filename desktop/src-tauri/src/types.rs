@@ -89,6 +89,42 @@ pub struct DependencyResolution {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PackBudgetItem {
+    pub pack_id: String,
+    pub chars: u64,
+    pub words: u64,
+    pub percentage_of_total: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BudgetInfo {
+    pub total_chars: u64,
+    pub max_chars: Option<u64>,
+    pub percentage: Option<u64>,
+    pub within_limit: bool,
+    pub pack_breakdown: Vec<PackBudgetItem>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ValidationResult {
+    pub valid: bool,
+    pub errors: Vec<String>,
+    pub warnings: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GenerateResult {
+    pub success: bool,
+    pub content: String,
+    pub budget: BudgetInfo,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum LinkMethod {
     Symlink,
     Junction,

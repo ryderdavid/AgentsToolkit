@@ -15,4 +15,10 @@ export default defineConfig({
     port: 1420,
     strictPort: true,
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './vitest.setup.ts',
+    mockReset: true,
+  },
 });

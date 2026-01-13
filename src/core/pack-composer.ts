@@ -19,8 +19,6 @@ import {
   loadPackFull,
   resolveDependencies,
   validatePack,
-  listAvailablePacks,
-  getPacksDirectory
 } from './rule-pack-loader';
 import { getMaxCharacters } from './agent-capabilities';
 
@@ -51,13 +49,6 @@ export function getAgentCharLimit(agentId: string): number | null {
     // Fall back to hardcoded limits
   }
   return AGENT_CHAR_LIMITS[agentId.toLowerCase()] ?? null;
-}
-
-/**
- * Count words in text
- */
-function countWords(text: string): number {
-  return text.split(/\s+/).filter(word => word.length > 0).length;
 }
 
 /**

@@ -1,7 +1,7 @@
 import { useQueries } from '@tanstack/react-query';
 import { getAllAgents } from '@/lib/agents';
 import { AgentCard } from '@/components/AgentCard';
-import { agentApi } from '@/lib/api';
+import { fsApi } from '@/lib/api';
 
 export function AgentsView() {
   // Load agents from TypeScript core (frontend)
@@ -11,7 +11,7 @@ export function AgentsView() {
   const installationQueries = useQueries({
     queries: agents.map(agent => ({
       queryKey: ['agent-installed', agent.id],
-      queryFn: () => agentApi.checkAgentInstalled(agent.id),
+      queryFn: () => fsApi.checkAgentInstalled(agent.id),
     })),
   });
 
