@@ -198,6 +198,98 @@ impl MarkdownConverter {
 
         Self::add_frontmatter(content, frontmatter)
     }
+
+    /// Convert command to Gemini TOML format
+    /// 
+    /// Creates a TOML command structure for Gemini CLI
+    pub fn to_gemini_command(
+        name: &str,
+        description: &str,
+        content: &str,
+    ) -> DeploymentResult<String> {
+        let mut frontmatter = HashMap::new();
+        frontmatter.insert("name".to_string(), name.to_string());
+        frontmatter.insert("description".to_string(), description.to_string());
+        frontmatter.insert("type".to_string(), "command".to_string());
+
+        Self::to_toml(content, Some(frontmatter))
+    }
+
+    /// Convert command to Aider YAML format
+    /// 
+    /// Creates a YAML command structure for Aider
+    pub fn to_aider_command(
+        name: &str,
+        description: &str,
+        content: &str,
+    ) -> DeploymentResult<String> {
+        let mut yaml_content = String::new();
+
+        yaml_content.push_str("---\n");
+        yaml_content.push_str(&format!("name: \"{}\"\n", escape_yaml_string(name)));
+        yaml_content.push_str(&format!("description: \"{}\"\n", escape_yaml_string(description)));
+        yaml_content.push_str("type: command\n");
+        yaml_content.push_str("content: |\n");
+
+        for line in content.lines() {
+            yaml_content.push_str("  ");
+            yaml_content.push_str(line);
+            yaml_content.push('\n');
+        }
+
+        yaml_content.push_str("---\n");
+
+        Ok(yaml_content)
+    }
+
+    /// Convert command to Warp workflow format
+    /// 
+    /// Creates a Warp-specific workflow command structure
+    pub fn to_warp_command(
+        name: &str,
+        description: &str,
+        content: &str,
+    ) -> DeploymentResult<String> {
+        // Warp workflows use a specific YAML structure
+        let workflow = WarpWorkflow {
+            name: name.to_string(),
+            description: description.to_string(),
+            steps: vec![
+                WarpStep {
+                    command: format!("# {}\n{}", description, content),
+                    description: Some(format!("Execute {} command", name)),
+                },
+            ],
+        };
+
+        serde_yaml::to_string(&workflow)
+            .map_err(|e| DeploymentError::format_error(format!("YAML serialization failed: {}", e)))
+    }
+
+    /// Convert command to Cline JSON format
+    /// 
+    /// Creates a JSON command structure for Cline
+    pub fn to_cline_command(
+        name: &str,
+        description: &str,
+        content: &str,
+    ) -> DeploymentResult<String> {
+        let mut json_obj = serde_json::Map::new();
+
+        json_obj.insert("name".to_string(), Value::String(name.to_string()));
+        json_obj.insert("description".to_string(), Value::String(description.to_string()));
+        json_obj.insert("type".to_string(), Value::String("command".to_string()));
+        json_obj.insert("content".to_string(), Value::String(content.to_string()));
+
+        // Add metadata
+        let mut metadata = serde_json::Map::new();
+        metadata.insert("version".to_string(), Value::String("1.0".to_string()));
+        metadata.insert("format".to_string(), Value::String("markdown".to_string()));
+        json_obj.insert("metadata".to_string(), Value::Object(metadata));
+
+        serde_json::to_string_pretty(&Value::Object(json_obj))
+            .map_err(|e| DeploymentError::format_error(format!("JSON serialization failed: {}", e)))
+    }
 }
 
 /// Warp workflow structure

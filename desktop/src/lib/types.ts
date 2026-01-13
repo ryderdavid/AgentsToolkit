@@ -117,3 +117,95 @@ export interface DeploymentState {
   /** Project path (for project-level deployments) */
   projectPath?: string;
 }
+
+// ============================================================================
+// Out-Reference Types
+// ============================================================================
+
+/** Category for organizing out-references */
+export type OutReferenceCategory = 'templates' | 'examples' | 'schemas';
+
+/** File format for out-references */
+export type FileFormat = 'markdown' | 'json' | 'yaml' | 'text';
+
+/** Out-reference metadata */
+export interface OutReference {
+  /** Unique identifier (UUID) */
+  id: string;
+  /** Human-readable name */
+  name: string;
+  /** Brief description */
+  description: string;
+  /** Category for organizing */
+  category: OutReferenceCategory;
+  /** Relative path within out-references directory */
+  filePath: string;
+  /** File format */
+  format: FileFormat;
+  /** Tags for filtering */
+  tags: string[];
+  /** IDs of commands/packs that reference this */
+  linkedFrom: string[];
+  /** Total character count */
+  characterCount: number;
+  /** Total word count */
+  wordCount: number;
+  /** ISO timestamp of creation */
+  createdAt: string;
+  /** ISO timestamp of last update */
+  updatedAt: string;
+}
+
+/** Validation report for out-references */
+export interface OutReferenceValidationReport {
+  /** Whether validation passed */
+  valid: boolean;
+  /** Links that point to missing files */
+  brokenLinks: BrokenLink[];
+  /** Out-references not linked from any command/pack */
+  unusedReferences: string[];
+  /** Files on disk not tracked in metadata */
+  orphanedFiles: string[];
+}
+
+/** A broken link in the out-reference system */
+export interface BrokenLink {
+  /** Type of source (command, pack, out-reference) */
+  sourceType: string;
+  /** ID of the source */
+  sourceId: string;
+  /** Path that was expected */
+  targetPath: string;
+  /** Reason the link is broken */
+  reason: string;
+}
+
+/** A reference link to an out-reference */
+export interface ReferenceLink {
+  /** Type of referencing entity (command, pack) */
+  linkType: string;
+  /** ID of the referencing entity */
+  id: string;
+  /** Name of the referencing entity */
+  name: string;
+  /** Number of times this entity references the out-reference */
+  linkCount: number;
+}
+
+/** Statistics about out-references */
+export interface OutReferenceStats {
+  /** Total number of out-references */
+  totalCount: number;
+  /** Number of template out-references */
+  templatesCount: number;
+  /** Number of example out-references */
+  examplesCount: number;
+  /** Number of schema out-references */
+  schemasCount: number;
+  /** Total character count across all out-references */
+  totalCharacterCount: number;
+  /** Number of broken links */
+  brokenLinkCount: number;
+  /** Number of unused out-references */
+  unusedCount: number;
+}

@@ -14,6 +14,8 @@ interface AgentDeploymentConfig {
 interface DeploymentConfigStoreState {
   /** Per-agent configuration map */
   configs: Record<string, AgentDeploymentConfig>;
+  /** Global enabled command IDs (shared across agents) */
+  enabledCommandIds: string[];
 }
 
 interface DeploymentConfigStoreActions {
@@ -39,6 +41,14 @@ interface DeploymentConfigStoreActions {
   syncWithPackStore: (agentId: string, packIds: string[]) => void;
   /** Reset all configurations */
   resetAll: () => void;
+  /** Enable a command globally */
+  enableCommand: (commandId: string) => void;
+  /** Disable a command globally */
+  disableCommand: (commandId: string) => void;
+  /** Enable multiple commands globally */
+  enableCommands: (commandIds: string[]) => void;
+  /** Clear all enabled commands */
+  clearEnabledCommands: () => void;
 }
 
 const DEFAULT_CONFIG: AgentDeploymentConfig = {
@@ -53,6 +63,7 @@ export const useDeploymentConfigStore = create<DeploymentConfigStoreState & Depl
   persist(
     (set, get) => ({
       configs: {},
+      enabledCommandIds: [],
 
       getAgentConfig: (agentId: string): AgentDeploymentConfig => {
         const { configs } = get();
@@ -118,7 +129,29 @@ export const useDeploymentConfigStore = create<DeploymentConfigStoreState & Depl
         setAgentConfig(agentId, { packIds });
       },
 
-      resetAll: () => set({ configs: {} }),
+      resetAll: () => set({ configs: {}, enabledCommandIds: [] }),
+
+      enableCommand: (commandId: string) => {
+        const { enabledCommandIds } = get();
+        if (!enabledCommandIds.includes(commandId)) {
+          set({ enabledCommandIds: [...enabledCommandIds, commandId] });
+        }
+      },
+
+      disableCommand: (commandId: string) => {
+        const { enabledCommandIds } = get();
+        set({ enabledCommandIds: enabledCommandIds.filter(id => id !== commandId) });
+      },
+
+      enableCommands: (commandIds: string[]) => {
+        const { enabledCommandIds } = get();
+        const newIds = commandIds.filter(id => !enabledCommandIds.includes(id));
+        set({ enabledCommandIds: [...enabledCommandIds, ...newIds] });
+      },
+
+      clearEnabledCommands: () => {
+        set({ enabledCommandIds: [] });
+      },
     }),
     {
       name: 'deployment-config-store',

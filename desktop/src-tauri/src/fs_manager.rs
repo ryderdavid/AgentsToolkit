@@ -1,8 +1,10 @@
 use crate::types::*;
 use dirs::home_dir;
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
+use serde_json;
 
 const AGENT_REGISTRY_JSON: &str =
     include_str!("../../../dist/core/agent-registry.bundled.json");
@@ -125,6 +127,34 @@ pub fn read_pack_content(pack_id: String) -> Result<String> {
     }
     
     Ok(contents.join("\n\n---\n\n"))
+}
+
+fn pack_out_ref_overrides_path() -> PathBuf {
+    get_rule_packs_dir().join("out-references.json")
+}
+
+/// Load persisted out-reference overrides for rule packs
+pub fn read_pack_out_ref_overrides() -> Result<HashMap<String, Vec<String>>> {
+    let path = pack_out_ref_overrides_path();
+    if !path.exists() {
+        return Ok(HashMap::new());
+    }
+
+    let content = fs::read_to_string(&path)?;
+    let map = serde_json::from_str(&content)?;
+    Ok(map)
+}
+
+/// Persist out-reference overrides for rule packs
+pub fn write_pack_out_ref_overrides(map: &HashMap<String, Vec<String>>) -> Result<()> {
+    let path = pack_out_ref_overrides_path();
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    let content = serde_json::to_string_pretty(map)?;
+    fs::write(&path, content)?;
+    Ok(())
 }
 
 /// Get agent's config directory path (expands ~)

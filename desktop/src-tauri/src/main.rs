@@ -1,9 +1,11 @@
 // Prevents additional console window on Windows in release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod command_registry;
 mod deployment;
 mod fs_manager;
 mod ipc;
+mod out_reference_manager;
 mod symlink;
 mod types;
 
@@ -26,6 +28,7 @@ fn main() {
             load_pack,
             load_pack_full,
             load_pack_file,
+            update_pack_out_references,
             validate_pack,
             resolve_dependencies,
             calculate_budget,
@@ -46,6 +49,30 @@ fn main() {
             get_deployment_history,
             preview_deployment,
             get_deployable_agents,
+            // Command registry commands
+            list_available_commands,
+            get_command_by_id,
+            get_commands_for_agent,
+            get_commands_by_category,
+            load_command_content,
+            update_command_out_references,
+            validate_command_for_agent,
+            calculate_command_budget,
+            refresh_commands,
+            // Out-reference commands
+            list_out_references,
+            get_out_reference,
+            create_out_reference,
+            update_out_reference,
+            update_out_reference_metadata,
+            delete_out_reference,
+            read_out_reference_content,
+            write_out_reference_content,
+            validate_out_references,
+            find_references_to,
+            export_out_references,
+            import_out_references,
+            get_out_reference_stats,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
