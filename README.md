@@ -466,15 +466,44 @@ gh auth login
 2. Verify files in `.issue_screenshots/`
 3. Check raw GitHub URLs in issue body
 
-## Uninstallation
+## Managing Agent Installations
 
-### Remove Global Installation
+### Disable or Uninstall from Agents
+
+Use the interactive script to disable or uninstall AGENTS.md from specific agents:
 
 ```bash
+python3 ~/.agentsmd/scripts/uninstall_agents.py
+```
+
+**Options:**
+- **Disable:** Keeps files but makes them inactive (can be re-enabled easily)
+- **Uninstall:** Completely removes AGENTS.md configuration from selected agents
+
+The script will:
+1. Detect which agents have AGENTS.md installed
+2. Show you what's configured
+3. Let you select agents to modify
+4. Choose between disable or uninstall
+5. Process each agent safely
+
+**What gets modified:**
+- Cursor: `~/.cursor/commands` (renamed/removed)
+- Gemini CLI/Antigravity: prompts, scripts, settings.json, GEMINI.md import
+- Claude Code, Copilot, Codex: Instructions displayed for manual updates
+
+### Complete Toolkit Removal
+
+```bash
+# 1. First uninstall from all agents
+python3 ~/.agentsmd/scripts/uninstall_agents.py
+
+# 2. Remove global installation
 rm -rf ~/.agentsmd
 rm -rf ~/.cursor/commands
+rm -rf ~/.claude/commands
 
-# Remove from shell config
+# 3. Remove from shell config
 # Edit ~/.zshrc or ~/.bashrc and delete:
 # # AgentsMD Toolkit
 # export PATH="$HOME/.agentsmd/bin:$PATH"
